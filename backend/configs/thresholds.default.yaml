@@ -1,0 +1,20 @@
+# Acceptance thresholds for `retrace eval` (PRD §16).
+#
+# Drop rules: fail when (baseline - current) >= drop_lt
+# Absolute floors: fail when current < min_* (defaults 0.0 so first runs can pass)
+# Error rate: fail when incorrect/total > fail_on_eval_error_rate_gt
+
+version: "acceptance_thresholds.v1"
+
+# Max allowed absolute drop vs accepted baseline (inclusive fail at this delta)
+require_failure_code_accuracy_drop_lt: 0.05
+require_rule_accuracy_drop_lt: 0.05
+require_evidence_accuracy_drop_lt: 0.05
+
+# Absolute minimums (always applied). 0.0 = no floor beyond drop rules.
+min_failure_code_accuracy: 0.0
+min_rule_accuracy: 0.0
+min_evidence_accuracy: 0.0
+
+# Fraction of incorrect cases that triggers regression
+fail_on_eval_error_rate_gt: 0.02

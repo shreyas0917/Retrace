@@ -1,0 +1,100 @@
+"""API error types and helpers."""
+
+from __future__ import annotations
+
+from typing import Any
+
+
+class AppError(Exception):
+    """Base application error mapped to a structured API response."""
+
+    def __init__(
+        self,
+        code: str,
+        message: str,
+        status_code: int = 400,
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.code = code
+        self.message = message
+        self.status_code = status_code
+        self.details = details or {}
+
+
+class UnauthorizedError(AppError):
+    def __init__(self, message: str = "Missing or invalid API key") -> None:
+        super().__init__(
+            code="UNAUTHORIZED",
+            message=message,
+            status_code=401,
+        )
+
+
+class NotFoundError(AppError):
+    def __init__(self, message: str = "Resource not found") -> None:
+        super().__init__(
+            code="NOT_FOUND",
+            message=message,
+            status_code=404,
+        )
+
+
+class ConflictError(AppError):
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__(
+            code="CONFLICT",
+            message=message,
+            status_code=409,
+            details=details,
+        )
+
+
+class InvalidStateError(AppError):
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__(
+            code="INVALID_STATE",
+            message=message,
+            status_code=409,
+            details=details,
+        )
+
+
+class DependencyUnavailableError(AppError):
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__(
+            code="DEPENDENCY_UNAVAILABLE",
+            message=message,
+            status_code=503,
+            details=details,
+        )
+
+
+class EmbeddingError(AppError):
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__(
+            code="EMBEDDING_FAILED",
+            message=message,
+            status_code=502,
+            details=details,
+        )
+
+
+class GenerationError(AppError):
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
+        super().__init__(
+            code="GENERATION_FAILED",
+            message=message,
+            status_code=502,
+            details=details,
+        )
+
+
+class GenerationTimeoutError(AppError):
+    def __init__(self, message: str = "Generation timed out", details: dict[str, Any] | None = None) -> None:
+        super().__init__(
+            code="GENERATION_TIMEOUT",
+            message=message,
+            status_code=504,
+            details=details,
+        )

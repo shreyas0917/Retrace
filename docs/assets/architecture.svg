@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1344" height="1296" viewBox="0 0 1344 1296" role="img" aria-labelledby="t d">
+<title id="t">Retrace system architecture</title>
+<desc id="d">Console and CLI drive a FastAPI backend and in-process services; a six-stage diagnostic pipeline (ingest, retrieve, generate, judge, diagnose, investigate) persists to PostgreSQL and ChromaDB, is exercised by evaluation suites, experiments and a baseline regression gate, and feeds operations endpoints and runbooks.</desc>
+<defs>
+<marker id="ag" orient="auto" markerWidth="5" markerHeight="5" refX="2" refY="2" overflow="visible"><path d="M0 0 L4 2 L0 4 Z" fill="#5c6478"/></marker>
+<marker id="aa" orient="auto" markerWidth="5" markerHeight="5" refX="2" refY="2" overflow="visible"><path d="M0 0 L4 2 L0 4 Z" fill="#4f7df3"/></marker>
+</defs>
+<rect width="1344" height="1296" rx="12" fill="#0a0b0e"/>
+<rect x="48.5" y="456.5" width="1247" height="231" rx="10" fill="#0f1115" stroke="#1c212c"/>
+<rect x="48.5" y="744.5" width="695" height="303" rx="10" fill="#0f1115" stroke="#1c212c"/>
+<rect x="792.5" y="744.5" width="503" height="303" rx="10" fill="#0f1115" stroke="#1c212c"/>
+<path d="M 344 248 L 344 307" fill="none" stroke="#5c6478" stroke-width="2" stroke-linecap="round" marker-end="url(#ag)"/>
+<path d="M 344 408 L 344 451" fill="none" stroke="#5c6478" stroke-width="2" stroke-linecap="round" marker-end="url(#ag)"/>
+<path d="M 1000 248 L 1000 451" fill="none" stroke="#5c6478" stroke-width="2" stroke-linecap="round" marker-end="url(#ag)"/>
+<path d="M 232 576 L 275 576" fill="none" stroke="#4f7df3" stroke-width="2" stroke-linecap="round" marker-end="url(#aa)"/>
+<path d="M 440 576 L 483 576" fill="none" stroke="#4f7df3" stroke-width="2" stroke-linecap="round" marker-end="url(#aa)"/>
+<path d="M 648 576 L 691 576" fill="none" stroke="#4f7df3" stroke-width="2" stroke-linecap="round" marker-end="url(#aa)"/>
+<path d="M 856 576 L 899 576" fill="none" stroke="#4f7df3" stroke-width="2" stroke-linecap="round" marker-end="url(#aa)"/>
+<path d="M 1064 576 L 1107 576" fill="none" stroke="#4f7df3" stroke-width="2" stroke-linecap="round" marker-end="url(#aa)"/>
+<path d="M 365 832 L 365 693" fill="none" stroke="#5c6478" stroke-width="2" stroke-linecap="round" marker-end="url(#ag)"/>
+<path d="M 427 688 L 427 827" fill="none" stroke="#5c6478" stroke-width="2" stroke-linecap="round" marker-end="url(#ag)"/>
+<path d="M 920 688 L 920 795" fill="none" stroke="#5c6478" stroke-width="2" stroke-linecap="round" marker-end="url(#ag)"/>
+<path d="M 1176 688 L 1176 795" fill="none" stroke="#5c6478" stroke-width="2" stroke-linecap="round" marker-end="url(#ag)"/>
+<path d="M 256 888 L 299 888" fill="none" stroke="#5c6478" stroke-width="2" stroke-linecap="round" marker-end="url(#ag)"/>
+<path d="M 488 888 L 531 888" fill="none" stroke="#5c6478" stroke-width="2" stroke-linecap="round" marker-end="url(#ag)"/>
+<path d="M 396 1048 L 396 1107" fill="none" stroke="#5c6478" stroke-width="2" stroke-linecap="round" marker-end="url(#ag)"/>
+<path d="M 1044 1048 L 1044 1107" fill="none" stroke="#5c6478" stroke-width="2" stroke-linecap="round" marker-end="url(#ag)"/>
+<rect x="64.5" y="160.5" width="559" height="87" rx="8" fill="#151820" stroke="#262b38"/>
+<text x="344.0" y="200.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#eceef2">Engineering console</text>
+<text x="344.0" y="218.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">React + Vite · Investigate · Evaluations · Experiments · Operations</text>
+<rect x="720.5" y="160.5" width="559" height="87" rx="8" fill="#151820" stroke="#262b38"/>
+<text x="1000.0" y="200.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#eceef2">CLI<tspan font-family="'IBM Plex Mono',ui-monospace,Consolas,'Courier New',monospace" font-weight="400" font-size="13" fill="#8b92a5"> python -m app.cli.retrace</tspan></text>
+<text x="1000.0" y="218.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">eval · baseline promote · exit codes 0 / 1 / 2 for CI gates</text>
+<rect x="64.5" y="312.5" width="559" height="95" rx="8" fill="#151820" stroke="#262b38"/>
+<text x="344.0" y="356.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#eceef2">FastAPI backend<tspan font-family="'IBM Plex Mono',ui-monospace,Consolas,'Courier New',monospace" font-weight="400" font-size="13" fill="#8b92a5"> /api/v1</tspan></text>
+<text x="344.0" y="374.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">Bearer auth · request_id correlation · redacted JSON logs · in-memory metrics</text>
+<rect x="72.5" y="520.5" width="159" height="111" rx="8" fill="#151820" stroke="#262b38"/>
+<path d="M 80 521 H 224" stroke="#4f7df3" stroke-width="2"/>
+<text x="152.0" y="563.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#eceef2">Ingest</text>
+<text x="152.0" y="581.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">versioned corpus</text>
+<text x="152.0" y="599.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">chunk · embed</text>
+<rect x="280.5" y="520.5" width="159" height="111" rx="8" fill="#151820" stroke="#262b38"/>
+<path d="M 288 521 H 432" stroke="#4f7df3" stroke-width="2"/>
+<text x="360.0" y="563.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#eceef2">Retrieve</text>
+<text x="360.0" y="581.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">top-k chunks · scores</text>
+<text x="360.0" y="599.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">retrieval trace</text>
+<rect x="488.5" y="520.5" width="159" height="111" rx="8" fill="#151820" stroke="#262b38"/>
+<path d="M 496 521 H 640" stroke="#4f7df3" stroke-width="2"/>
+<text x="568.0" y="563.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#eceef2">Generate</text>
+<text x="568.0" y="581.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">answer or abstention</text>
+<text x="568.0" y="599.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">execution trace</text>
+<rect x="696.5" y="520.5" width="159" height="111" rx="8" fill="#151820" stroke="#262b38"/>
+<path d="M 704 521 H 848" stroke="#4f7df3" stroke-width="2"/>
+<text x="776.0" y="563.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#eceef2">Judge</text>
+<text x="776.0" y="581.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">relevance · faithfulness</text>
+<text x="776.0" y="599.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">contradiction</text>
+<rect x="904.5" y="520.5" width="159" height="111" rx="8" fill="#151820" stroke="#262b38"/>
+<path d="M 912 521 H 1056" stroke="#4f7df3" stroke-width="2"/>
+<text x="984.0" y="554.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#eceef2">Diagnose</text>
+<text x="984.0" y="572.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">ordered rules</text>
+<text x="984.0" y="590.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">failure_code · confidence</text>
+<text x="984.0" y="608.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">evidence refs</text>
+<rect x="1112.5" y="520.5" width="159" height="111" rx="8" fill="#151820" stroke="#262b38"/>
+<path d="M 1120 521 H 1264" stroke="#4f7df3" stroke-width="2"/>
+<text x="1192.0" y="563.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#eceef2">Investigate</text>
+<text x="1192.0" y="581.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">retrieval evidence</text>
+<text x="1192.0" y="599.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">timeline · runbook</text>
+<rect x="72.5" y="832.5" width="183" height="111" rx="8" fill="#151820" stroke="#262b38"/>
+<text x="164.0" y="875.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#eceef2">Eval suites</text>
+<text x="164.0" y="893.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">gold_v1 · planted_v1</text>
+<text x="164.0" y="911.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">suite hash integrity</text>
+<rect x="304.5" y="832.5" width="183" height="111" rx="8" fill="#151820" stroke="#262b38"/>
+<text x="396.0" y="875.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#eceef2">Experiments</text>
+<text x="396.0" y="893.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">case → execution</text>
+<text x="396.0" y="911.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">metrics per run</text>
+<rect x="536.5" y="832.5" width="183" height="111" rx="8" fill="#151820" stroke="#262b38"/>
+<text x="628.0" y="875.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#eceef2">Baseline + gate</text>
+<text x="628.0" y="893.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">promote · compare</text>
+<text x="628.0" y="911.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">exit 0 pass · 1 regression · 2 error</text>
+<rect x="816.5" y="800.5" width="207" height="87" rx="8" fill="#151820" stroke="#262b38"/>
+<text x="920.0" y="831.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#eceef2">PostgreSQL</text>
+<text x="920.0" y="849.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">traces · executions · diagnoses</text>
+<text x="920.0" y="867.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">experiments · baselines</text>
+<rect x="1072.5" y="800.5" width="207" height="87" rx="8" fill="#151820" stroke="#262b38"/>
+<text x="1176.0" y="831.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#eceef2">ChromaDB</text>
+<text x="1176.0" y="849.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">chunk embeddings</text>
+<text x="1176.0" y="867.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">top-k similarity search</text>
+<rect x="816.5" y="920.5" width="207" height="87" rx="8" fill="#151820" stroke="#262b38"/>
+<text x="920.0" y="951.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#eceef2">LLM (OpenAI-compatible)</text>
+<text x="920.0" y="969.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">local Ollama or cloud</text>
+<text x="920.0" y="987.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">generation + judges</text>
+<rect x="1072.5" y="920.5" width="207" height="87" rx="8" fill="#151820" stroke="#262b38"/>
+<text x="1176.0" y="960.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#eceef2">Embeddings</text>
+<text x="1176.0" y="978.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">all-MiniLM-L6-v2 · in-process</text>
+<rect x="64.5" y="1112.5" width="1215" height="87" rx="8" fill="#151820" stroke="#262b38"/>
+<text x="672.0" y="1152.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#eceef2">Operations</text>
+<text x="672.0" y="1170.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">/health/ready checks Postgres + Chroma · GET /metrics · GET /api/v1/signals · runbooks → engineer action</text>
+<text x="64" y="78" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="28" font-weight="600" fill="#eceef2">Retrace · system architecture</text>
+<text x="64" y="108" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="15" fill="#8b92a5">How a RAG request is executed, judged, diagnosed with evidence, evaluated against a baseline and gated.</text>
+<text x="72" y="668" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11" font-weight="600" letter-spacing="1.1" fill="#8b92a5">DIAGNOSTIC PIPELINE</text>
+<text x="72" y="1028" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11" font-weight="600" letter-spacing="1.1" fill="#8b92a5">EVALUATION &amp; REGRESSION</text>
+<text x="816" y="1028" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11" font-weight="600" letter-spacing="1.1" fill="#8b92a5">STORES &amp; MODEL PROVIDERS</text>
+<text x="356" y="284" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">HTTP + Bearer</text>
+<text x="356" y="435" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">service calls</text>
+<text x="1012" y="355" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">in-process services</text>
+<text x="439" y="764" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">runs cases · collects results</text>
+<text x="932" y="720" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">persist</text>
+<text x="1188" y="720" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">vectors</text>
+<text x="408" y="1084" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">eval metrics</text>
+<text x="1056" y="1084" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">readiness checks</text>
+<text x="64" y="1236" font-family="'IBM Plex Mono',ui-monospace,Consolas,'Courier New',monospace" font-size="12" fill="#5c6478">correlation: request_id → retrieval_trace_id → execution_id → failure_code / rule_id   ·   experiment_id → case_id → execution_id → investigation</text>
+</svg>

@@ -1,0 +1,41 @@
+# Observability signal thresholds (Phase 7).
+# In-memory metrics — not durable production telemetry.
+# Status ALERT when actual >= threshold (rates) or actual > threshold (latency).
+
+version: "observability_signals.v1"
+
+signals:
+  retrieval_miss_rate:
+    enabled: true
+    threshold: 0.10
+    description: "Fraction of diagnoses classified as RETRIEVAL_MISS"
+
+  retrieval_empty_rate:
+    enabled: true
+    threshold: 0.15
+    description: "Fraction of retrievals returning zero chunks"
+
+  judge_timeout_rate:
+    enabled: true
+    threshold: 0.05
+    description: "Fraction of judge calls that timed out"
+
+  judge_malformed_rate:
+    enabled: true
+    threshold: 0.05
+    description: "Fraction of judge calls with schema failure after retry"
+
+  generation_timeout_rate:
+    enabled: true
+    threshold: 0.05
+    description: "Fraction of generations that timed out"
+
+  request_error_rate:
+    enabled: true
+    threshold: 0.05
+    description: "Fraction of HTTP responses with status >= 500"
+
+  p95_latency_ms:
+    enabled: true
+    threshold: 2000
+    description: "HTTP request latency p95 in milliseconds"

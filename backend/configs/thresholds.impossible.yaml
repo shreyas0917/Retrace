@@ -1,0 +1,14 @@
+# Test-only: impossible absolute floor → forces exit code 1 (regression)
+# without mutating suites or the accepted baseline.
+
+version: "acceptance_thresholds.v1_impossible"
+
+require_failure_code_accuracy_drop_lt: 0.05
+require_rule_accuracy_drop_lt: 0.05
+require_evidence_accuracy_drop_lt: 0.05
+
+min_failure_code_accuracy: 1.01
+min_rule_accuracy: 0.0
+min_evidence_accuracy: 0.0
+
+fail_on_eval_error_rate_gt: 0.02
