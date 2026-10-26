@@ -24,6 +24,10 @@ os.environ.setdefault(
     "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
 )
 os.environ.setdefault("LOG_LEVEL", "WARNING")
+# The whole test process shares one API key and therefore one rate-limit
+# budget; keep it out of the way unless a test configures the limiter itself.
+os.environ.setdefault("RATE_LIMIT_PER_MINUTE", "100000")
+os.environ.setdefault("AUTH_RATE_LIMIT_PER_MINUTE", "100000")
 
 
 @pytest.fixture(scope="session")

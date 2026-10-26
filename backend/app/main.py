@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.api.routes_auth import router as auth_router
 from app.api.routes_benchmark import router as benchmark_router
 from app.api.routes_corpus import router as corpus_router
 from app.api.routes_diagnose import router as diagnose_router
@@ -21,8 +22,10 @@ from app.api.routes_investigate import router as investigate_router
 from app.api.routes_retrieve import router as retrieve_router
 from app.core.config import get_settings
 from app.core.errors import AppError
+from app.core.hardening import RequestHardeningMiddleware
 from app.core.logging import configure_logging, get_logger
 from app.core.middleware import RequestIdMiddleware
+from app.core.ratelimit import RateLimitMiddleware, get_rate_limiter
 from app.db import models  # noqa: F401 — register models with metadata
 from app.db.session import init_db
 
@@ -48,6 +51,13 @@ async def lifespan(_app: FastAPI):
         generation_model=settings.model_name,
     )
     yield
+    # Flush any buffered durable telemetry before the process exits.
+    try:
+        from app.core.telemetry import flush_telemetry
+
+        flush_telemetry()
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("telemetry_flush_on_shutdown_failed", error=str(exc))
     logger.info("app_stopped")
 
 
@@ -56,10 +66,21 @@ def create_app() -> FastAPI:
     application = FastAPI(
         title="Retrace",
         description="RAG reliability and failure-localization system",
-        version="0.9.0",
+        version="1.0.0",
         lifespan=lifespan,
     )
 
+    # Innermost first: rate limit, then hardening (headers on 429s too), then
+    # CORS and request-id wrap everything so browsers always see CORS headers.
+    get_rate_limiter().configure(
+        per_minute=settings.rate_limit_per_minute,
+        auth_per_minute=settings.auth_rate_limit_per_minute,
+        enabled=settings.rate_limit_enabled,
+    )
+    application.add_middleware(RateLimitMiddleware)
+    application.add_middleware(
+        RequestHardeningMiddleware, max_request_bytes=settings.max_request_bytes
+    )
     application.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
@@ -71,6 +92,7 @@ def create_app() -> FastAPI:
     application.add_middleware(RequestIdMiddleware)
 
     application.include_router(health_router)
+    application.include_router(auth_router)
     application.include_router(corpus_router)
     application.include_router(retrieve_router)
     application.include_router(generate_router)

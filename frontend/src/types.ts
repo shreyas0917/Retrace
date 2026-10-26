@@ -57,6 +57,13 @@ export type Investigation = {
     recommendation_code: string | null;
     evidence_refs: string[];
     taxonomy_version: string;
+    /** v1.0: numeric rule score, calibrated probability, deferral flag, explanation. */
+    diagnosis_score?: number | null;
+    calibrated_confidence?: number | null;
+    calibration_version?: string | null;
+    uncertain?: boolean;
+    review_recommended?: boolean;
+    explanation?: string | null;
   } | null;
   rule: {
     rule_id: string;
@@ -118,7 +125,31 @@ export type Investigation = {
     note: string;
     signals_used: Record<string, unknown>;
     rule: Investigation["rule"];
+    explanation?: string | null;
+    calibrated_confidence?: number | null;
+    calibration_version?: string | null;
+    uncertain?: boolean;
   };
+};
+
+/** Per-class precision/recall/F1 row stored in experiment metrics (v1.0). */
+export type PerClassMetric = {
+  support: number;
+  predicted: number;
+  tp: number;
+  fp: number;
+  fn: number;
+  precision: number;
+  recall: number;
+  f1: number;
+};
+
+export type SelectiveMetrics = {
+  coverage: number | null;
+  selective_accuracy: number | null;
+  deferred: number;
+  deferred_accuracy: number | null;
+  uncertain_rate: number | null;
 };
 
 export type ExperimentListItem = {
@@ -218,4 +249,37 @@ export type EvalRunResult = {
   comparison: Record<string, unknown>;
   baseline: Record<string, unknown> | null;
   no_baseline?: boolean;
+};
+
+/** Postgres-backed telemetry window (GET /api/v1/metrics/durable, ops summary). */
+export type DurableWindow = {
+  available: boolean;
+  reason?: string | null;
+  source?: string;
+  window_minutes?: number | null;
+  event_count?: number;
+  http_latency?: {
+    count?: number;
+    p50_ms?: number | null;
+    p95_ms?: number | null;
+    p99_ms?: number | null;
+    max_ms?: number | null;
+  };
+  requests_total?: number;
+  requests_5xx?: number;
+  request_error_rate?: number | null;
+  generation_attempts?: number;
+  generation_timeout_rate?: number | null;
+  llm_retries?: number;
+  llm_failures?: number;
+  tokens?: { prompt?: number; completion?: number; total?: number } | null;
+  cost_usd?: number | null;
+};
+
+export type OpsSummaryV1 = OpsSummary & {
+  metrics: OpsSummary["metrics"] & {
+    source?: string;
+    durable_available?: boolean;
+    durable_window?: DurableWindow;
+  };
 };

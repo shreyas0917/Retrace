@@ -51,10 +51,37 @@ def load_observability_config(path: str | Path | None = None) -> dict[str, Any]:
 def evaluate_signals(
     snapshot: dict[str, Any] | None = None,
     config: dict[str, Any] | None = None,
+    *,
+    source: str = "memory",
+    window_minutes: int | None = None,
 ) -> dict[str, Any]:
-    """Return signal rows with actual/threshold/status (OK|ALERT|INSUFFICIENT_DATA)."""
+    """Return signal rows with actual/threshold/status (OK|ALERT|INSUFFICIENT_DATA).
+
+    source="memory" (default) evaluates the in-process snapshot; source="durable"
+    uses the Postgres-backed window (falls back to memory when unavailable). The
+    result reports which one was used in `metrics_source`.
+    """
     config = config or load_observability_config()
-    snapshot = snapshot or get_metrics().snapshot()
+    metrics_source = "in-memory"
+    if snapshot is None:
+        if source == "durable":
+            from app.core.telemetry import try_durable_snapshot
+
+            durable = try_durable_snapshot(window_minutes)
+            if durable.get("available"):
+                snapshot = durable
+                metrics_source = "postgres"
+            else:
+                snapshot = get_metrics().snapshot()
+                snapshot = dict(snapshot)
+                snapshot["note"] = (
+                    f"{snapshot.get('note') or ''} Durable store unavailable: "
+                    f"{durable.get('reason')}"
+                ).strip()
+        else:
+            snapshot = get_metrics().snapshot()
+    elif snapshot.get("source") == "postgres":
+        metrics_source = "postgres"
     derived = snapshot.get("derived") or {}
     latencies = snapshot.get("latencies") or {}
     http_lat = latencies.get("http.request") or {}
@@ -98,5 +125,7 @@ def evaluate_signals(
         "version": config.get("version"),
         "alert_count": alerts,
         "signals": rows,
+        "metrics_source": metrics_source,
+        "window_minutes": snapshot.get("window_minutes"),
         "metrics_note": snapshot.get("note"),
     }

@@ -17,6 +17,19 @@ from app.services.eval.evaluate import (
 )
 from app.services.eval.suite_loader import SuiteValidationError
 from app.services.eval.thresholds_config import ThresholdConfigError, load_thresholds
+from app.cli.retrieval_cmd import add_retrieval_eval_subparser
+from app.cli.judges_cmd import add_judges_subparser
+from app.cli.benchmark_cmd import register as add_benchmark_subparser
+
+
+def _flush_telemetry() -> None:
+    """Persist buffered metrics from CLI runs; never fail the command."""
+    try:
+        from app.core.telemetry import flush_telemetry
+
+        flush_telemetry()
+    except Exception:  # noqa: BLE001
+        pass
 
 
 def _open_db():
@@ -120,13 +133,25 @@ def build_parser() -> argparse.ArgumentParser:
     promote_p.add_argument("--thresholds", default=None)
     promote_p.set_defaults(func=cmd_baseline_promote)
 
+    # v1.0 retrieval quality: chunking x retriever ablation (app/cli/retrieval_cmd.py)
+    add_retrieval_eval_subparser(sub)
+    # v1.0 judge validation: `retrace judges validate` (app/cli/judges_cmd.py)
+    add_judges_subparser(sub)
+    # v1.0 held-out benchmark, calibration, classifier comparison (app/cli/benchmark_cmd.py)
+    add_benchmark_subparser(sub)
+
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
-    return int(args.func(args))
+    if getattr(args, "calibrate_on", None) == "":
+        args.calibrate_on = None
+    try:
+        return int(args.func(args))
+    finally:
+        _flush_telemetry()
 
 
 if __name__ == "__main__":

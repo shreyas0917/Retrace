@@ -37,6 +37,36 @@ class Settings(BaseSettings):
         alias="CORS_ORIGINS",
     )
 
+    # --- Session auth for the console (v1.0) ---
+    # HMAC key for signing short-lived session tokens. When unset, a key is
+    # derived from API_KEY so development works out of the box; set an
+    # independent random value in production.
+    session_secret: str | None = Field(default=None, alias="SESSION_SECRET")
+    session_ttl_minutes: int = Field(default=480, alias="SESSION_TTL_MINUTES")
+    cookie_secure: bool = Field(default=False, alias="COOKIE_SECURE")
+
+    # --- Abuse controls (v1.0) ---
+    rate_limit_enabled: bool = Field(default=True, alias="RATE_LIMIT_ENABLED")
+    rate_limit_per_minute: int = Field(default=120, alias="RATE_LIMIT_PER_MINUTE")
+    auth_rate_limit_per_minute: int = Field(
+        default=10, alias="AUTH_RATE_LIMIT_PER_MINUTE"
+    )
+    max_query_chars: int = Field(default=4000, alias="MAX_QUERY_CHARS")
+    max_request_bytes: int = Field(default=1_048_576, alias="MAX_REQUEST_BYTES")
+
+    # --- LLM resilience (v1.0) ---
+    model_max_retries: int = Field(default=2, alias="MODEL_MAX_RETRIES")
+    model_retry_backoff_seconds: float = Field(
+        default=0.5, alias="MODEL_RETRY_BACKOFF_SECONDS"
+    )
+    model_connect_timeout_seconds: float = Field(
+        default=10.0, alias="MODEL_CONNECT_TIMEOUT_SECONDS"
+    )
+
+    # --- Durable telemetry + cost accounting (v1.0) ---
+    telemetry_durable: bool = Field(default=True, alias="TELEMETRY_DURABLE")
+    pricing_path: str | None = Field(default=None, alias="PRICING_PATH")
+
     @field_validator("api_key")
     @classmethod
     def api_key_must_be_set(cls, value: str) -> str:
@@ -65,6 +95,15 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.environment.lower() == "production"
+
+    @property
+    def effective_session_secret(self) -> str:
+        """Session signing key: SESSION_SECRET, else derived from API_KEY."""
+        if self.session_secret and self.session_secret.strip():
+            return self.session_secret.strip()
+        import hashlib
+
+        return hashlib.sha256(f"retrace-session:{self.api_key}".encode("utf-8")).hexdigest()
 
 
 def get_settings() -> Settings:

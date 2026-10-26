@@ -143,6 +143,20 @@ RULE_CATALOG: dict[str, dict[str, Any]] = {
         ],
         "summary": "Answer is grounded in retrieved evidence.",
     },
+    "R90": {
+        "rule_id": "R90",
+        "result": "DIAGNOSIS_UNCERTAIN",
+        "layer": "uncertain",
+        "conditions": [
+            "judges ran",
+            "signals inconsistent: faithfulness_score < TAU_FAITHFUL with "
+            "unsupported_claim_count == 0, OR a required judge verdict is missing",
+        ],
+        "summary": (
+            "Judge outputs are self-inconsistent or incomplete; the engine "
+            "declines to localize and recommends manual review."
+        ),
+    },
     "R99": {
         "rule_id": "R99",
         "result": "EVAL_INTERNAL_ERROR",

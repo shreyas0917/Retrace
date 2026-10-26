@@ -1,0 +1,15 @@
+# Acceptance thresholds for the calibration suite `calib_v1`.
+# This suite exists to fit the confidence calibrator; it is not a release gate,
+# so only loose floors apply.
+
+version: "acceptance_thresholds.calib.v1"
+
+require_failure_code_accuracy_drop_lt: 0.05
+require_rule_accuracy_drop_lt: 0.05
+require_evidence_accuracy_drop_lt: 0.05
+
+min_failure_code_accuracy: 0.70
+min_rule_accuracy: 0.60
+min_evidence_accuracy: 0.70
+
+fail_on_eval_error_rate_gt: 0.30

@@ -6,12 +6,14 @@ import time
 import uuid
 
 import structlog
+from starlette.concurrency import run_in_threadpool
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response
 
 from app.core.logging import get_logger
 from app.core.metrics import get_metrics
+from app.core.telemetry import flush_telemetry, get_buffer
 
 REQUEST_ID_HEADER = "X-Request-ID"
 
@@ -60,3 +62,10 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
                 latency_ms=latency_ms,
                 operation="http_request",
             )
+            # Durable telemetry: one batched INSERT per request (off the event
+            # loop). flush_telemetry() swallows DB errors and never raises.
+            if len(get_buffer()) > 0:
+                try:
+                    await run_in_threadpool(flush_telemetry)
+                except Exception as exc:  # noqa: BLE001 - never fail the request
+                    logger.warning("telemetry_flush_error", error=str(exc)[:200])

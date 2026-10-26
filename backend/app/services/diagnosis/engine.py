@@ -16,11 +16,14 @@ from app.core.errors import NotFoundError
 from app.core.logging import bind_correlation, get_logger
 from app.core.ops import record_diagnosis  # noqa: F401 — used via _emit_ops
 from app.db.models import Diagnosis, DiagnosisEvidence, ExecutionTrace, JudgeResult
+from app.services.diagnosis.calibration import apply_calibration, get_calibrator
+from app.services.diagnosis.explain import build_explanation
 from app.services.diagnosis.models import DiagnosisDecision, SignalBag
 from app.services.diagnosis.rules import apply_rules, needs_judges
 from app.services.diagnosis.taxonomy import TAXONOMY_VERSION
 from app.services.diagnosis.thresholds import (
     TAU_REL,
+    TAU_UNCERTAIN,
     THRESHOLDS_VERSION,
 )
 from app.services.judges.base import JudgeMalformedError
@@ -46,6 +49,29 @@ def _emit_ops(decision: DiagnosisDecision, started: float) -> None:
         layer=decision.layer,
         latency_ms=latency_ms,
     )
+
+
+def _finalize(
+    decision: DiagnosisDecision,
+    signals: SignalBag,
+    *,
+    metrics: dict[str, Any],
+    judges_ran: bool,
+    started: float,
+) -> DiagnosisDecision:
+    """Attach latency, calibrated confidence, uncertainty flag and explanation."""
+    metrics["diagnosis_latency_ms"] = round((time.perf_counter() - started) * 1000, 2)
+    decision.metrics = metrics
+    decision.judges_ran = judges_ran
+    table = get_calibrator()
+    calibrated = apply_calibration(table, decision.diagnosis_score)
+    decision.calibrated_confidence = round(calibrated, 6)
+    decision.calibration_version = table.version if table else None
+    decision.uncertain = (
+        decision.primary_code == "DIAGNOSIS_UNCERTAIN" or calibrated < TAU_UNCERTAIN
+    )
+    decision.explanation = build_explanation(decision, signals)
+    return decision
 
 
 def _input_hash(payload: dict[str, Any]) -> str:
@@ -146,6 +172,10 @@ def _persist_diagnosis(
             "metrics": decision.metrics,
             "thresholds_version": THRESHOLDS_VERSION,
             "judges_ran": decision.judges_ran,
+            "explanation": decision.explanation,
+            "calibrated_confidence": decision.calibrated_confidence,
+            "calibration_version": decision.calibration_version,
+            "uncertain": decision.uncertain,
         },
     )
     db.add(diagnosis)
@@ -230,14 +260,12 @@ def diagnose_execution(
     # Short-circuit infra / empty / gold miss without judges
     if not needs_judges(signals):
         decision = apply_rules(signals)
-        metrics["diagnosis_latency_ms"] = round(
-            (time.perf_counter() - started) * 1000, 2
-        )
-        decision.metrics = metrics
-        decision.judges_ran = False
         # Ensure evidence includes retrieval refs for empty case
         if "retrieval:empty" not in decision.evidence_refs and signals.n_retrieved == 0:
             decision.evidence_refs.append("retrieval:empty")
+        decision = _finalize(
+            decision, signals, metrics=metrics, judges_ran=False, started=started
+        )
         row = _persist_diagnosis(db, execution=execution, decision=decision)
         _emit_ops(decision, started)
         return _to_response(row, execution)
@@ -324,11 +352,9 @@ def diagnose_execution(
 
         signals.judge_schema_ok = True
         decision = apply_rules(signals)
-        metrics["diagnosis_latency_ms"] = round(
-            (time.perf_counter() - started) * 1000, 2
+        decision = _finalize(
+            decision, signals, metrics=metrics, judges_ran=judges_ran, started=started
         )
-        decision.metrics = metrics
-        decision.judges_ran = judges_ran
         row = _persist_diagnosis(db, execution=execution, decision=decision)
         logger.info(
             "diagnosis_completed",
@@ -336,6 +362,8 @@ def diagnose_execution(
             primary_code=decision.primary_code,
             rule_id=decision.rule_id,
             confidence=decision.diagnosis_confidence,
+            calibrated_confidence=decision.calibrated_confidence,
+            uncertain=decision.uncertain,
             failure_code=decision.primary_code,
             operation="diagnosis",
         )
@@ -345,12 +373,10 @@ def diagnose_execution(
     except JudgeMalformedError as exc:
         signals.judge_schema_ok = False
         decision = apply_rules(signals)
-        metrics["diagnosis_latency_ms"] = round(
-            (time.perf_counter() - started) * 1000, 2
-        )
-        decision.metrics = metrics
-        decision.judges_ran = judges_ran
         decision.evidence_refs.append(f"judge:{exc.judge_type}:malformed")
+        decision = _finalize(
+            decision, signals, metrics=metrics, judges_ran=judges_ran, started=started
+        )
         row = _persist_diagnosis(db, execution=execution, decision=decision)
         db.commit()
         _emit_ops(decision, started)
@@ -359,8 +385,10 @@ def diagnose_execution(
 
 def _to_response(diagnosis: Diagnosis, execution: ExecutionTrace) -> dict[str, Any]:
     metrics: dict[str, Any] = {}
-    if isinstance(diagnosis.signals, dict):
-        metrics = diagnosis.signals.get("metrics") or {}
+    stored: dict[str, Any] = diagnosis.signals if isinstance(diagnosis.signals, dict) else {}
+    if stored:
+        metrics = stored.get("metrics") or {}
+    uncertain = bool(stored.get("uncertain", diagnosis.primary_code == "DIAGNOSIS_UNCERTAIN"))
     return {
         "diagnosis_id": diagnosis.id,
         "execution_id": execution.id,
@@ -371,6 +399,11 @@ def _to_response(diagnosis: Diagnosis, execution: ExecutionTrace) -> dict[str, A
         "layer": diagnosis.layer,
         "confidence": diagnosis.diagnosis_confidence,
         "diagnosis_score": diagnosis.diagnosis_score,
+        "calibrated_confidence": stored.get("calibrated_confidence"),
+        "calibration_version": stored.get("calibration_version"),
+        "uncertain": uncertain,
+        "review_recommended": uncertain,
+        "explanation": stored.get("explanation"),
         "recommendation_code": diagnosis.recommendation_code,
         "taxonomy_version": diagnosis.taxonomy_version,
         "evidence_refs": _evidence_refs_from_db(diagnosis),

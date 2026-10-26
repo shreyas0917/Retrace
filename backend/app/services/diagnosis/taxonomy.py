@@ -16,6 +16,7 @@ class Layer(str, Enum):
     ABSTENTION = "abstention"
     INFRA = "infra"
     NONE = "none"
+    UNCERTAIN = "uncertain"
 
 
 @dataclass(frozen=True)
@@ -135,6 +136,12 @@ FAILURE_CODES: dict[str, FailureCode] = {
     "EVAL_INTERNAL_ERROR": FailureCode(
         "EVAL_INTERNAL_ERROR", Layer.INFRA, "Unexpected pipeline exception"
     ),
+    "DIAGNOSIS_UNCERTAIN": FailureCode(
+        "DIAGNOSIS_UNCERTAIN",
+        Layer.UNCERTAIN,
+        "Judge signals are internally inconsistent or sit on a decision "
+        "boundary; no confident localization. Route to manual review.",
+    ),
 }
 
 
@@ -155,6 +162,7 @@ RECOMMENDATIONS: dict[str, str] = {
     "EVAL_JUDGE_MALFORMED": "FIX_PIPELINE",
     "EVAL_MISSING_CONTEXT": "FIX_PIPELINE",
     "EVAL_INTERNAL_ERROR": "FIX_PIPELINE",
+    "DIAGNOSIS_UNCERTAIN": "MANUAL_REVIEW",
 }
 
 

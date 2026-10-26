@@ -1,13 +1,17 @@
-import { useEffect, useState } from "react";
-import { API_BASE } from "./api";
+import { useCallback, useEffect, useState } from "react";
+import { API_BASE, fetchAuthState, logout } from "./api";
+import { LoginView } from "./views/LoginView";
 import { InvestigateView } from "./views/InvestigateView";
 import { EvaluationsView } from "./views/EvaluationsView";
 import { ExperimentsView } from "./views/ExperimentsView";
 import { OperationsView } from "./views/OperationsView";
 import type { NavId } from "./types";
 
-const DEFAULT_KEY =
-  import.meta.env.VITE_API_KEY ?? "dev-retrace-api-key-change-me";
+// Views receive an empty key: requests authenticate with the HttpOnly
+// session cookie, so no credential is ever baked into the bundle.
+const SESSION_AUTH_KEY = "";
+
+type AuthStatus = "checking" | "anonymous" | "authenticated";
 
 const NAV: Array<{ id: NavId; label: string; desc: string }> = [
   {
@@ -34,10 +38,33 @@ const NAV: Array<{ id: NavId; label: string; desc: string }> = [
 
 export default function App() {
   const [nav, setNav] = useState<NavId>("investigate");
-  const [apiKey, setApiKey] = useState(DEFAULT_KEY);
+  const [auth, setAuth] = useState<AuthStatus>("checking");
   const [health, setHealth] = useState<"checking" | "ok" | "error">("checking");
   const [executionId, setExecutionId] = useState("");
   const [navOpen, setNavOpen] = useState(false);
+  const apiKey = SESSION_AUTH_KEY;
+
+  const refreshAuth = useCallback(async () => {
+    try {
+      const state = await fetchAuthState();
+      setAuth(state.authenticated ? "authenticated" : "anonymous");
+    } catch {
+      setAuth("anonymous");
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshAuth();
+  }, [refreshAuth]);
+
+  async function signOut() {
+    try {
+      await logout();
+    } finally {
+      setAuth("anonymous");
+      setNavOpen(false);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -64,6 +91,16 @@ export default function App() {
   }
 
   const active = NAV.find((n) => n.id === nav);
+
+  if (auth !== "authenticated") {
+    return auth === "checking" ? (
+      <div className="login-shell">
+        <div className="login-card panel login-checking">Checking session…</div>
+      </div>
+    ) : (
+      <LoginView apiBase={API_BASE} onAuthenticated={() => setAuth("authenticated")} />
+    );
+  }
 
   const healthLabel =
     health === "ok"
@@ -97,7 +134,7 @@ export default function App() {
         </nav>
         <div className="sidebar-foot">
           <div className="sidebar-meta">
-            <span className="mono">v0.9.0</span>
+            <span className="mono">v1.0.0</span>
             <span
               className={`status-dot ${health === "ok" ? "ok" : health === "error" ? "error" : ""}`}
               title="GET /health/live"
@@ -105,16 +142,18 @@ export default function App() {
               {healthLabel}
             </span>
           </div>
-          <label className="api-key-field">
-            API Key
-            <input
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              autoComplete="off"
-              aria-label="API key"
-            />
-          </label>
+          <div className="sidebar-session">
+            <span className="status-dot ok" title="HttpOnly session cookie">
+              Signed in
+            </span>
+            <button
+              type="button"
+              className="secondary logout-button"
+              onClick={() => void signOut()}
+            >
+              Log out
+            </button>
+          </div>
         </div>
       </aside>
 

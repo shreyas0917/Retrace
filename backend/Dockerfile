@@ -27,4 +27,7 @@ COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# UVICORN_WORKERS (default 1) is expanded by docker-entrypoint.sh. With >1
+# worker the in-memory metrics/rate limiter are per-process; the durable
+# telemetry store (Postgres) is shared. See docs/observability.md.
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "${UVICORN_WORKERS}"]

@@ -15,7 +15,10 @@ import type {
   Comparison,
   EvalRunResult,
   ExperimentDetail,
+  PerClassMetric,
+  SelectiveMetrics,
 } from "../types";
+import { PerClassSection } from "../components/PerClassSection";
 
 type Props = {
   apiKey: string;
@@ -132,7 +135,9 @@ export function EvaluationsView({ apiKey, onOpenExecution }: Props) {
         <label>
           Suite
           <select value={suiteId} onChange={(e) => setSuiteId(e.target.value)}>
-            <option value="planted_v1">planted_v1</option>
+            <option value="planted_v1">planted_v1 (12 planted scenarios)</option>
+            <option value="heldout_v1">heldout_v1 (160 held-out cases)</option>
+            <option value="calib_v1">calib_v1 (80 calibration cases)</option>
             <option value="gold_v1">gold_v1</option>
           </select>
         </label>
@@ -190,6 +195,27 @@ export function EvaluationsView({ apiKey, onOpenExecution }: Props) {
               <div className="metric-value">{pct(summary.evidence_accuracy)}</div>
             </div>
             <div className="metric-cell">
+              <div className="metric-label">Strict accuracy</div>
+              <div className="metric-value">{pct(summary.strict_accuracy)}</div>
+            </div>
+            <div className="metric-cell">
+              <div className="metric-label">Macro-F1</div>
+              <div className="metric-value">
+                {summary.macro_f1 == null
+                  ? "—"
+                  : Number(summary.macro_f1).toFixed(3)}
+              </div>
+            </div>
+            <div className="metric-cell">
+              <div className="metric-label">Deferred (uncertain)</div>
+              <div className="metric-value">
+                {pct(
+                  (summary.selective as SelectiveMetrics | undefined)
+                    ?.uncertain_rate,
+                )}
+              </div>
+            </div>
+            <div className="metric-cell">
               <div className="metric-label">Baseline</div>
               <div className="metric-value" style={{ fontSize: 14 }}>
                 {baseline ? (
@@ -241,6 +267,13 @@ export function EvaluationsView({ apiKey, onOpenExecution }: Props) {
                 ]}
               />
             </Section>
+
+            <PerClassSection
+              perClass={
+                summary.per_class as Record<string, PerClassMetric> | undefined
+              }
+              selective={summary.selective as SelectiveMetrics | undefined}
+            />
 
             <Section title="Active baseline">
               {!baseline ? (

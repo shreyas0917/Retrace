@@ -14,13 +14,27 @@ vi.mock("../api", () => ({
   API_BASE: "http://localhost:8000",
   apiGet: vi.fn(async (path: string) => {
     if (path === "/api/v1/corpora") return { corpora: [] };
-    if (path === "/api/v1/ops/summary") {
+    if (path.startsWith("/api/v1/ops/summary")) {
       return {
         ready: true,
         readiness_status: "ok",
         dependencies: { postgres: "ok", chroma: "ok" },
         metrics: {
           durable: false,
+          source: "in-memory",
+          durable_available: true,
+          durable_window: {
+            available: true,
+            source: "postgres",
+            window_minutes: 1440,
+            event_count: 42,
+            http_latency: { count: 3, p50_ms: 8, p95_ms: 12, p99_ms: 20, max_ms: 25 },
+            requests_total: 3,
+            requests_5xx: 0,
+            request_error_rate: 0,
+            tokens: { prompt: 120, completion: 40, total: 160 },
+            cost_usd: 0.000128,
+          },
           derived: {},
           http_latency: { p95_ms: 12 },
           counters_sample: { "http.requests_total": 3 },
@@ -247,9 +261,8 @@ describe("OperationsView", () => {
     expect(await screen.findByText("request_error_rate")).toBeInTheDocument();
     expect(screen.getByText("OK")).toBeInTheDocument();
     expect(screen.getByText("INSUFFICIENT_DATA")).toBeInTheDocument();
-    expect(
-      screen.getByText(/Not durable production telemetry/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/source: postgres/i)).toBeInTheDocument();
+    expect(screen.getByText("20 ms")).toBeInTheDocument();
   });
 });
 

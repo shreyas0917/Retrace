@@ -1,0 +1,28 @@
+{
+  "suite_id": "heldout_v1",
+  "suite_version": "1.0.0",
+  "suite_hash": "sha256:246f8d8e4663f63c3bfd370998fcb5fce0cbccfc3f9497d1e3fd59b28fd5f1a6",
+  "case_count": 160,
+  "taxonomy_version": "1.0",
+  "generator": {
+    "script": "scripts/build_heldout_suite.py",
+    "version": "heldout_generator.v1",
+    "seed": 20261026
+  },
+  "label_distribution": {
+    "ABSTENTION_FALSE_NEGATIVE": 16,
+    "ABSTENTION_FALSE_POSITIVE": 12,
+    "EVAL_JUDGE_MALFORMED": 4,
+    "EVAL_MODEL_TIMEOUT": 4,
+    "GENERATION_CONTRADICTION": 16,
+    "GENERATION_HALLUCINATION": 16,
+    "GROUNDING_PARTIAL": 14,
+    "OK_CORRECT_ABSTENTION": 18,
+    "OK_GROUNDED": 18,
+    "RETRIEVAL_DISTRACTOR_DOMINANT": 12,
+    "RETRIEVAL_EMPTY": 10,
+    "RETRIEVAL_MISS": 20
+  },
+  "boundary_cases": 24,
+  "notes": "Synthetic offline fixtures with scripted judge outputs; labels derive from scenario semantics, not from the rule engine. Not evidence of live-LLM robustness."
+}

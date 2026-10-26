@@ -287,6 +287,8 @@ def build_investigation(db: Session, execution_id: str) -> dict[str, Any]:
                 "prompt_tokens": execution.prompt_tokens,
                 "completion_tokens": execution.completion_tokens,
                 "total_tokens": execution.total_tokens,
+                "cost_usd": getattr(execution, "cost_usd", None),
+                "pricing_version": getattr(execution, "pricing_version", None),
             },
             "embedding": {
                 "model": execution.embedding_model,
@@ -345,6 +347,10 @@ def build_investigation(db: Session, execution_id: str) -> dict[str, Any]:
                 "Diagnosis is produced by ordered rules (first match wins), "
                 "not by a free-form LLM explanation."
             ),
+            "explanation": signals.get("explanation"),
+            "calibrated_confidence": signals.get("calibrated_confidence"),
+            "calibration_version": signals.get("calibration_version"),
+            "uncertain": bool(signals.get("uncertain", False)),
             "signals_used": {
                 k: signals.get(k)
                 for k in (

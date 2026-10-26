@@ -1,0 +1,20 @@
+# Acceptance thresholds for the held-out benchmark suite `heldout_v1`.
+#
+# The planted suite defaults demand near-perfect accuracy (error rate <= 2%)
+# because planted scenarios are unambiguous. A 160-case held-out suite with
+# boundary-noise cases is expected to have residual error, so the gate here
+# protects against regressions relative to the accepted baseline and enforces
+# absolute floors instead.
+
+version: "acceptance_thresholds.heldout.v1"
+
+require_failure_code_accuracy_drop_lt: 0.03
+require_rule_accuracy_drop_lt: 0.03
+require_evidence_accuracy_drop_lt: 0.05
+
+min_failure_code_accuracy: 0.80
+min_rule_accuracy: 0.75
+min_evidence_accuracy: 0.80
+
+# Fraction of incorrect cases that triggers regression without a baseline.
+fail_on_eval_error_rate_gt: 0.20

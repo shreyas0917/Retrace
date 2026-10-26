@@ -6,7 +6,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
-from app.schemas.corpus import RetrievedChunk
+from app.schemas.corpus import RetrievedChunk, clean_query
 
 
 class GenerateRequest(BaseModel):
@@ -17,10 +17,7 @@ class GenerateRequest(BaseModel):
     @field_validator("query")
     @classmethod
     def query_not_blank(cls, value: str) -> str:
-        cleaned = value.strip()
-        if not cleaned:
-            raise ValueError("query must be non-empty")
-        return cleaned
+        return clean_query(value)
 
 
 class GenerationInfo(BaseModel):
@@ -31,6 +28,8 @@ class GenerationInfo(BaseModel):
     prompt_tokens: int | None = None
     completion_tokens: int | None = None
     total_tokens: int | None = None
+    cost_usd: float | None = None
+    pricing_version: str | None = None
 
 
 class RetrievalInfo(BaseModel):
@@ -81,5 +80,7 @@ class ExecutionTraceResponse(BaseModel):
     prompt_tokens: int | None = None
     completion_tokens: int | None = None
     total_tokens: int | None = None
+    cost_usd: float | None = None
+    pricing_version: str | None = None
 
     model_config = {"from_attributes": True}

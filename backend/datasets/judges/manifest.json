@@ -1,0 +1,52 @@
+{
+  "dataset_id": "judge_labels",
+  "version": "1",
+  "file": "judge_labels_v1.jsonl",
+  "dataset_hash": "sha256:565837c67b72ea6b7c95334ab4cf181c6e4593db082d1bf46350b16af23cdd28",
+  "example_count": 66,
+  "per_judge": {
+    "relevance": 24,
+    "faithfulness": 24,
+    "contradiction": 18
+  },
+  "label_counts": {
+    "relevance_chunks_total": 51,
+    "relevance_chunks_relevant": 25,
+    "relevance_context_sufficient_true": 21,
+    "faithfulness_fully_supported": 11,
+    "faithfulness_with_unsupported": 13,
+    "contradiction_true": 9,
+    "contradiction_false": 9
+  },
+  "tag_counts": {
+    "abstention": 2,
+    "contradicted_detail": 3,
+    "cross_row_confusion": 3,
+    "fabricated_detail": 2,
+    "fully_supported": 11,
+    "happy_path": 11,
+    "hard_negative": 13,
+    "injection": 4,
+    "insufficient": 3,
+    "missing_info_not_contradiction": 2,
+    "multi_chunk": 4,
+    "numerically_wrong": 13,
+    "outside_knowledge": 1,
+    "partial": 1,
+    "partially_supported": 9,
+    "policy_conflict": 2,
+    "topical_but_unhelpful": 1,
+    "unanswerable": 1,
+    "unit_confusion": 1,
+    "unsupported_not_contradiction": 1,
+    "unsupported_not_in_context": 1
+  },
+  "source": "Hand-authored from data/corpus/demo facts. Chunk texts are excerpts of the corpus documents (plus 4 synthetic injection chunks under the 'injected' document id); chunk ordinals are illustrative, not the production 512/64 chunking.",
+  "labels": {
+    "relevance": "per-chunk relevant (bool) + context_sufficient (bool)",
+    "faithfulness": "per-claim supported (bool); faithfulness_band = [lo, hi] acceptable predicted score range containing supported/total",
+    "contradiction": "contradicts (bool); missing or extra information is not a contradiction"
+  },
+  "annotator": "author",
+  "annotation_date": "2026-10-26"
+}

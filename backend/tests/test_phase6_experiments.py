@@ -138,7 +138,7 @@ def test_eval_gold_persists_case_results() -> None:
         assert exp is not None
         assert exp.status == "COMPLETED"
         assert exp.suite_hash == result["suite_hash"]
-        assert exp.pipeline.get("app_version") == "0.9.0"
+        assert exp.pipeline.get("app_version") == "1.0.0"
         assert "cost_per_query" in exp.pipeline
         assert exp.pipeline["cost_per_query"] is None
     finally:

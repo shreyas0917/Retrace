@@ -1,7 +1,9 @@
-"""In-process application metrics (Phase 7).
+"""In-process application metrics (Phase 7) + durable hook (v1.0).
 
-Not a time-series database. Values reset on process restart.
-Documented limitation: local/dev observability only.
+The registry itself is an in-memory, per-process view (fast, resets on
+restart). Every inc/observe is also forwarded to `app.core.telemetry`, which
+buffers events and flushes them to the Postgres `metric_events` table, so
+durable aggregates survive restarts and are shared across workers.
 """
 
 from __future__ import annotations
@@ -10,6 +12,8 @@ import threading
 import time
 from collections import defaultdict
 from typing import Any
+
+from app.core import telemetry as _telemetry
 
 
 _MAX_LATENCY_SAMPLES = 500
@@ -44,6 +48,7 @@ class MetricsRegistry:
     def inc(self, name: str, value: int = 1) -> None:
         with self._lock:
             self._counters[name] += value
+        _telemetry.record_event(_telemetry.KIND_COUNTER, name, value)
 
     def observe(self, name: str, ms: float) -> None:
         with self._lock:
@@ -51,6 +56,7 @@ class MetricsRegistry:
             bucket.append(float(ms))
             if len(bucket) > _MAX_LATENCY_SAMPLES:
                 del bucket[: len(bucket) - _MAX_LATENCY_SAMPLES]
+        _telemetry.record_event(_telemetry.KIND_LATENCY, name, float(ms))
 
     def get_counter(self, name: str) -> int:
         with self._lock:
@@ -84,7 +90,9 @@ class MetricsRegistry:
         return {
             "uptime_seconds": round(time.time() - self._started_at, 1),
             "durable": False,
-            "note": "In-memory metrics; reset on process restart.",
+            "source": "in-memory",
+            "note": "In-memory metrics; reset on process restart. "
+            "See `durable_store` / /api/v1/metrics/durable for the Postgres view.",
             "counters": counters,
             "latencies": latency_stats,
             "derived": {

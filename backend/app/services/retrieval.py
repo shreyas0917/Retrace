@@ -10,7 +10,9 @@ from sqlalchemy.orm import Session
 
 from app.core.config import Settings, get_settings
 from app.core.errors import InvalidStateError, NotFoundError
+from app.core.injection import scan_text
 from app.core.logging import bind_correlation, get_logger
+from app.core.metrics import get_metrics
 from app.core.ops import record_retrieval
 from app.db.models import CorpusVersion, RetrievalTrace
 from app.services import chroma as chroma_service
@@ -18,6 +20,35 @@ from app.services.embeddings import embed_query
 from app.services.ingestion import STATUS_READY
 
 logger = get_logger(__name__)
+
+INJECTION_METRIC = "retrieval.injection_suspected"
+
+
+def annotate_injection_flags(
+    results: list[dict[str, Any]], *, request_id: str | None = None
+) -> int:
+    """Scan each result's text for prompt-injection patterns.
+
+    Sets ``injection_flags`` on every result (empty list when clean), bumps the
+    ``retrieval.injection_suspected`` counter and logs a warning naming only the
+    chunk ids and pattern names, never the chunk text. Returns the flagged count.
+    """
+    flagged: dict[str, list[str]] = {}
+    for item in results:
+        flags = scan_text(item.get("text"))
+        item["injection_flags"] = flags
+        if flags:
+            flagged[str(item.get("chunk_id"))] = flags
+    if flagged:
+        get_metrics().inc(INJECTION_METRIC, len(flagged))
+        logger.warning(
+            "retrieval_injection_suspected",
+            request_id=request_id,
+            flagged_count=len(flagged),
+            flagged_chunks=flagged,
+            operation="retrieval",
+        )
+    return len(flagged)
 
 
 def retrieve(
@@ -80,6 +111,8 @@ def retrieve(
                 "chunk_index": (meta or {}).get("chunk_index"),
             }
         )
+
+    annotate_injection_flags(results, request_id=request_id)
 
     latency_ms = round((time.perf_counter() - started) * 1000, 2)
 

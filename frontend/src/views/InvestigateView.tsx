@@ -451,12 +451,36 @@ export function InvestigateView({
                   <span className="meta-k">Confidence</span>
                   <span className="meta-v">
                     {formatConfidence(inv.diagnosis.confidence)}
+                    {inv.diagnosis.calibrated_confidence != null && (
+                      <span
+                        className="muted small"
+                        title={`Calibrated probability of being correct (${inv.diagnosis.calibration_version || "uncalibrated"})`}
+                      >
+                        {" "}
+                        · {Math.round(inv.diagnosis.calibrated_confidence * 100)}%
+                        calibrated
+                      </span>
+                    )}
                   </span>
                 </div>
+                {inv.diagnosis.uncertain && (
+                  <div className="meta-item">
+                    <span className="meta-k">Review</span>
+                    <span className="meta-v">
+                      <StatusBadge status="UNCERTAIN — manual review" tone="warn" />
+                    </span>
+                  </div>
+                )}
               </div>
               {(inv.failure?.description || inv.rule?.summary) && (
                 <p className="diagnosis-summary">
                   {inv.failure?.description || inv.rule?.summary}
+                </p>
+              )}
+              {(inv.diagnosis.explanation || inv.why?.explanation) && (
+                <p className="diagnosis-explanation muted small">
+                  <strong>Why: </strong>
+                  {inv.diagnosis.explanation || inv.why?.explanation}
                 </p>
               )}
             </div>

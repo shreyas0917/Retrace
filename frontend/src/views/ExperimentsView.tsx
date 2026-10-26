@@ -15,7 +15,10 @@ import type {
   Comparison,
   ExperimentDetail,
   ExperimentListItem,
+  PerClassMetric,
+  SelectiveMetrics,
 } from "../types";
+import { PerClassSection } from "../components/PerClassSection";
 
 type Props = {
   apiKey: string;
@@ -251,7 +254,10 @@ export function ExperimentsView({ apiKey, onOpenExecution }: Props) {
             ) : (
               <MetaTable
                 rows={Object.entries(detail.metrics)
-                  .filter(([k]) => k !== "confusion_matrix")
+                  .filter(
+                    ([k]) =>
+                      !["confusion_matrix", "per_class", "selective"].includes(k),
+                  )
                   .map(([k, v]) => [
                     k,
                     <code key={k}>{JSON.stringify(v)}</code>,
@@ -259,6 +265,17 @@ export function ExperimentsView({ apiKey, onOpenExecution }: Props) {
               />
             )}
           </Section>
+
+          {detail.metrics && (
+            <PerClassSection
+              perClass={
+                detail.metrics.per_class as
+                  | Record<string, PerClassMetric>
+                  | undefined
+              }
+              selective={detail.metrics.selective as SelectiveMetrics | undefined}
+            />
+          )}
 
           <Section title="Baseline comparison">
             {!comparison ? (

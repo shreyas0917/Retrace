@@ -6,11 +6,13 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     DateTime,
     Float,
     ForeignKey,
     ForeignKeyConstraint,
+    Index,
     Integer,
     Text,
     UniqueConstraint,
@@ -423,6 +425,30 @@ class ExecutionTrace(Base):
     prompt_tokens: Mapped[int | None] = mapped_column(Integer)
     completion_tokens: Mapped[int | None] = mapped_column(Integer)
     total_tokens: Mapped[int | None] = mapped_column(Integer)
+    # v1.0 cost accounting (migration 007): estimated USD from configs/pricing.yaml
+    cost_usd: Mapped[float | None] = mapped_column(Float)
+    pricing_version: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+
+
+class MetricEvent(Base):
+    """Durable telemetry event (v1.0, migration 007).
+
+    One row per counter increment or latency observation, appended by
+    app.core.telemetry and aggregated in SQL by durable_snapshot().
+    """
+
+    __tablename__ = "metric_events"
+    __table_args__ = (Index("ix_metric_events_name_ts", "name", "ts"),)
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    ts: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False, index=True
+    )
+    kind: Mapped[str] = mapped_column(Text, nullable=False)  # 'counter' | 'latency'
+    name: Mapped[str] = mapped_column(Text, nullable=False, index=True)
+    value: Mapped[float] = mapped_column(Float, nullable=False)
+    labels: Mapped[dict | None] = mapped_column(JSONB)
+    request_id: Mapped[str | None] = mapped_column(Text)

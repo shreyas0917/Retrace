@@ -1,0 +1,84 @@
+{
+  "version": "calibration.v1",
+  "n_bins": 10,
+  "bins": [
+    {
+      "lo": 0.0,
+      "hi": 0.1,
+      "count": 0,
+      "mean_score": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.1,
+      "hi": 0.2,
+      "count": 0,
+      "mean_score": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.2,
+      "hi": 0.3,
+      "count": 0,
+      "mean_score": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.3,
+      "hi": 0.4,
+      "count": 3,
+      "mean_score": 0.3,
+      "accuracy": 0.666667
+    },
+    {
+      "lo": 0.4,
+      "hi": 0.5,
+      "count": 0,
+      "mean_score": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.5,
+      "hi": 0.6,
+      "count": 0,
+      "mean_score": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.6,
+      "hi": 0.7,
+      "count": 0,
+      "mean_score": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.7,
+      "hi": 0.8,
+      "count": 29,
+      "mean_score": 0.705138,
+      "accuracy": 1.0
+    },
+    {
+      "lo": 0.8,
+      "hi": 0.9,
+      "count": 3,
+      "mean_score": 0.846,
+      "accuracy": 1.0
+    },
+    {
+      "lo": 0.9,
+      "hi": 1.0,
+      "count": 45,
+      "mean_score": 0.997778,
+      "accuracy": 1.0
+    }
+  ],
+  "fitted_on": "calib_v1@1.0.0 (sha256:1e1807ab544c7c05fcc1ae9ee5b501dc383536f7d7b3c72b8f9ce92c0b928d2e)",
+  "sample_size": 80,
+  "created_at": "2026-10-25T20:06:53.551224+00:00",
+  "ece_before": 0.127662,
+  "brier_before": 0.046068,
+  "notes": {
+    "experiment_id": "df1503a9-bf99-4c83-904a-c277212102ff"
+  }
+}

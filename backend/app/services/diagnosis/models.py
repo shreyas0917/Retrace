@@ -19,6 +19,12 @@ class DiagnosisDecision:
     signals: dict[str, Any] = field(default_factory=dict)
     metrics: dict[str, Any] = field(default_factory=dict)
     judges_ran: bool = False
+    # v1.0 additions: evidence-based explanation, calibrated confidence and
+    # an explicit uncertain flag (see diagnosis/explain.py, calibration.py).
+    explanation: str = ""
+    calibrated_confidence: float | None = None
+    calibration_version: str | None = None
+    uncertain: bool = False
 
 
 @dataclass

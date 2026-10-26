@@ -296,4 +296,136 @@ Decision: Phase 9 adds no product features. Deliverables are clean-room validati
 
 Reason: Project scope ends at reproducible, demonstrable engineering completeness.
 
+Status: Superseded by the v1.0 records below (the project continued past the Phase 9 scope).
+
+---
+
+# Architecture Decision Records (v1.0)
+
+## ADR-031 — Explicit uncertain outcome (`DIAGNOSIS_UNCERTAIN`, rule R90)
+
+Decision: When judges ran but their outputs are self-inconsistent (faithfulness below threshold with zero unsupported claims, or a required verdict missing), the engine returns `DIAGNOSIS_UNCERTAIN` with recommendation `MANUAL_REVIEW` instead of falling through to `EVAL_INTERNAL_ERROR`. Any decision whose calibrated confidence is below `TAU_UNCERTAIN` (0.5) is additionally flagged `uncertain` / `review_recommended` while keeping its primary code.
+
+Reason: Ambiguous or conflicting judge signals were previously reported as infrastructure errors, which hid the real cause and inflated confidence. Reviewers asked for an abstain option; keeping the primary code keeps metrics comparable and lets the benchmark report selective accuracy versus coverage.
+
+Status: Accepted
+
+---
+
+## ADR-032 — Templated, evidence-based explanations
+
+Decision: Every diagnosis stores an `explanation` string assembled from the signal bag and the matched rule (`app/services/diagnosis/explain.py`). No LLM is involved.
+
+Reason: The explanation must be reproducible from stored signals and must never assert anything the engine did not observe. It is shown in the Investigate view and in benchmark reports for misclassified cases.
+
+Status: Accepted
+
+---
+
+## ADR-033 — Histogram-binned confidence calibration
+
+Decision: `diagnosis_score` stays a heuristic rule strength (ADR-019), but a calibrator fitted on `calib_v1` maps it to empirical accuracy; the result is persisted as `calibrated_confidence` with `calibration_version`. The table lives in `backend/configs/calibration.json`; empty bins fall back to the raw score.
+
+Reason: Reviewers asked for calibrated confidence. Histogram binning is transparent, needs no dependencies, and its expected calibration error and Brier score are reported before and after on the held-out suite.
+
+Status: Accepted
+
+---
+
+## ADR-034 — Generated held-out and calibration suites
+
+Decision: `scripts/build_heldout_suite.py` deterministically generates `heldout_v1` (160 cases) and `calib_v1` (80 cases) from scenario templates whose labels derive from scenario semantics, with about 15% boundary cases. Suites are hash-pinned and never used to tune rules or thresholds. The generator is committed so the suites can be regenerated and audited.
+
+Reason: Twelve planted scenarios cannot estimate per-class precision/recall or calibration. Human-labelled live traces do not exist yet for this project; a seeded generator is the honest, reproducible alternative and is documented as synthetic.
+
+Status: Accepted
+
+---
+
+## ADR-035 — Per-suite acceptance thresholds
+
+Decision: `load_thresholds(suite_id=...)` picks `configs/thresholds.<suite_id>.yaml` when present. The held-out suite uses absolute floors (accuracy >= 0.80) and a 20% error-rate ceiling instead of the planted suite's 2%.
+
+Reason: The planted suite is expected to be perfect; a boundary-heavy held-out suite is not. One global error-rate ceiling made every held-out run a "regression".
+
+Status: Accepted
+
+---
+
+## ADR-036 — Rule engine remains the reference; alternatives are benchmarked, not deployed
+
+Decision: `app/services/diagnosis/classifiers.py` adds majority, heuristic and LLM classifiers that consume the same `SignalBag`. `retrace benchmark report` compares them on identical persisted signals and reports Cohen's kappa. Production diagnosis still uses the rule engine only.
+
+Reason: Reviewers asked how the rules compare to an LLM classifier and a trivial baseline. Running the comparison on stored signals guarantees identical inputs and keeps the production path deterministic.
+
+Status: Accepted
+
+---
+
+## ADR-037 — Session cookie auth for the console; Bearer for automation
+
+Decision: The frontend no longer receives the API key at build time. It exchanges the key once at `POST /api/v1/auth/session` for a short-lived HMAC-signed `HttpOnly` cookie; cookie-authenticated writes require `X-Requested-With: retrace-console`. `require_auth` accepts either the cookie or `Authorization: Bearer`. Supersedes the frontend half of ADR-003.
+
+Reason: A key embedded in a browser bundle is not a secret. Stateless signed sessions need no new table and keep CLI/CI unchanged.
+
+Status: Accepted
+
+---
+
+## ADR-038 — Rate limiting, payload limits and input validation at the edge
+
+Decision: Pure-ASGI middleware enforces a per-credential sliding-window limit (`RATE_LIMIT_PER_MINUTE`, stricter on the login endpoint), rejects bodies above `MAX_REQUEST_BYTES`, adds security headers, and schemas cap query length and strip control characters. Retrieved chunks are scanned for prompt-injection patterns and flagged, never rewritten.
+
+Reason: Minimal abuse controls that do not require external infrastructure; flags are evidence for the engineer, not automatic filtering that could hide failures.
+
+Status: Accepted
+
+---
+
+## ADR-039 — Durable telemetry in PostgreSQL alongside in-memory metrics
+
+Decision: Counters and latency observations are buffered and flushed to a `metric_events` table (migration 007); `/api/v1/metrics/durable` aggregates p50/p95/p99, error rates, token usage and estimated cost over a time window. The in-memory registry stays as the fast path. Supersedes the "not durable" limitation in ADR-026.
+
+Reason: Metrics that vanish on restart cannot support incident review or trend reporting. PostgreSQL is already a dependency; no Prometheus server is introduced.
+
+Status: Accepted
+
+---
+
+## ADR-040 — Cost per execution from a pricing table
+
+Decision: `ExecutionTrace` gains `cost_usd` and `pricing_version`, computed from `configs/pricing.yaml` (USD per million tokens; local models cost 0). Unknown models yield null, never a guess.
+
+Reason: Reviewers asked for token usage and cost per execution; a versioned pricing file keeps the estimate auditable.
+
+Status: Accepted
+
+---
+
+## ADR-041 — LLM client retries only on transient failures
+
+Decision: `OpenAICompatibleProvider` retries HTTP 429/5xx and transport errors with exponential backoff and jitter (`MODEL_MAX_RETRIES`), separates connect and read timeouts, and never retries other 4xx responses or exceeds the overall timeout budget.
+
+Reason: Resilience without masking genuine request errors; timeouts must still surface as `GENERATION_TIMEOUT` so the diagnosis taxonomy stays truthful.
+
+Status: Accepted
+
+---
+
+## ADR-042 — Retrieval quality is measured, not assumed
+
+Decision: `retrace retrieval-eval` computes Recall@k, MRR and nDCG against chunking-independent qrels (document id plus a must-contain substring) and compares chunking configurations, dense retrieval, BM25 and a reciprocal-rank-fusion hybrid on the same queries. Results live in `docs/benchmarks/retrieval_ablation.md`.
+
+Reason: Using an embedding model and a vector store is not evidence of retrieval quality; the ablation gives numbers and a method to re-run them.
+
+Status: Accepted
+
+---
+
+## ADR-043 — Judges are validated against labelled examples and prompt variants
+
+Decision: `retrace judges validate` scores each judge against an author-labelled example set (accuracy, F1, Cohen's kappa, score MAE), checks inter-judge consistency, and measures label flip rate across meaning-preserving prompt variants, recording model, temperature, prompt version and prompt hash. Fixture-based numbers are always labelled as such.
+
+Reason: Judge reliability bounds diagnosis reliability; it has to be measured per model and re-measured when prompts change.
+
 Status: Accepted

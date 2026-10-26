@@ -9,11 +9,17 @@ import {
   Section,
   StatusBadge,
 } from "../components/ui";
-import type { OpsSummary } from "../types";
+import type { DurableWindow, OpsSummaryV1 } from "../types";
 
 type Props = {
   apiKey: string;
 };
+
+const WINDOWS: Array<{ label: string; minutes: number }> = [
+  { label: "1h", minutes: 60 },
+  { label: "24h", minutes: 1440 },
+  { label: "7d", minutes: 10080 },
+];
 
 function signalTone(
   status: string,
@@ -42,23 +48,157 @@ function counterValue(
   return { text: String(counters[key]), missing: false };
 }
 
+function ms(value: number | null | undefined): string {
+  return value == null ? "No data" : `${value} ms`;
+}
+
+function pct(value: number | null | undefined): string {
+  return value == null ? "No data" : `${(Number(value) * 100).toFixed(2)}%`;
+}
+
+function tokens(value: number | null | undefined): string {
+  return value == null ? "No data" : Number(value).toLocaleString();
+}
+
+function usd(value: number | null | undefined): string {
+  if (value == null) return "No data";
+  const n = Number(value);
+  if (n === 0) return "$0.00";
+  if (n < 0.01) return `$${n.toFixed(6)}`;
+  return `$${n.toFixed(4)}`;
+}
+
+function DurablePanel({
+  window,
+  windowMinutes,
+  onWindowChange,
+  inMemorySource,
+}: {
+  window: DurableWindow | undefined;
+  windowMinutes: number;
+  onWindowChange: (minutes: number) => void;
+  inMemorySource: string;
+}) {
+  const available = Boolean(window?.available);
+  const http = window?.http_latency || {};
+  const tok = window?.tokens || {};
+  return (
+    <div className="panel tight" style={{ marginBottom: 16 }}>
+      <div
+        className="inline"
+        style={{ justifyContent: "space-between", alignItems: "baseline" }}
+      >
+        <h2 style={{ margin: 0 }}>Telemetry window</h2>
+        <div className="inline" role="group" aria-label="Telemetry window">
+          {WINDOWS.map((w) => (
+            <button
+              key={w.minutes}
+              type="button"
+              className={w.minutes === windowMinutes ? "" : "secondary"}
+              aria-pressed={w.minutes === windowMinutes}
+              onClick={() => onWindowChange(w.minutes)}
+            >
+              {w.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <p className="muted small" style={{ margin: "6px 0 12px" }}>
+        {available ? (
+          <>
+            source: {window?.source || "postgres"} — durable across restarts
+            and shared across workers ({tokens(window?.event_count)} events in
+            window). Live counters below are source: {inMemorySource} (per
+            process).
+          </>
+        ) : (
+          <>
+            source: {inMemorySource} only — durable store unavailable
+            {window?.reason ? ` (${window.reason})` : ""}. Values reset on
+            process restart.
+          </>
+        )}
+      </p>
+      <div className="metric-strip">
+        <div className="metric-cell">
+          <div className="metric-label">p50 latency</div>
+          <div className={http.p50_ms == null ? "metric-value muted" : "metric-value"}>
+            {ms(http.p50_ms)}
+          </div>
+        </div>
+        <div className="metric-cell">
+          <div className="metric-label">p95 latency</div>
+          <div className={http.p95_ms == null ? "metric-value muted" : "metric-value"}>
+            {ms(http.p95_ms)}
+          </div>
+        </div>
+        <div className="metric-cell">
+          <div className="metric-label">p99 latency</div>
+          <div className={http.p99_ms == null ? "metric-value muted" : "metric-value"}>
+            {ms(http.p99_ms)}
+          </div>
+        </div>
+        <div className="metric-cell">
+          <div className="metric-label">Error rate</div>
+          <div
+            className={
+              window?.request_error_rate == null
+                ? "metric-value muted"
+                : "metric-value"
+            }
+          >
+            {pct(window?.request_error_rate)}
+          </div>
+        </div>
+        <div className="metric-cell">
+          <div className="metric-label">Tokens (prompt / completion)</div>
+          <div className={available ? "metric-value" : "metric-value muted"}>
+            {available
+              ? `${tokens(tok.prompt ?? 0)} / ${tokens(tok.completion ?? 0)}`
+              : "No data"}
+          </div>
+        </div>
+        <div className="metric-cell">
+          <div className="metric-label">Estimated cost</div>
+          <div
+            className={window?.cost_usd == null ? "metric-value muted" : "metric-value"}
+          >
+            {usd(window?.cost_usd)}
+          </div>
+        </div>
+      </div>
+      {available && (
+        <p className="muted small" style={{ marginTop: 10, marginBottom: 0 }}>
+          {tokens(window?.requests_total)} requests, {tokens(window?.requests_5xx)}{" "}
+          5xx, {tokens(window?.llm_retries)} LLM retries,{" "}
+          {tokens(window?.llm_failures)} LLM failures. Cost is an estimate from
+          configs/pricing.yaml (illustrative rates), not a bill.
+        </p>
+      )}
+    </div>
+  );
+}
+
 export function OperationsView({ apiKey: _apiKey }: Props) {
-  const [ops, setOps] = useState<OpsSummary | null>(null);
+  const [ops, setOps] = useState<OpsSummaryV1 | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [runbook, setRunbook] = useState("");
   const [runbookMap, setRunbookMap] = useState<Record<string, string>>({});
+  const [windowMinutes, setWindowMinutes] = useState(1440);
 
-  async function refresh() {
+  async function refresh(minutes: number = windowMinutes) {
     setLoading(true);
     setError("");
     try {
-      const body = await apiGet<OpsSummary>("/api/v1/ops/summary");
+      const body = await apiGet<OpsSummaryV1>(
+        `/api/v1/ops/summary?window_minutes=${minutes}`,
+      );
       setOps(body);
       const books = await apiGet<{
         by_signal: Record<string, string>;
       }>("/api/v1/runbooks");
-      setRunbookMap(books.by_signal || {});
+      setRunbookMap(books?.by_signal || {});
     } catch (err) {
       setOps(null);
       setError(err instanceof Error ? err.message : "Unable to load ops summary");
@@ -68,8 +208,9 @@ export function OperationsView({ apiKey: _apiKey }: Props) {
   }
 
   useEffect(() => {
-    void refresh();
-  }, []);
+    void refresh(windowMinutes);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [windowMinutes]);
 
   async function openRunbook(slug: string) {
     try {
@@ -88,13 +229,14 @@ export function OperationsView({ apiKey: _apiKey }: Props) {
   const retrievalEmpty = counterValue(counters, "retrieval.empty");
   const judgeMalformed = counterValue(counters, "judge.malformed");
   const p95 = ops?.metrics.http_latency?.p95_ms;
+  const inMemorySource = ops?.metrics.source || "in-memory";
 
   return (
     <div>
       <PageHeader
         eyebrow="Operations"
         title="Operations"
-        description="System health, metrics, signals, and runbooks."
+        description="System health, durable telemetry, signals, and runbooks."
         actions={
           <button
             type="button"
@@ -106,10 +248,6 @@ export function OperationsView({ apiKey: _apiKey }: Props) {
           </button>
         }
       />
-      <p className="muted small" style={{ marginTop: -8, marginBottom: 16 }}>
-        In-memory metrics — reset on process restart. Not durable production
-        telemetry.
-      </p>
       <ErrorBanner message={error} />
       {loading && !ops && <LoadingState label="Loading operations…" />}
       {!loading && !ops && <EmptyState>Unable to load operations.</EmptyState>}
@@ -162,6 +300,16 @@ export function OperationsView({ apiKey: _apiKey }: Props) {
             </div>
           </div>
 
+          <DurablePanel
+            window={ops.metrics.durable_window}
+            windowMinutes={windowMinutes}
+            onWindowChange={setWindowMinutes}
+            inMemorySource={inMemorySource}
+          />
+
+          <h2 className="muted small" style={{ margin: "0 0 8px" }}>
+            Live process counters (source: {inMemorySource}, since last restart)
+          </h2>
           <div className="metric-strip">
             <div className="metric-cell">
               <div className="metric-label">Requests</div>

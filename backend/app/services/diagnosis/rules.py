@@ -39,6 +39,8 @@ def _confidence_for_rule(rule_id: str, signals: SignalBag) -> tuple[str, float]:
         return "low", score
     if rule_id == "R01":
         return "high", 1.0
+    if rule_id == "R90":
+        return "low", 0.3
     return "medium", 0.5
 
 
@@ -198,6 +200,37 @@ def apply_rules(signals: SignalBag) -> DiagnosisDecision:
             "R40",
             signals,
             evidence=[f"chunk:{cid}" for cid in signals.retrieved_ids[:5]],
+        )
+
+    # --- Uncertain (v1.0): judges ran but their outputs do not support any
+    # confident localization. Previously these fell through to R99 and were
+    # reported as an internal error, which hid judge inconsistency.
+    evidence = [f"chunk:{cid}" for cid in signals.retrieved_ids[:5]]
+    if signals.context_sufficient is True and not signals.answer_is_abstention:
+        if faith is not None and faith < TAU_FAITHFUL and not unsupported:
+            # Low faithfulness score but no unsupported claim listed: the
+            # faithfulness judge contradicts itself.
+            return _decision(
+                "DIAGNOSIS_UNCERTAIN",
+                "R90",
+                signals,
+                evidence=evidence + ["judge:faithfulness:inconsistent"],
+            )
+        if faith is None:
+            # Grounding judges should have produced a verdict but did not.
+            return _decision(
+                "DIAGNOSIS_UNCERTAIN",
+                "R90",
+                signals,
+                evidence=evidence + ["judge:faithfulness:missing"],
+            )
+    if signals.context_sufficient is None and signals.n_retrieved > 0:
+        # Relevance judge never produced a verdict for a non-empty retrieval.
+        return _decision(
+            "DIAGNOSIS_UNCERTAIN",
+            "R90",
+            signals,
+            evidence=evidence + ["judge:relevance:missing"],
         )
 
     return _decision("EVAL_INTERNAL_ERROR", "R99", signals)

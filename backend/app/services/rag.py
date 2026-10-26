@@ -19,6 +19,7 @@ from app.core.ops import record_generation
 from app.db.models import CorpusVersion, ExecutionTrace
 from app.services.generation import generate_answer
 from app.services.llm_client import GENERATION_TEMPERATURE
+from app.services.pricing import estimate_cost_usd, pricing_version
 from app.services.prompts import ABSTENTION_ANSWER, PROMPT_VERSION
 from app.services.retrieval import retrieve
 
@@ -90,6 +91,8 @@ def run_rag(
     prompt_tokens = None
     completion_tokens = None
     total_tokens = None
+    cost_usd: float | None = None
+    cost_pricing_version: str | None = None
     generation_model = settings.model_name
 
     try:
@@ -131,6 +134,17 @@ def run_rag(
             prompt_tokens = llm.prompt_tokens
             completion_tokens = llm.completion_tokens
             total_tokens = llm.total_tokens
+            # Cost accounting (v1.0): None when the provider returned no usage.
+            try:
+                cost_pricing_version = pricing_version(settings.pricing_path)
+                cost_usd = estimate_cost_usd(
+                    generation_model,
+                    prompt_tokens,
+                    completion_tokens,
+                    path=settings.pricing_path,
+                )
+            except Exception as exc:  # noqa: BLE001 - never fail a run on pricing
+                logger.warning("cost_estimate_failed", error=str(exc)[:200])
             if answer.strip() == ABSTENTION_ANSWER:
                 abstained = True
                 status = STATUS_ABSTAINED
@@ -215,6 +229,8 @@ def run_rag(
         prompt_tokens=prompt_tokens,
         completion_tokens=completion_tokens,
         total_tokens=total_tokens,
+        cost_usd=cost_usd,
+        pricing_version=cost_pricing_version,
     )
     db.add(trace)
     db.commit()
@@ -223,6 +239,9 @@ def run_rag(
         status=status,
         latency_ms=generation_latency_ms,
         tokens=total_tokens,
+        prompt_tokens=prompt_tokens,
+        completion_tokens=completion_tokens,
+        cost_usd=cost_usd,
     )
     if retrieval_latency_ms is not None:
         # retrieval already recorded in retrieve(); keep generation-focused here
@@ -277,6 +296,8 @@ def run_rag(
             "prompt_tokens": prompt_tokens,
             "completion_tokens": completion_tokens,
             "total_tokens": total_tokens,
+            "cost_usd": cost_usd,
+            "pricing_version": cost_pricing_version,
         },
         "latency_ms": {
             "retrieval": retrieval_latency_ms,

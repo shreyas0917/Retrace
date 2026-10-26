@@ -338,7 +338,8 @@ def main() -> int:
     print("=== ALL PHASE 9 CHECKS PASSED ===")
     print(
         "LIMITATIONS: offline fixtures + FakeLLM ≠ live-LLM robustness; "
-        "in-memory metrics ≠ durable telemetry."
+        "/metrics top level is the in-memory view (durable window under "
+        "durable_store and /api/v1/metrics/durable)."
     )
     return 0
 

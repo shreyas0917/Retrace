@@ -32,19 +32,34 @@ DEFAULT_THRESHOLDS: dict[str, Any] = {
 }
 
 
-def default_thresholds_path() -> Path:
+def _configs_dir() -> Path:
     # backend/app/services/eval/thresholds_config.py → backend/configs/
     here = Path(__file__).resolve()
-    candidate = here.parents[3] / "configs" / "thresholds.default.yaml"
-    if candidate.is_file():
-        return candidate
-    return candidate
+    return here.parents[3] / "configs"
 
 
-def load_thresholds(path: str | Path | None = None) -> dict[str, Any]:
-    """Load YAML thresholds; missing file falls back to DEFAULT_THRESHOLDS."""
+def default_thresholds_path(suite_id: str | None = None) -> Path:
+    """Per-suite file `thresholds.<suite_id>.yaml` when present, else default.
+
+    Large held-out suites legitimately have a non-zero error rate, so they
+    carry their own acceptance thresholds instead of the planted-suite
+    defaults (which demand near-perfect accuracy).
+    """
+    configs = _configs_dir()
+    if suite_id:
+        safe = "".join(ch for ch in suite_id if ch.isalnum() or ch in "._-")
+        per_suite = configs / f"thresholds.{safe}.yaml"
+        if per_suite.is_file():
+            return per_suite
+    return configs / "thresholds.default.yaml"
+
+
+def load_thresholds(
+    path: str | Path | None = None, *, suite_id: str | None = None
+) -> dict[str, Any]:
+    """Load YAML thresholds; missing default file falls back to DEFAULT_THRESHOLDS."""
     if path is None:
-        path = default_thresholds_path()
+        path = default_thresholds_path(suite_id)
     path = Path(path)
     if not path.is_file():
         if path == default_thresholds_path():

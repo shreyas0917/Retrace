@@ -1,0 +1,32 @@
+# Retrace cost model — USD per 1,000,000 tokens.
+#
+# ILLUSTRATIVE VALUES: verify against your provider's current price list before
+# relying on them. Retrace only *estimates* cost per execution from the token
+# counts the provider returns; it is not a billing system.
+#
+# Matching: exact model name first, then the longest prefix match (so
+# "gpt-4.1-mini-2025-04-14" -> gpt-4.1-mini and "llama3.2:latest" -> llama3.2),
+# then `default`. Local / self-hosted models cost 0 by convention.
+version: pricing.v1-2026-10
+currency: USD
+unit: per_1m_tokens
+
+default:
+  prompt: 0.0
+  completion: 0.0
+
+models:
+  # Cloud (illustrative, verify with provider)
+  gpt-4.1-mini: {prompt: 0.40, completion: 1.60}
+  gpt-4.1: {prompt: 2.00, completion: 8.00}
+  gpt-4o-mini: {prompt: 0.15, completion: 0.60}
+  claude-sonnet-4-5: {prompt: 3.00, completion: 15.00}
+
+  # Local / Ollama-style models: no per-token charge
+  llama3.2: {prompt: 0.0, completion: 0.0}
+  llama3.1: {prompt: 0.0, completion: 0.0}
+  llama3: {prompt: 0.0, completion: 0.0}
+  mistral: {prompt: 0.0, completion: 0.0}
+  qwen2.5: {prompt: 0.0, completion: 0.0}
+  gemma2: {prompt: 0.0, completion: 0.0}
+  phi3: {prompt: 0.0, completion: 0.0}

@@ -18,7 +18,7 @@ from app.services.eval.suite_loader import load_suite
 from app.services.eval.thresholds_config import load_thresholds
 
 
-APP_VERSION = "0.9.0"
+APP_VERSION = "1.0.0"
 
 # Exit codes (PRD §16)
 EXIT_PASS = 0
@@ -91,7 +91,7 @@ def run_evaluation(
     Infrastructure errors are raised (caller maps to exit 2).
     """
     settings = settings or get_settings()
-    thresholds = load_thresholds(thresholds_path)
+    thresholds = load_thresholds(thresholds_path, suite_id=suite_id)
 
     suite_hash, _ = verify_suite_integrity(
         suite_id, suite_version, expect_hash=expect_hash
