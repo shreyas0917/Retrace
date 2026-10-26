@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint and dataset integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Ruff (syntax errors, unused or undefined names)
+        run: |
+          pip install ruff==0.8.4
+          ruff check backend scripts --config backend/ruff.toml
+      - name: Held-out and calibration suite hashes match manifests
+        run: python scripts/build_heldout_suite.py --check
+
+  backend:
+    name: Backend tests (Docker, Postgres, Chroma)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create .env from the example
+        run: cp .env.example .env
+      - uses: docker/setup-buildx-action@v3
+      - name: Build backend image (cached)
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          load: true
+          tags: retrace-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Start Postgres and Chroma
+        run: |
+          docker compose up -d --wait postgres chroma
+          for i in $(seq 1 30); do
+            curl -sf -m 5 http://localhost:8001/api/v1/heartbeat && exit 0
+            sleep 2
+          done
+          echo "Chroma did not become ready" >&2
+          exit 1
+      - name: Run pytest inside the backend image
+        run: |
+          chmod +x scripts/dev_test.sh
+          scripts/dev_test.sh pytest -q -p no:cacheprovider --durations=10
+      - name: Service logs on failure
+        if: failure()
+        run: docker compose logs --no-color postgres chroma | tail -200
+
+  frontend:
+    name: Frontend (type-check, tests, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit -p tsconfig.json
+      - run: npm test
+      - run: npm run build

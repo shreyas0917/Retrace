@@ -148,7 +148,6 @@ def run_evaluation(
     )
 
     exit_code = EXIT_PASS if comparison["passed"] else EXIT_REGRESSION
-    status = "COMPLETED" if comparison["passed"] else "REGRESSION"
 
     if persist:
         exp = db.get(Experiment, report["experiment_id"])

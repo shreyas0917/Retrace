@@ -6,6 +6,7 @@
 
 Retrace diagnoses *why* a retrieval-augmented generation answer failed, localizes the failure to retrieval, grounding, generation, abstention or infrastructure, attaches reproducible evidence and a calibrated confidence, and ships the measurements that back every claim: a 160-case held-out benchmark, a retrieval ablation, judge validation, durable telemetry and a load test.
 
+[![CI](https://github.com/shreyas0917/Retrace/actions/workflows/ci.yml/badge.svg)](https://github.com/shreyas0917/Retrace/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-3776AB.svg?logo=python&logoColor=white)](backend/Dockerfile)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688.svg?logo=fastapi&logoColor=white)](backend/requirements.txt)
@@ -297,7 +298,7 @@ scripts/dev_test.sh tests/test_security.py -k csrf
 cd frontend && npm install && npm test && npm run build
 ```
 
-At v1.0.0: 217 backend tests (about 100 seconds against the Compose stack) and 11 frontend tests. Backend coverage by area: infrastructure, corpus and retrieval, generation, diagnosis, evaluation suites, experiments and baselines, observability, investigation, security (51 tests), durable telemetry (17), resilience and fault injection (18), retrieval metrics, judge validation, and the held-out benchmark, which runs all 160 cases and fails below the documented floors.
+Every push and pull request runs [CI](.github/workflows/ci.yml): ruff, suite-hash integrity, the backend suite inside the Docker image against real Postgres and Chroma, and frontend type-check, tests and build. At v1.0.0: 217 backend tests (about 100 seconds against the Compose stack) and 11 frontend tests. Backend coverage by area: infrastructure, corpus and retrieval, generation, diagnosis, evaluation suites, experiments and baselines, observability, investigation, security (51 tests), durable telemetry (17), resilience and fault injection (18), retrieval metrics, judge validation, and the held-out benchmark, which runs all 160 cases and fails below the documented floors.
 
 ## Repository structure
 

@@ -124,7 +124,7 @@ def _insert_execution(
     db = _open_db()
     try:
         # Need a corpus version FK — reuse any READY version from prior tests or create stub
-        from app.db.models import Corpus, CorpusVersion
+        from app.db.models import CorpusVersion
         from app.services.ingestion import create_corpus
 
         cid = f"diag_{uuid.uuid4().hex[:6]}"

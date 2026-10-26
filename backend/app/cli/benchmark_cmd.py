@@ -17,7 +17,6 @@ from pathlib import Path
 from typing import Any
 
 from app.services.diagnosis.calibration import (
-    apply_calibration,
     brier_score,
     expected_calibration_error,
     fit_histogram_calibrator,

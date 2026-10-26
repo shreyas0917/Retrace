@@ -10,7 +10,6 @@ from sqlalchemy.orm import Session
 from app.core.errors import NotFoundError
 from app.core.security import require_api_key
 from app.db.models import (
-    BaselineArtifact,
     Experiment,
     ExperimentCaseResult,
     ExperimentMetric,

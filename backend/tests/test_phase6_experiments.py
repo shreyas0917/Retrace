@@ -8,7 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.db import session as db_session
-from app.db.models import BaselineArtifact, Experiment, ExperimentCaseResult
+from app.db.models import Experiment, ExperimentCaseResult
 from app.services.eval.baseline import BaselineError, get_active_baseline, promote_baseline
 from app.services.eval.evaluate import (
     EXIT_ERROR,

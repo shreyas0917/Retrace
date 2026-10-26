@@ -16,7 +16,6 @@ from app.services.eval.suite_loader import (
     SuiteValidationError,
     compute_suite_hash,
     load_suite,
-    suite_dir,
 )
 from app.services.metrics.diagnosis import (
     confusion_matrix,

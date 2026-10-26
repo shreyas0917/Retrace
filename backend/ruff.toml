@@ -1,0 +1,8 @@
+# Lint gate used by CI (.github/workflows/ci.yml).
+# Scope: syntax errors and pyflakes (unused imports/variables, undefined names).
+# Formatting is not enforced.
+target-version = "py311"
+line-length = 120
+
+[lint]
+select = ["E9", "F"]
