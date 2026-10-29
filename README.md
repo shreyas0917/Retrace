@@ -56,7 +56,7 @@ Every number below comes from a committed, reproducible report. Commands to rege
 | Is its confidence calibrated? | Expected calibration error 0.128 → 0.004 and Brier 0.047 → 0.011 after histogram calibration fitted on a disjoint 80-case suite | [heldout_v1.md](docs/benchmarks/heldout_v1.md#confidence-calibration) |
 | How do the rules compare with other classifiers on identical inputs? | Rule engine 98.1% · heuristic baseline 48.1% · majority 12.5% · LLM classifier (local `llama3.2`, 3B) 40.6%, macro-F1 0.42, 9 s per case vs 0.3 ms | [heldout_v1.md](docs/benchmarks/heldout_v1.md#classifier-comparison-on-identical-signal-bags) |
 | Is retrieval actually good? | Production config (512/64 chunks, MiniLM dense): Recall@5 0.947, MRR 0.849, nDCG@10 0.869 on 82 answerable queries over 13 documents; BM25 0.890 / 0.816 / 0.830; best measured: 1024/128 hybrid with `bge-small` at Recall@5 0.953, MRR 0.919, nDCG@10 0.928 | [retrieval_ablation.md](docs/benchmarks/retrieval_ablation.md) |
-| Can the LLM judges be trusted? | Measured, not assumed: against 66 labelled examples with a local `llama3.2` (3B) the contradiction judge reaches kappa 0.80, the relevance judge kappa 0.64 per chunk but only 40% accuracy on "context sufficient", and the faithfulness judge kappa 0.0 (it returns score 0.0 even for fully supported answers); prompt rewording flips 20 to 30% of relevance verdicts | [judge_validation.md](docs/benchmarks/judge_validation.md) |
+| Can the LLM judges be trusted? | Measured, not assumed: against the full 66 labelled examples (282 calls, zero schema failures) with a local `llama3.2` (3B) the contradiction judge reaches kappa 0.78, the relevance judge kappa 0.69 per chunk but only 29% accuracy on "context sufficient", and the faithfulness judge kappa 0.02 (it returns a near-zero score even for fully supported answers); prompt rewording flips 13 to 20% of relevance verdicts | [judge_validation.md](docs/benchmarks/judge_validation.md) |
 | Does it hold up under load and failure? | 0% errors at concurrency 25; retrieval saturates at 6 to 7 req/s on one CPU-bound worker (p95 2.3 s at c=10); fault-injection tests for LLM 5xx/429/timeouts, 20 concurrent generations, Chroma outage and database errors | [load_test.md](docs/benchmarks/load_test.md), `backend/tests/test_resilience.py` |
 | Do metrics survive a restart? | Yes: every counter and latency sample is also written to PostgreSQL; p50/p95/p99, error rates, tokens and cost are queried per time window | [observability.md](docs/observability.md) |
 
@@ -266,13 +266,13 @@ Takeaways: dense beats BM25 on paraphrased queries while BM25 matches it on lite
 
 `retrace judges validate` runs each judge against 66 author-labelled examples (24 relevance, 24 faithfulness, 18 contradiction, including partially supported answers, numerically wrong answers, missing-information-is-not-a-contradiction cases and chunks carrying prompt-injection text), reports accuracy, precision/recall/F1, Cohen's kappa and score error, checks inter-judge consistency (for example a contradiction verdict with a perfect faithfulness score), and measures how often labels flip across meaning-preserving prompt variants. Model, temperature, prompt version and prompt hash are recorded with every run.
 
-Live result with a local `llama3.2` (3B, CPU, temperature 0, 30-example subset, zero schema failures across 124 calls):
+Live result with a local `llama3.2` (3B, CPU, temperature 0, full 66-example set, zero schema failures across 282 calls):
 
 | Judge | Agreement with labels | Note |
 | --- | --- | --- |
-| Contradiction | accuracy 0.90, kappa 0.80 | handles missing-info and number-confusion cases; one false positive |
-| Relevance | per-chunk accuracy 0.82, kappa 0.64; `context_sufficient` accuracy 0.40 | says "insufficient" for sufficient contexts; 20 to 30% of verdicts flip under prompt rewording |
-| Faithfulness | kappa 0.0, score error 0.60 | returns score 0.0 for 9 of 10 answers, including fully supported ones; not usable as a numeric signal with this model |
+| Contradiction | accuracy 0.89, kappa 0.78 (prompt `v1b`: 1.00) | handles missing-info and number-confusion cases; one false positive on the production prompt |
+| Relevance | per-chunk accuracy 0.84, kappa 0.69; `context_sufficient` accuracy 0.29 | says "insufficient" for sufficient contexts; 13 to 20% of verdicts flip under prompt rewording |
+| Faithfulness | kappa 0.02, score error 0.62 | returns a near-zero faithfulness score even for fully supported answers; not usable as a numeric signal with this model |
 
 This is exactly why the diagnosis engine treats judge output as signals, cross-checks them (rule R90 flags self-inconsistent judge output as uncertain) and why the judge model must be validated before its verdicts are trusted. Method and full tables: [docs/benchmarks/judge_validation.md](docs/benchmarks/judge_validation.md), [docs/retrieval-and-judges.md](docs/retrieval-and-judges.md).
 
