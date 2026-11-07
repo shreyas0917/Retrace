@@ -1,4 +1,9 @@
-export type NavId = "investigate" | "evaluations" | "experiments" | "operations";
+export type NavId =
+  | "overview"
+  | "investigate"
+  | "evaluations"
+  | "experiments"
+  | "operations";
 
 export type CorpusVersion = {
   id: string;
@@ -282,4 +287,11 @@ export type OpsSummaryV1 = OpsSummary & {
     durable_available?: boolean;
     durable_window?: DurableWindow;
   };
+};
+
+/** Response of GET /api/v1/metrics/durable (durable snapshot incl. counters). */
+export type DurableMetrics = DurableWindow & {
+  durable?: boolean;
+  counters?: Record<string, number>;
+  generated_at?: number;
 };

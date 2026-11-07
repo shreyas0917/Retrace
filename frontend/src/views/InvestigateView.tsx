@@ -14,9 +14,18 @@ import { MarkdownAnswer } from "../components/MarkdownAnswer";
 import {
   buildInvestigateVersions,
   buildReadyVersions,
+  isFixtureCorpus,
   pickDefaultVersionId,
 } from "../corpusClassify";
+import { friendlyDiagnosis, severityLabel } from "../taxonomy";
 import type { CorpusDetail, Investigation } from "../types";
+
+const STEPS: Array<{ id: string; n: string; label: string }> = [
+  { id: "step-happened", n: "A", label: "What happened" },
+  { id: "step-wrong", n: "B", label: "What went wrong" },
+  { id: "retrieval-section", n: "C", label: "Evidence" },
+  { id: "step-todo", n: "D", label: "What to do" },
+];
 
 type Props = {
   apiKey: string;
@@ -128,10 +137,24 @@ export function InvestigateView({
         apiKey,
       );
       const items = Array.isArray(list) ? list : list.corpora || [];
+      // Only product/live corpora are selectable here; backend test fixtures
+      // (hundreds of them in a long-lived database) are never shown, so fetch
+      // detail only for those. This keeps the page fast and avoids a request
+      // burst against the rate limiter.
+      const relevant = items
+        .filter((c) => !isFixtureCorpus({ id: c.id }))
+        .slice(0, 60);
       const details: CorpusDetail[] = [];
-      for (const c of items) {
-        const d = await apiGet<CorpusDetail>(`/api/v1/corpora/${c.id}`, apiKey);
-        details.push(d);
+      for (const c of relevant) {
+        try {
+          const d = await apiGet<CorpusDetail>(
+            `/api/v1/corpora/${c.id}`,
+            apiKey,
+          );
+          details.push(d);
+        } catch {
+          /* skip a corpus that failed to load; others still populate */
+        }
       }
       setCorpora(details);
       const rows = buildInvestigateVersions(details);
@@ -421,75 +444,144 @@ export function InvestigateView({
           </div>
 
           {inv.diagnosis ? (
-            <div
-              className={
-                inv.diagnosis.failure_code.startsWith("OK_")
-                  ? "diagnosis-hero ok"
-                  : "diagnosis-hero fail"
-              }
-            >
-              <div className="diagnosis-hero-top">
-                <div>
-                  <div className="label">Diagnosis</div>
-                  <div className="failure-code">
-                    {inv.diagnosis.failure_code}
-                  </div>
-                </div>
-                <div>
-                  <div className="label">Rule</div>
-                  <div className="rule-id">{inv.diagnosis.rule_id}</div>
-                </div>
-              </div>
-              <div className="diagnosis-meta diagnosis-meta-grid">
-                <div className="meta-item">
-                  <span className="meta-k">Layer</span>
-                  <span className="meta-v">
-                    {formatLayer(inv.diagnosis.layer)}
-                  </span>
-                </div>
-                <div className="meta-item">
-                  <span className="meta-k">Confidence</span>
-                  <span className="meta-v">
-                    {formatConfidence(inv.diagnosis.confidence)}
-                    {inv.diagnosis.calibrated_confidence != null && (
-                      <span
-                        className="muted small"
-                        title={`Calibrated probability of being correct (${inv.diagnosis.calibration_version || "uncalibrated"})`}
+            (() => {
+              const diag = inv.diagnosis;
+              const fd = friendlyDiagnosis(diag.failure_code);
+              const sev = fd.severity;
+              const engineWhy = diag.explanation || inv.why?.explanation;
+              const runbook = inv.failure?.runbook;
+              return (
+                <>
+                  <nav className="stepper" aria-label="Investigation steps">
+                    {STEPS.map((s) => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        className="step-chip"
+                        onClick={() =>
+                          document
+                            .getElementById(s.id)
+                            ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                        }
                       >
-                        {" "}
-                        · {Math.round(inv.diagnosis.calibrated_confidence * 100)}%
-                        calibrated
+                        <span className="step-num">{s.n}</span>
+                        <span className="step-label">{s.label}</span>
+                      </button>
+                    ))}
+                  </nav>
+
+                  <section
+                    className={`diagnosis-plain sev-${sev}`}
+                    id="step-wrong"
+                    aria-label="Diagnosis"
+                  >
+                    <div className="diagnosis-plain-head">
+                      <div style={{ minWidth: 0 }}>
+                        <p className="diagnosis-kicker">What went wrong</p>
+                        <h2 className="diagnosis-plain-title">{fd.title}</h2>
+                      </div>
+                      <span className={`severity sev-${sev}`}>
+                        {severityLabel(sev)}
                       </span>
+                    </div>
+                    <p className="diagnosis-plain-what">
+                      {inv.failure?.description || fd.what}
+                    </p>
+                    {engineWhy && (
+                      <p className="diagnosis-explanation muted small">
+                        <strong>How the engine reached this: </strong>
+                        {engineWhy}
+                      </p>
                     )}
-                  </span>
-                </div>
-                {inv.diagnosis.uncertain && (
-                  <div className="meta-item">
-                    <span className="meta-k">Review</span>
-                    <span className="meta-v">
-                      <StatusBadge status="UNCERTAIN — manual review" tone="warn" />
-                    </span>
+                    <div className="diagnosis-facts">
+                      <div className="diagnosis-fact">
+                        <span className="k">Failure code</span>
+                        <span
+                          className="v failure-code"
+                          style={{ fontSize: 13 }}
+                        >
+                          {diag.failure_code}
+                        </span>
+                      </div>
+                      <div className="diagnosis-fact">
+                        <span className="k">Rule</span>
+                        <span className="v rule-id" style={{ fontSize: 13 }}>
+                          {diag.rule_id}
+                        </span>
+                      </div>
+                      <div className="diagnosis-fact">
+                        <span className="k">Where</span>
+                        <span className="v">{formatLayer(diag.layer)}</span>
+                      </div>
+                      <div className="diagnosis-fact">
+                        <span className="k">
+                          Confidence
+                        </span>
+                        <span className="v">
+                          {formatConfidence(diag.confidence)}
+                          {diag.calibrated_confidence != null && (
+                            <span className="confidence-meter" aria-hidden="true">
+                              <span className="confidence-track">
+                                <span
+                                  className="confidence-fill"
+                                  style={{
+                                    width: `${Math.round(diag.calibrated_confidence * 100)}%`,
+                                  }}
+                                />
+                              </span>
+                            </span>
+                          )}
+                        </span>
+                        {diag.calibrated_confidence != null && (
+                          <span className="stat-sub">
+                            {Math.round(diag.calibrated_confidence * 100)}%
+                            calibrated likelihood this is correct
+                          </span>
+                        )}
+                      </div>
+                      {diag.uncertain && (
+                        <div className="diagnosis-fact">
+                          <span className="k">Review</span>
+                          <span className="v">
+                            <StatusBadge status="Manual review" tone="warn" />
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </section>
+
+                  <div className="nextstep" id="step-todo">
+                    <span className="nextstep-title">What to do next</span>
+                    <div className="nextstep-body">
+                      {sev === "ok" ? (
+                        "Nothing to fix — this answer behaved correctly. You can use it as a positive reference case."
+                      ) : runbook ? (
+                        <>
+                          Follow the runbook for this failure, then re-run the
+                          query to confirm the fix.{" "}
+                          <button
+                            type="button"
+                            className="linkish"
+                            onClick={() => void openRunbook(runbook)}
+                          >
+                            Open runbook: {runbook}
+                          </button>
+                        </>
+                      ) : (
+                        "Use the evidence below to confirm the cause: check whether the right documents were retrieved, then whether the answer stayed faithful to them. The rule details explain which signals drove this diagnosis."
+                      )}
+                    </div>
                   </div>
-                )}
-              </div>
-              {(inv.failure?.description || inv.rule?.summary) && (
-                <p className="diagnosis-summary">
-                  {inv.failure?.description || inv.rule?.summary}
-                </p>
-              )}
-              {(inv.diagnosis.explanation || inv.why?.explanation) && (
-                <p className="diagnosis-explanation muted small">
-                  <strong>Why: </strong>
-                  {inv.diagnosis.explanation || inv.why?.explanation}
-                </p>
-              )}
-            </div>
+                </>
+              );
+            })()
           ) : (
             <EmptyState compact>
               No diagnosis yet for this execution. Run diagnose first.
             </EmptyState>
           )}
 
+          <span id="step-happened" aria-hidden="true" />
           <div className="panel tight">
             <Section title="Execution" id="execution-section">
               <div className="meta-grid">

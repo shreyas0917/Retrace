@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { ApiError, login } from "../api";
+import { IconLogo } from "../components/icons";
 
 type Props = {
   onAuthenticated: () => void;
@@ -45,8 +46,13 @@ export function LoginView({ onAuthenticated, apiBase }: Props) {
     <div className="login-shell">
       <form className="login-card panel" onSubmit={submit} aria-label="Sign in">
         <div className="login-brand">
-          <div className="brand">Retrace</div>
-          <div className="brand-tag">AI Reliability</div>
+          <span className="brand-mark" aria-hidden="true">
+            <IconLogo />
+          </span>
+          <span className="brand-text">
+            <span className="brand">Retrace</span>
+            <span className="brand-tag">AI answer reliability</span>
+          </span>
         </div>
         <h1 className="login-title">Sign in to the console</h1>
         <p className="login-desc">
