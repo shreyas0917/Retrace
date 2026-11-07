@@ -54,6 +54,12 @@ class Settings(BaseSettings):
     max_query_chars: int = Field(default=4000, alias="MAX_QUERY_CHARS")
     max_request_bytes: int = Field(default=1_048_576, alias="MAX_REQUEST_BYTES")
 
+    # --- External traces (POST /api/v1/traces) ---
+    max_trace_chunks: int = Field(default=50, alias="MAX_TRACE_CHUNKS")
+    max_trace_chunk_chars: int = Field(default=8000, alias="MAX_TRACE_CHUNK_CHARS")
+    max_trace_answer_chars: int = Field(default=20000, alias="MAX_TRACE_ANSWER_CHARS")
+    max_trace_batch: int = Field(default=100, alias="MAX_TRACE_BATCH")
+
     # --- LLM resilience (v1.0) ---
     model_max_retries: int = Field(default=2, alias="MODEL_MAX_RETRIES")
     model_retry_backoff_seconds: float = Field(

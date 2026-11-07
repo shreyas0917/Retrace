@@ -61,7 +61,9 @@ class GenerateResponse(BaseModel):
 class ExecutionTraceResponse(BaseModel):
     id: str
     request_id: str
-    corpus_version_id: str
+    # null for external traces (POST /api/v1/traces), which have no Retrace corpus.
+    corpus_version_id: str | None = None
+    source: str = "internal"
     query: str
     retrieval_trace_id: str | None
     top_k: int

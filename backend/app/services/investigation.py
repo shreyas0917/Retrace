@@ -265,11 +265,26 @@ def build_investigation(db: Session, execution_id: str) -> dict[str, Any]:
         elif execution.abstained:
             abstention_kind = "ABSTAINED"
 
+    source = getattr(execution, "source", None) or "internal"
+    trace_meta = execution.trace_metadata if isinstance(execution.trace_metadata, dict) else {}
+
     return {
+        "source": source,
         "execution": {
             "execution_id": execution.id,
             "request_id": execution.request_id,
+            "source": source,
+            # null for external traces: they were not produced from a Retrace corpus.
             "corpus_version_id": execution.corpus_version_id,
+            "external": (
+                {
+                    "metadata": trace_meta.get("metadata"),
+                    "expected_abstention": trace_meta.get("expected_abstention"),
+                    "abstention_detected_by": trace_meta.get("abstention_detected_by"),
+                }
+                if source == "external"
+                else None
+            ),
             "retrieval_trace_id": execution.retrieval_trace_id,
             "query": execution.query,
             "status": execution.status,

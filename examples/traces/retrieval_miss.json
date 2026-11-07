@@ -1,0 +1,28 @@
+{
+  "query": "How much PTO do full-time employees accrue per month?",
+  "retrieved_chunks": [
+    {
+      "chunk_id": "employee_handbook:c002",
+      "text": "Standard office hours are Monday through Friday, 9:00 to 17:30 local time. Remote work is permitted up to 2 days per week with manager approval.",
+      "score": 0.42,
+      "rank": 1,
+      "source_name": "employee_handbook.md"
+    },
+    {
+      "chunk_id": "travel_policy:c001",
+      "text": "All travel must be booked through the corporate travel portal, TripDesk, so that trips are visible to Security and insured through the corporate card program. Flights and hotels should be booked at least 14 days in advance.",
+      "score": 0.31,
+      "rank": 2,
+      "source_name": "travel_policy.md"
+    }
+  ],
+  "answer": "Full-time employees can work remotely up to 2 days per week.",
+  "abstained": false,
+  "gold_chunk_ids": [
+    "employee_handbook:c000"
+  ],
+  "metadata": {
+    "app": "example-rag",
+    "model": "gpt-4.1-mini"
+  }
+}

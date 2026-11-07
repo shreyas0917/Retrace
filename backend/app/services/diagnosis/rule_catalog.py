@@ -28,8 +28,10 @@ RULE_CATALOG: dict[str, dict[str, Any]] = {
         "rule_id": "R02",
         "result": "EVAL_MISSING_CONTEXT",
         "layer": "infra",
-        "conditions": ["missing_answer", "n_retrieved == 0"],
-        "summary": "Execution is missing both answer and retrieved context.",
+        "conditions": [
+            "missing_answer (no answer text, and status is not abstained, timeout or failed)",
+        ],
+        "summary": "Execution has no answer to assess, so no judge runs (ADR-044).",
     },
     "R10": {
         "rule_id": "R10",

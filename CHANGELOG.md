@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Bring your own trace (Phase 1)
+- `POST /api/v1/traces` stores a trace produced by any RAG app and diagnoses it with the same engine; `diagnose: false` stores it only. `POST /api/v1/traces/batch` takes a JSON array or JSON Lines (up to `MAX_TRACE_BATCH`) and returns one result per trace, so one bad trace never fails the batch.
+- The caller's chunk texts are what the judges read; Retrace's corpus and vector store are never consulted. Responses include `injection_flags`, `abstention_detected_by` and `warnings` (for example, no `gold_chunk_ids` means retrieval-miss detection is unavailable).
+- `retrace diagnose --file/--batch [--fail-on CODES|ALL_FAILURES] [--json]` runs in process with exit codes 0, 1 and 2 for CI.
+- Migration `008_external_traces`: `execution_traces.source` (`internal` or `external`), `trace_metadata`, and a nullable `corpus_version_id` that a check constraint keeps required for internal traces. Execution, diagnosis and investigation endpoints and the console handle the null corpus; investigations report `source: external`.
+- Rule R02 (`EVAL_MISSING_CONTEXT`) now fires for any missing answer and skips the judges (ADR-044). No internal execution or suite case is affected.
+- New settings `MAX_TRACE_CHUNKS`, `MAX_TRACE_CHUNK_CHARS`, `MAX_TRACE_ANSWER_CHARS`, `MAX_TRACE_BATCH`; docs in `docs/integrate.md`; sample inputs in `examples/traces/`.
+
 ### Calibration
 - `retrace benchmark report` no longer rewrites `backend/configs/calibration.json` as a side effect. A fresh fit is reported for comparison; `--write-calibration` is required to write it, and the report states which calibrator its numbers used.
 

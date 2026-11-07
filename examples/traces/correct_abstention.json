@@ -1,0 +1,25 @@
+{
+  "query": "How much PTO do contractors accrue per month?",
+  "retrieved_chunks": [
+    {
+      "chunk_id": "employee_handbook:c000",
+      "text": "Full-time employees accrue 1.25 days of PTO per month, for a total of 15 days per year. Part-time employees accrue PTO on a pro-rated basis according to scheduled hours.",
+      "score": 0.71,
+      "rank": 1,
+      "source_name": "employee_handbook.md"
+    },
+    {
+      "chunk_id": "employee_handbook:c001",
+      "text": "Unused PTO may be carried over up to a maximum of 5 days into the next calendar year. Requests for PTO must be submitted at least 7 days in advance except for emergencies.",
+      "score": 0.58,
+      "rank": 2,
+      "source_name": "employee_handbook.md"
+    }
+  ],
+  "answer": "I don't know. The provided context does not contain a PTO rule for contractors.",
+  "expected_abstention": true,
+  "metadata": {
+    "app": "example-rag",
+    "model": "gpt-4.1-mini"
+  }
+}
