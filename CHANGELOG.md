@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Bring your own trace (Phase 1)
-- `POST /api/v1/traces` stores a trace produced by any RAG app and diagnoses it with the same engine; `diagnose: false` stores it only. `POST /api/v1/traces/batch` takes a JSON array or JSON Lines (up to `MAX_TRACE_BATCH`) and returns one result per trace, so one bad trace never fails the batch.
+- `POST /api/v1/traces` stores a trace produced by any RAG app and diagnoses it with the same engine; `diagnose: false` stores it only. `POST /api/v1/traces/batch` takes a JSON array or JSON Lines (up to `MAX_TRACE_BATCH`) and returns one result per trace, so one bad trace never fails the batch. The default cap is 25; larger batches should use the CLI.
 - The caller's chunk texts are what the judges read; Retrace's corpus and vector store are never consulted. Responses include `injection_flags`, `abstention_detected_by` and `warnings` (for example, no `gold_chunk_ids` means retrieval-miss detection is unavailable).
 - `retrace diagnose --file/--batch [--fail-on CODES|ALL_FAILURES] [--json]` runs in process with exit codes 0, 1 and 2 for CI.
 - Migration `008_external_traces`: `execution_traces.source` (`internal` or `external`), `trace_metadata`, and a nullable `corpus_version_id` that a check constraint keeps required for internal traces. Execution, diagnosis and investigation endpoints and the console handle the null corpus; investigations report `source: external`.

@@ -39,8 +39,9 @@ async def post_trace_batch(request: Request, db: Session = Depends(get_db)) -> d
     """Ingest a JSON array (or JSON Lines) of traces; one result per trace.
 
     Items are validated and diagnosed independently, so one bad trace does not
-    fail the batch. Diagnosis runs synchronously; for large batches that need
-    LLM judges, prefer `retrace diagnose --batch`.
+    fail the batch. At most `MAX_TRACE_BATCH` traces (25 by default). Diagnosis
+    runs inside this request, so for larger batches use the CLI instead:
+    `python -m app.cli.retrace diagnose --batch traces.jsonl`.
     """
     settings = get_settings()
     body = await request.body()

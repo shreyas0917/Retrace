@@ -58,7 +58,7 @@ class Settings(BaseSettings):
     max_trace_chunks: int = Field(default=50, alias="MAX_TRACE_CHUNKS")
     max_trace_chunk_chars: int = Field(default=8000, alias="MAX_TRACE_CHUNK_CHARS")
     max_trace_answer_chars: int = Field(default=20000, alias="MAX_TRACE_ANSWER_CHARS")
-    max_trace_batch: int = Field(default=100, alias="MAX_TRACE_BATCH")
+    max_trace_batch: int = Field(default=25, alias="MAX_TRACE_BATCH")
 
     # --- LLM resilience (v1.0) ---
     model_max_retries: int = Field(default=2, alias="MODEL_MAX_RETRIES")

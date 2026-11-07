@@ -264,8 +264,9 @@ def parse_batch_body(body: bytes, content_type: str, *, max_items: int) -> list[
         raise BatchError("batch is empty")
     if len(items) > max_items:
         raise BatchError(
-            f"at most {max_items} traces per batch, got {len(items)}",
-            details={"max": max_items, "received": len(items)},
+            f"at most {max_items} traces per batch, got {len(items)}; "
+            "use `retrace diagnose --batch traces.jsonl` for larger batches",
+            details={"max": max_items, "received": len(items), "cli": "retrace diagnose --batch"},
         )
     return items
 

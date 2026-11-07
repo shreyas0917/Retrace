@@ -298,6 +298,12 @@ def test_batch_limits(client: TestClient, api_key: str, monkeypatch) -> None:
     too_many = client.post("/api/v1/traces/batch", json=[item] * 3, headers=_auth(api_key))
     assert too_many.status_code == 400
     assert "at most 2" in too_many.text
+    assert "retrace diagnose --batch" in too_many.text
+
+
+def test_batch_cap_defaults_to_25(monkeypatch) -> None:
+    monkeypatch.delenv("MAX_TRACE_BATCH", raising=False)
+    assert get_settings().max_trace_batch == 25
 
 
 # --- CLI ------------------------------------------------------------------------

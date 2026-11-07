@@ -85,7 +85,7 @@ Open `GET /api/v1/investigations/{execution_id}` for the full evidence. External
 
 ## Send many traces
 
-`POST /api/v1/traces/batch` accepts a JSON array (or `{"traces": [...]}`), or JSON Lines with `Content-Type: application/x-ndjson`. At most `MAX_TRACE_BATCH` traces (100 by default). Each trace is validated and diagnosed independently, so one bad trace does not fail the batch:
+`POST /api/v1/traces/batch` accepts a JSON array (or `{"traces": [...]}`), or JSON Lines with `Content-Type: application/x-ndjson`. At most `MAX_TRACE_BATCH` traces (25 by default); **for larger batches use the CLI** (`retrace diagnose --batch`, below). Each trace is validated and diagnosed independently, so one bad trace does not fail the batch:
 
 ```json
 {"summary": {"total": 3, "ok": 2, "failed": 1},
@@ -93,7 +93,7 @@ Open `GET /api/v1/investigations/{execution_id}` for the full evidence. External
              {"index": 1, "ok": false, "error": {"code": "INVALID_REQUEST", "message": "Trace failed validation", "details": {...}}}]}
 ```
 
-Diagnosis runs inside the request. Batches that need LLM judges can take minutes on a slow model, so use the CLI below for large runs.
+Diagnosis runs inside the request, and a batch that needs LLM judges can take minutes on a slow model. That is why the cap is small: anything bigger belongs in the CLI, which has no batch limit.
 
 ## Use it as a CI check
 
@@ -120,7 +120,7 @@ python -m app.cli.retrace diagnose --batch traces.jsonl --fail-on ALL_FAILURES -
 | `MAX_TRACE_CHUNKS` | 50 | chunks per trace |
 | `MAX_TRACE_CHUNK_CHARS` | 8000 | characters per chunk text |
 | `MAX_TRACE_ANSWER_CHARS` | 20000 | characters in the answer |
-| `MAX_TRACE_BATCH` | 100 | traces per batch request |
+| `MAX_TRACE_BATCH` | 25 | traces per batch request; use the CLI for more |
 | `MAX_QUERY_CHARS` | 4000 | characters in the query |
 | `MAX_REQUEST_BYTES` | 1048576 | bytes per request body |
 
