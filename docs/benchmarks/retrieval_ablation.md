@@ -2,6 +2,8 @@
 
 Generated 2026-10-25T20:31:28+00:00 by `retrace retrieval-eval` (elapsed 4580.39s). Numbers below are measured, not estimated; re-run the command to refresh them.
 
+> **Provenance note (2026-11-08).** The queries and relevance labels used for this run are AI-drafted and not yet reviewed by a human. Their values are unchanged since the run, but the dataset's annotator metadata was later corrected from `author` to `ai_draft`. That edit changed the file hash, so the hash recorded below identifies the file as it was when this report was generated.
+
 ## Dataset
 
 - Corpus: `/data/corpus/demo`, 13 markdown documents (benefits_overview, data_retention, employee_handbook, expense_reimbursement, incident_response, it_acceptable_use, onboarding_checklist, performance_reviews, procurement_policy, refund_policy, remote_work_policy, security_policy, travel_policy).
@@ -146,7 +148,7 @@ These queries have no relevant chunk anywhere in the corpus. A retriever always 
 
 **What they do not show**
 
-- The corpus is 13 short, clean, synthetic-but-realistic policy documents and the 87 queries were written by the same author who wrote the documents. Absolute numbers will be lower on real, noisy corpora with longer documents and user-written queries; the *relative* ordering (dense > BM25 on paraphrase, bge-small > MiniLM > mpnet here, hybrid marginal) is the transferable finding, and even that should be re-checked on the target corpus.
+- The corpus is 13 short, clean, synthetic-but-realistic policy documents and the 87 queries were drafted by the same AI agent that drafted the documents and are not yet reviewed by a human. Absolute numbers will be lower on real, noisy corpora with longer documents and user-written queries; the *relative* ordering (dense > BM25 on paraphrase, bge-small > MiniLM > mpnet here, hybrid marginal) is the transferable finding, and even that should be re-checked on the target corpus.
 - With 82 answerable queries, a difference of 2-3 MRR points is a handful of queries changing rank and is within noise. Differences of 5+ points that hold across all three chunk sizes (bge-small vs MiniLM, dense vs BM25 on medium queries) are the ones to act on.
 - Relevance is substring-based, so a chunk that paraphrases the answer without the labeled substring counts as a miss for every retriever equally.
 - Latency is per-query scoring time measured inside the dev container on a 4-core laptop CPU, after one warm-up call; it is only meaningful relative to the other rows of the same run. The run recorded above overlapped with other CPU-heavy jobs (an Ollama judge run and the test suite), which inflates the dense numbers; on an idle machine the same code measures MiniLM dense at roughly 35-50 ms per query and BM25 at under 2 ms.

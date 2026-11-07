@@ -424,7 +424,7 @@ Status: Accepted
 
 ## ADR-043 — Judges are validated against labelled examples and prompt variants
 
-Decision: `retrace judges validate` scores each judge against an author-labelled example set (accuracy, F1, Cohen's kappa, score MAE), checks inter-judge consistency, and measures label flip rate across meaning-preserving prompt variants, recording model, temperature, prompt version and prompt hash. Fixture-based numbers are always labelled as such.
+Decision: `retrace judges validate` scores each judge against an example set (AI-drafted, not yet reviewed) (accuracy, F1, Cohen's kappa, score MAE), checks inter-judge consistency, and measures label flip rate across meaning-preserving prompt variants, recording model, temperature, prompt version and prompt hash. Fixture-based numbers are always labelled as such.
 
 Reason: Judge reliability bounds diagnosis reliability; it has to be measured per model and re-measured when prompts change.
 

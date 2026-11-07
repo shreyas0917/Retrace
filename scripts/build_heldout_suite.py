@@ -18,7 +18,7 @@ Honesty notes
   match the scenario. They are NOT live-LLM outputs and the suite does not
   prove live-model robustness. See docs/benchmarks/heldout_v1.md.
 * Labels were authored by the generator's scenario templates (annotator
-  `synthetic_generator_v1`), reviewed by the project author.
+  `synthetic_generator_v1`). No human has reviewed them.
 * `heldout_v1` and `calib_v1` use different seeds and are disjoint by
   construction (different case ids, different sampled parameters).
 

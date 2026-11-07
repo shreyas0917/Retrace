@@ -38,7 +38,7 @@ tables show both.
 
 ### Dataset (`backend/datasets/retrieval/demo_qrels_v1.jsonl`)
 
-87 hand-written queries over the 13-document demo corpus (`data/corpus/demo`):
+87 queries (AI-drafted, not yet reviewed) over the 13-document demo corpus (`data/corpus/demo`):
 82 answerable (30 easy, 34 medium, 18 hard) and 5 unanswerable. Hard queries
 include paraphrases, questions whose answer spans two documents, and hard
 negatives that reuse another document's vocabulary or a number that appears in
@@ -89,7 +89,7 @@ scripts/dev_test.sh python -m app.cli.retrace retrieval-eval \
   --out /data/reports/retrieval_ablation.json
 ```
 
-The markdown report regenerates its tables and preserves the hand-written
+The markdown report regenerates its tables and preserves the
 "Interpretation" section between the `<!-- interpretation:start/end -->`
 markers.
 
@@ -97,8 +97,9 @@ markers.
 
 * They compare configurations fairly on one dataset. They do **not** say how
   the system performs on a real customer corpus: the demo corpus is 13 short,
-  clean, synthetic-but-realistic policy documents and the queries were written
-  by the same author who wrote the documents.
+  clean, synthetic-but-realistic policy documents and the queries were drafted
+  by the same AI agent that drafted the documents, and no human has reviewed
+  them yet.
 * With ~80 queries, differences of a few points in MRR are within noise; only
   consistent gaps across configurations and difficulty levels mean anything.
 * Relevance labels are substring-based. A chunk that paraphrases the answer
@@ -117,7 +118,7 @@ wording.
 
 ### Labeled dataset (`backend/datasets/judges/judge_labels_v1.jsonl`)
 
-66 hand-labeled examples (24 relevance, 24 faithfulness, 18 contradiction)
+66 examples (AI-drafted, not yet reviewed; 24 relevance, 24 faithfulness, 18 contradiction)
 built from demo-corpus facts. Chunk texts are excerpts of the corpus documents;
 four synthetic "injected" chunks carry prompt-injection text. Hard cases:
 
@@ -131,9 +132,11 @@ four synthetic "injected" chunks carry prompt-injection text. Hard cases:
   detail is not a contradiction, abstentions, unit confusion ($300 per month
   vs per week), same-chunk number confusion (SEV1 15 min vs SEV2 1 hour).
 
-Every row records `annotator: "author"` and `annotation_date`; the manifest
-carries the dataset hash. Labels were written by one person, so there is no
-inter-annotator agreement figure; that is a known limitation.
+Every row records `annotator: "ai_draft"` and `annotation_date`; the manifest
+carries the dataset hash. The labels were drafted by an AI agent and no human
+has reviewed them yet. After the author's review the annotator becomes
+`ai_draft_author_reviewed` and the manifest records how many labels changed.
+There is no inter-annotator agreement figure; that is a known limitation.
 
 ### What is measured (`backend/app/services/judges/validation.py`)
 
@@ -186,7 +189,7 @@ never be presented as live-model results.
 
 ### What the numbers do and do not show
 
-* They measure one model on 66 author-labeled examples. Kappa on 18
+* They measure one model on 66 AI-drafted, not yet reviewed examples. Kappa on 18
   contradiction examples has wide confidence intervals; treat anything within
   about 0.15 as the same.
 * Perfect fixture results (kappa = 1.0 with the oracle provider in tests) prove
