@@ -59,6 +59,12 @@ stored in `backend/configs/calibration.json` and applied at diagnosis time;
 diagnosis and shown in the console. Bins with no calibration observations
 fall back to the raw score rather than inventing a probability.
 
+Running the benchmark report never changes the committed calibrator on its
+own. With `--calibrate-on` it fits a fresh calibrator and reports it for
+comparison; only `--write-calibration` writes it to
+`backend/configs/calibration.json`. The report always states which
+calibrator its calibrated numbers used.
+
 ## Classifier comparison
 
 `app/services/diagnosis/classifiers.py` defines four classifiers over the same
@@ -109,6 +115,7 @@ docker compose exec backend python -m app.cli.retrace benchmark report \
   --suite heldout_v1 --calibrate-on calib_v1 \
   --markdown /docs/benchmarks/heldout_v1.md --out /data/reports/heldout_report.json
 # add --with-llm to include the LLM classifier (uses MODEL_* from .env)
+# add --write-calibration to refit and replace the committed calibrator
 ```
 
 The held-out run is also a test: `backend/tests/test_v1_diagnosis_benchmark.py`

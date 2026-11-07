@@ -36,7 +36,7 @@ cd frontend && npm install && npm test && npm run build
 
 | Report | Command |
 | --- | --- |
-| Held-out diagnosis benchmark, calibration, classifier comparison | `python -m app.cli.retrace benchmark report --suite heldout_v1 --calibrate-on calib_v1 --markdown /docs/benchmarks/heldout_v1.md [--with-llm]` |
+| Held-out diagnosis benchmark, calibration, classifier comparison | `python -m app.cli.retrace benchmark report --suite heldout_v1 --calibrate-on calib_v1 --markdown /docs/benchmarks/heldout_v1.md [--with-llm]`; add `--write-calibration` only to refit the committed calibrator |
 | Retrieval ablation | `python -m app.cli.retrace retrieval-eval --corpus-dir /data/corpus/demo --markdown /docs/benchmarks/retrieval_ablation.md` |
 | Judge validation (live model) | `python -m app.cli.retrace judges validate --markdown /docs/benchmarks/judge_validation.md` |
 | Load test | `python scripts/load_test.py --endpoint retrieve --concurrency 25 --requests 300` |

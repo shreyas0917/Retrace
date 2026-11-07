@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Calibration
+- `retrace benchmark report` no longer rewrites `backend/configs/calibration.json` as a side effect. A fresh fit is reported for comparison; `--write-calibration` is required to write it, and the report states which calibrator its numbers used.
+
 ### Label provenance
 - Corrected a false claim: the 66 judge labels and 87 retrieval queries were drafted by an AI agent, not written by hand. README and docs now say "AI-drafted, not yet reviewed", both datasets record `annotator: ai_draft`, and the generated reports carry a provenance note because their recorded hashes predate the metadata change.
 - Removed an untrue "reviewed by the project author" line from the heldout suite generator.

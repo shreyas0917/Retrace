@@ -75,6 +75,7 @@ def run_report(
     with_llm: bool,
     classifier_limit: int | None,
     n_bins: int,
+    write_calibration: bool = False,
 ) -> dict[str, Any]:
     report: dict[str, Any] = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -83,7 +84,9 @@ def run_report(
         "suite_version": suite_version,
     }
 
-    # 1. Fit the calibrator on a disjoint suite.
+    # 1. Fit a calibrator on a disjoint suite. It is only written to the
+    #    committed config with an explicit write_calibration; otherwise the
+    #    fit is reported for comparison and the committed calibrator applies.
     if calibrate_on:
         calib = run_evaluation(db, suite_id=calibrate_on, suite_version=calibrate_version, persist=True)
         scores, correct = _scores_and_correct(calib["cases"], "diagnosis_score")
@@ -94,21 +97,28 @@ def run_report(
             fitted_on=f"{calibrate_on}@{calibrate_version} ({calib['suite_hash']})",
             notes={"experiment_id": calib["experiment_id"]},
         )
-        path = save_calibration(table)
+        path = save_calibration(table) if write_calibration else None
         report["calibration_fit"] = {
+            "written": bool(write_calibration),
             "suite": calibrate_on,
             "suite_hash": calib["suite_hash"],
             "experiment_id": calib["experiment_id"],
             "sample_size": table.sample_size,
             "ece_before": table.ece_before,
             "brier_before": table.brier_before,
-            "path": str(path),
+            "path": str(path) if path else None,
             "summary": {
                 k: v for k, v in calib["summary"].items() if k not in {"confusion_matrix", "per_class"}
             },
         }
 
-    # 2. Held-out evaluation (uses the calibrator saved above).
+    # 2. Evaluation, using whichever calibrator is on disk now.
+    applied = load_calibration()
+    report["applied_calibrator"] = (
+        {"fitted_on": applied.fitted_on, "created_at": applied.created_at, "sample_size": applied.sample_size}
+        if applied
+        else None
+    )
     result = run_evaluation(db, suite_id=suite_id, suite_version=suite_version, persist=True)
     cases = result["cases"]
     report.update(
@@ -245,12 +255,27 @@ def render_markdown(report: dict[str, Any]) -> str:
     lines.append("## Confidence calibration")
     lines.append("")
     fit = report.get("calibration_fit")
-    if fit:
+    applied = report.get("applied_calibrator")
+    if fit and fit.get("written"):
         lines.append(
             f"Calibrator: histogram binning fitted on `{fit['suite']}` ({fit['sample_size']} cases, "
-            f"disjoint from this suite), stored in `backend/configs/calibration.json`."
+            f"disjoint from this suite), written to `backend/configs/calibration.json` and applied below."
         )
-        lines.append("")
+    else:
+        if applied:
+            lines.append(
+                f"Calibrated confidence below uses the committed calibrator in "
+                f"`backend/configs/calibration.json`, fitted on {applied['fitted_on']} "
+                f"({applied['sample_size']} cases)."
+            )
+        else:
+            lines.append("No calibrator is committed, so calibrated confidence equals the raw score.")
+        if fit:
+            lines.append(
+                f"A fresh fit on `{fit['suite']}` was computed for comparison but not written; "
+                f"pass `--write-calibration` to replace the committed calibrator."
+            )
+    lines.append("")
     lines.append("| | Raw rule score | Calibrated confidence |")
     lines.append("| --- | ---: | ---: |")
     lines.append(f"| Expected calibration error (lower is better) | {_f(cal.get('raw', {}).get('ece'))} | {_f(cal.get('calibrated', {}).get('ece'))} |")
@@ -345,6 +370,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         "--suite heldout_v1 --calibrate-on calib_v1 --markdown /docs/benchmarks/heldout_v1.md"
     )
     lines.append("# add --with-llm to include the LLM classifier (needs MODEL_* configured)")
+    lines.append("# add --write-calibration to refit and replace backend/configs/calibration.json")
     lines.append("```")
     lines.append("")
     return "\n".join(lines)
@@ -392,6 +418,7 @@ def cmd_benchmark_report(args: argparse.Namespace) -> int:
             with_llm=bool(args.with_llm),
             classifier_limit=args.classifier_limit,
             n_bins=args.bins,
+            write_calibration=bool(getattr(args, "write_calibration", False)),
         )
     except Exception as exc:  # noqa: BLE001
         print(f"Benchmark error: {exc}", file=sys.stderr)
@@ -438,6 +465,11 @@ def register(sub: argparse._SubParsersAction) -> None:
     rep.add_argument("--bins", type=int, default=10)
     rep.add_argument("--out", default="/data/reports/heldout_report.json")
     rep.add_argument("--markdown", default=None)
+    rep.add_argument(
+        "--write-calibration",
+        action="store_true",
+        help="Write the calibrator fitted on --calibrate-on to backend/configs/calibration.json",
+    )
     rep.set_defaults(func=cmd_benchmark_report)
 
 
@@ -455,6 +487,11 @@ def main(argv: list[str] | None = None) -> int:
     rep.add_argument("--bins", type=int, default=10)
     rep.add_argument("--out", default="/data/reports/heldout_report.json")
     rep.add_argument("--markdown", default=None)
+    rep.add_argument(
+        "--write-calibration",
+        action="store_true",
+        help="Write the calibrator fitted on --calibrate-on to backend/configs/calibration.json",
+    )
     rep.set_defaults(func=cmd_benchmark_report)
     args = parser.parse_args(argv)
     if args.calibrate_on == "":
