@@ -1,4 +1,4 @@
-"""`retrace judges validate` — score the LLM judges against human-labeled examples."""
+"""`retrace judges validate` — score the judges against labeled examples (provenance in the dataset manifest)."""
 
 from __future__ import annotations
 
@@ -24,6 +24,53 @@ from app.services.llm_client import get_llm_provider
 
 EXIT_OK = 0
 EXIT_ERROR = 2
+
+
+PROVISIONAL_BANNER = "PROVISIONAL — AI-drafted labels, not yet reviewed by the author"
+
+
+def label_provenance(labels_path: str | Path) -> tuple[str, bool]:
+    """(sentence, provisional) describing who produced the labels, from the dataset manifest."""
+    manifest_path = Path(labels_path).with_name("manifest.json")
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return "Label provenance unknown (no manifest.json next to the labels file).", True
+    annotator = manifest.get("annotator")
+    review = manifest.get("review") or {}
+    units = review.get("reviewed_units", "?")
+    changed = review.get("changed_labels", "?")
+    if annotator == "ai_draft_author_reviewed":
+        return f"Labels: AI-drafted, reviewed and corrected by the author ({changed} of {units} labels changed).", False
+    if annotator == "ai_draft_blind":
+        return (
+            f"Labels: AI-drafted, then checked by a second AI agent that saw only the review sheet "
+            f"({changed} of {units} labels changed). Not yet reviewed by the author. Two AI passes agreeing "
+            "is weak evidence that a label is right.",
+            True,
+        )
+    return f"Labels: {manifest.get('source') or annotator}", annotator != "author"
+
+
+def limits_markdown(examples: list) -> str:
+    faith = [e for e in examples if e.judge == "faithfulness"]
+    claims = sum(len(e.claims or []) for e in faith)
+    per = {j: sum(1 for e in examples if e.judge == j) for j in ("relevance", "faithfulness", "contradiction")}
+    return "\n".join(
+        [
+            "## Limits",
+            "",
+            f"- Small sets: {per['relevance']} relevance, {per['faithfulness']} faithfulness ({claims} claims) and "
+            f"{per['contradiction']} contradiction examples. One or two examples move accuracy by several points, "
+            "so the confidence intervals are wide; read differences between backends and variants with that in mind.",
+            "- The examples are short excerpts of one synthetic policy corpus, written for this test.",
+            "- NLI is weak on numeric reasoning (comparing amounts, dates and durations), on claims that need "
+            "several sentences, and on claims that combine facts from more than one chunk.",
+            "- NLI thresholds are the fixed rule (a claim is supported when entailment is the top label); the "
+            "cross-validated threshold table is a sensitivity check, not a tuned setting.",
+            "",
+        ]
+    )
 
 
 def _split_csv(value: str | None) -> list[str]:
@@ -101,10 +148,15 @@ def cmd_judges_validate(args: argparse.Namespace) -> int:
     if args.markdown:
         md = Path(args.markdown)
         md.parent.mkdir(parents=True, exist_ok=True)
-        text = format_markdown(report, source_label=source_label)
+        provenance, provisional = label_provenance(args.labels)
+        text = format_markdown(report, source_label=source_label, notes=provenance)
         if nli_section is not None:
             llm_faith = (report.get("per_judge", {}).get("faithfulness") or {}).get(primary)
             text = text.rstrip("\n") + "\n\n" + format_nli_markdown(nli_section, llm_faithfulness=llm_faith)
+        text = text.rstrip("\n") + "\n\n" + limits_markdown(examples)
+        if provisional:
+            head, _, rest = text.partition("\n")
+            text = f"{head}\n\n> **{PROVISIONAL_BANNER}.** Do not quote these numbers until the review is done.\n{rest}"
         md.write_text(text, encoding="utf-8")
         print(f"wrote {md}")
 
