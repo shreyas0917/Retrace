@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Judge validation (PROVISIONAL — AI-drafted labels, not yet reviewed by the author)
+- A second, fresh AI agent checked all 173 judge labels from the review sheet alone and suggested no changes (notes on 3 borderline rows). Applied with `judge_labels_review.py apply --annotator ai_draft_blind`: label values unchanged, annotator `ai_draft_blind`, manifest marked provisional, new hash.
+- `docs/benchmarks/judge_validation.md` regenerated with `judges validate --faithfulness-backend both`: the LLM and NLI faithfulness backends side by side, a PROVISIONAL banner, the label provenance read from the manifest, the exact command, and a Limits section.
+- `judge_labels_review.py apply --annotator` takes `ai_draft_author_reviewed` (default, after the author's review) or `ai_draft_blind`.
+
 ### Console redesign (Phase 7)
 - Merged the parked `console-refresh` branch (light/dark/system theme, Overview page, plain-English diagnosis) and removed `framer-motion`: view and list fades are CSS transitions, and `prefers-reduced-motion` turns them off. No UI library was added.
 - `frontend/src/labels.ts` replaces `taxonomy.ts` and holds the human labels for every failure code in `taxonomy.py` (including reserved codes), recommendation codes, diagnosis and operations signals, evaluation metrics, suites, judges and statuses. A test parses the backend files and fails if a code has no label. Raw codes are still shown, next to their label.
