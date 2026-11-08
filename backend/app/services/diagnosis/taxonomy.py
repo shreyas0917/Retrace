@@ -173,3 +173,29 @@ def recommendation_for(code: str) -> str:
 def layer_for(code: str) -> str:
     entry = FAILURE_CODES.get(code)
     return entry.layer.value if entry else Layer.INFRA.value
+
+
+SHORT_CODES: dict[str, str] = {
+    "RETRIEVAL_EMPTY": "R-EMPTY",
+    "RETRIEVAL_MISS": "R-MISS",
+    "RETRIEVAL_DISTRACTOR_DOMINANT": "R-DISTR",
+    "RETRIEVAL_INSUFFICIENT_CONTEXT": "R-INSUF",
+    "GROUNDING_UNSUPPORTED": "G-UNSUP",
+    "GROUNDING_PARTIAL": "G-PART",
+    "GENERATION_HALLUCINATION": "GEN-HALL",
+    "GENERATION_CONTRADICTION": "GEN-CONTRA",
+    "ABSTENTION_FALSE_NEGATIVE": "ABS-FN",
+    "ABSTENTION_FALSE_POSITIVE": "ABS-FP",
+    "OK_GROUNDED": "OK",
+    "OK_CORRECT_ABSTENTION": "OK-ABS",
+    "EVAL_MODEL_TIMEOUT": "E-TIMEOUT",
+    "EVAL_JUDGE_MALFORMED": "E-MALFORM",
+    "EVAL_MISSING_CONTEXT": "E-MISSING",
+    "EVAL_INTERNAL_ERROR": "E-INTERNAL",
+    "DIAGNOSIS_UNCERTAIN": "UNCERTAIN",
+}
+
+
+def short_code(code: str) -> str:
+    """Compact label for tables (confusion matrix headers)."""
+    return SHORT_CODES.get(code, code)

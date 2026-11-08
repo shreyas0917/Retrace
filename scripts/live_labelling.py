@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Blind labelling sheet for live_v1 (stdlib only).
+"""Blind labelling sheet for live_v1, and merging the author's labels.
 
-    python -I scripts/live_labelling.py export
+    python -I scripts/live_labelling.py export          # stdlib only
+    scripts/dev_test.sh python /scripts/live_labelling.py merge --dry-run
+    scripts/dev_test.sh python /scripts/live_labelling.py merge
 
-reads backend/datasets/suites/live_v1/v1.0.0/runs.jsonl and writes, under
+`export` reads backend/datasets/suites/live_v1/v1.0.0/runs.jsonl and writes, under
 data/labelling/:
 
 * live_v1_sheet.csv     one row per case: query, ranked retrieved chunks and
@@ -18,6 +20,14 @@ shuffled into sheet ids (S01, S02, ...) by a fixed hash of the query id, so
 neither the order nor the id gives the condition away. The merge step
 recomputes the same mapping, so no key file is written next to the sheet.
 
+`merge` reads the labelled sheet back, maps each sheet id to its run with the
+same salted order, validates every row (all problems are reported at once),
+and writes cases.jsonl and manifest.json: one GoldCase per run, carrying the
+author's labels and the recorded run as its offline execution. It refuses to
+overwrite an existing cases.jsonl unless --force is given. `merge` needs the
+backend package (it validates against the suite schema), so run it in the
+backend image or with backend/ importable.
+
 Labelling rules: docs/labelling-guide.md.
 """
 
@@ -29,11 +39,17 @@ import hashlib
 import html
 import json
 import sys
+from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SUITE_DIR = ROOT / "backend" / "datasets" / "suites" / "live_v1" / "v1.0.0"
-OUT_DIR = ROOT / "data" / "labelling"
+if Path("/app/datasets/suites").is_dir() and Path("/data").is_dir():
+    # Inside the backend image (scripts/dev_test.sh mounts these).
+    SUITE_DIR = Path("/app/datasets/suites/live_v1/v1.0.0")
+    OUT_DIR = Path("/data/labelling")
+else:
+    SUITE_DIR = ROOT / "backend" / "datasets" / "suites" / "live_v1" / "v1.0.0"
+    OUT_DIR = ROOT / "data" / "labelling"
 SHEET_SALT = "retrace-live_v1-sheet-v1"
 
 LABEL_COLUMNS = (
@@ -46,6 +62,27 @@ LABEL_COLUMNS = (
 )
 SHEET_COLUMNS = ("sheet_id", "query", "retrieved_chunks", "answer") + LABEL_COLUMNS
 NO_ANSWER_STATUSES = {"GENERATION_TIMEOUT", "FAILED"}
+
+# Codes a labeller may use (docs/labelling-guide.md). DIAGNOSIS_UNCERTAIN and
+# EVAL_JUDGE_MALFORMED describe Retrace itself, not the run, so they are not labels.
+LABEL_CODES = (
+    "OK_GROUNDED",
+    "OK_CORRECT_ABSTENTION",
+    "RETRIEVAL_EMPTY",
+    "RETRIEVAL_MISS",
+    "RETRIEVAL_DISTRACTOR_DOMINANT",
+    "RETRIEVAL_INSUFFICIENT_CONTEXT",
+    "ABSTENTION_FALSE_NEGATIVE",
+    "ABSTENTION_FALSE_POSITIVE",
+    "GENERATION_CONTRADICTION",
+    "GROUNDING_PARTIAL",
+    "GROUNDING_UNSUPPORTED",
+    "GENERATION_HALLUCINATION",
+    "EVAL_MODEL_TIMEOUT",
+    "EVAL_INTERNAL_ERROR",
+)
+YES = {"yes", "y", "true", "1"}
+NO = {"no", "n", "false", "0"}
 
 
 def read_jsonl(path: Path) -> list[dict]:
@@ -148,6 +185,220 @@ def export(args: argparse.Namespace) -> int:
     return 0
 
 
+# --------------------------------------------------------------------------
+# merge
+# --------------------------------------------------------------------------
+class SheetError(ValueError):
+    def __init__(self, problems: list[str]) -> None:
+        super().__init__(f"{len(problems)} problem(s) in the labelling sheet")
+        self.problems = problems
+
+
+def _split(value: str) -> list[str]:
+    return [part.strip() for part in (value or "").replace(",", ";").split(";") if part.strip()]
+
+
+def read_labels(sheet_path: Path, records: list[dict], inventory: list[dict]) -> dict[str, dict]:
+    """Labels keyed by query id. Raises SheetError listing every problem."""
+    by_sheet = dict(sheet_order(records))
+    chunk_ids = {c["chunk_id"] for c in inventory}
+    doc_chunks: dict[str, list[str]] = {}
+    for chunk in inventory:
+        doc_chunks.setdefault(chunk["document_id"], []).append(chunk["chunk_id"])
+
+    with sheet_path.open(encoding="utf-8-sig", newline="") as fh:
+        reader = csv.DictReader(fh)
+        missing_cols = [c for c in SHEET_COLUMNS if c not in (reader.fieldnames or [])]
+        if missing_cols:
+            raise SheetError([f"sheet is missing columns: {', '.join(missing_cols)}"])
+        rows = list(reader)
+
+    problems: list[str] = []
+    labels: dict[str, dict] = {}
+    seen: set[str] = set()
+    for line_no, row in enumerate(rows, start=2):
+        sid = (row.get("sheet_id") or "").strip()
+        where = sid or f"line {line_no}"
+        if sid not in by_sheet:
+            problems.append(f"{where}: unknown sheet id")
+            continue
+        if sid in seen:
+            problems.append(f"{where}: appears twice")
+            continue
+        seen.add(sid)
+        record = by_sheet[sid]
+        if (row.get("query") or "").strip() != record["query"].strip():
+            problems.append(f"{where}: the question differs from the recorded run (stale sheet, or the row was edited)")
+            continue
+
+        label = (row.get("failure_label") or "").strip().upper()
+        if not label:
+            problems.append(f"{where}: failure_label is empty")
+        elif label not in LABEL_CODES:
+            problems.append(f"{where}: failure_label {label!r} is not a labelling code")
+
+        extras: list[str] = []
+        for code in (c.upper() for c in _split(row.get("acceptable_primary_codes", ""))):
+            if code not in LABEL_CODES:
+                problems.append(f"{where}: acceptable code {code!r} is not a labelling code")
+            elif code != label and code not in extras:
+                extras.append(code)
+
+        gold_raw = (row.get("gold_chunk_ids") or "").strip()
+        gold: list[str] = []
+        if not gold_raw:
+            problems.append(f"{where}: gold_chunk_ids is empty (write 'none' if the policies do not answer it)")
+        elif gold_raw.lower() != "none":
+            for token in _split(gold_raw):
+                if token in chunk_ids:
+                    found = [token]
+                elif token in doc_chunks:
+                    found = doc_chunks[token]
+                else:
+                    problems.append(f"{where}: {token!r} is neither a chunk id nor a document id of the main corpus")
+                    continue
+                gold.extend(cid for cid in found if cid not in gold)
+        if label == "RETRIEVAL_MISS" and gold_raw.lower() == "none":
+            problems.append(f"{where}: RETRIEVAL_MISS needs the gold chunk ids that were missed, not 'none'")
+
+        abstain_raw = (row.get("should_abstain") or "").strip().lower()
+        if abstain_raw in YES:
+            should_abstain = True
+        elif abstain_raw in NO:
+            should_abstain = False
+        else:
+            problems.append(f"{where}: should_abstain must be yes or no")
+            should_abstain = False
+
+        labels[record["query_id"]] = {
+            "sheet_id": sid,
+            "failure_label": label,
+            "acceptable_primary_codes": [label, *extras],
+            "relevant_chunk_ids": gold,
+            "expected_abstention": should_abstain,
+            "expected_answer": (row.get("expected_answer") or "").strip() or None,
+            "notes": (row.get("notes") or "").strip() or None,
+        }
+    for sid in sorted(set(by_sheet) - seen):
+        problems.append(f"{sid}: missing from the sheet")
+    if problems:
+        raise SheetError(problems)
+    return labels
+
+
+def _backend_imports():
+    backend = Path("/app") if Path("/app/app").is_dir() else ROOT / "backend"
+    if str(backend) not in sys.path:
+        sys.path.insert(0, str(backend))
+    from app.services.eval.live_suite import record_to_offline_execution, runs_hash
+    from app.services.eval.schemas import GoldCase
+    from app.services.eval.suite_loader import compute_suite_hash
+
+    return record_to_offline_execution, runs_hash, GoldCase, compute_suite_hash
+
+
+def build_cases(records: list[dict], labels: dict[str, dict], *, annotator: str, annotation_date: str) -> list[dict]:
+    record_to_offline_execution, _, gold_case, _ = _backend_imports()
+    cases = []
+    for record in sorted(records, key=lambda r: r["query_id"]):
+        label = labels[record["query_id"]]
+        corpus = record.get("corpus") or {}
+        case = {
+            "case_id": record["query_id"],
+            "suite_id": record.get("suite_id", "live_v1"),
+            "suite_version": record.get("suite_version", "1.0.0"),
+            "corpus_id": "demo",
+            "corpus_version_pin": f"{corpus.get('corpus_id')}@{corpus.get('corpus_hash')}",
+            "query": record["query"],
+            "expected_answer": label["expected_answer"],
+            "expected_abstention": label["expected_abstention"],
+            "relevant_chunk_ids": label["relevant_chunk_ids"],
+            "failure_label": label["failure_label"],
+            "acceptable_primary_codes": label["acceptable_primary_codes"],
+            "planted_failure": None,
+            "notes": label["notes"],
+            "annotator": annotator,
+            "annotation_date": annotation_date,
+            "taxonomy_version": "1.0",
+            # The injected condition is metadata for the per-condition breakdown, not the label.
+            "tags": [
+                f"condition:{record['condition']}",
+                f"corpus_variant:{record['corpus_variant']}",
+                f"eval_fault:{record.get('eval_fault') or 'none'}",
+            ],
+            "expected_rule_id": None,
+            "expected_evidence_chunk_ids": None,
+            "offline_execution": record_to_offline_execution(record).model_dump(mode="json"),
+        }
+        gold_case.model_validate(case)
+        cases.append(case)
+    return cases
+
+
+def merge(args: argparse.Namespace) -> int:
+    suite_dir = Path(args.suite_dir)
+    sheet_path = Path(args.sheet)
+    runs_path = suite_dir / "runs.jsonl"
+    for path in (runs_path, suite_dir / "corpus_chunks.jsonl", sheet_path):
+        if not path.is_file():
+            print(f"merge: {path} not found", file=sys.stderr)
+            return 2
+    cases_path = suite_dir / "cases.jsonl"
+    if cases_path.exists() and not args.force and not args.dry_run:
+        print(f"merge: {cases_path} already exists; pass --force to replace it", file=sys.stderr)
+        return 2
+
+    runs_lines = runs_path.read_text(encoding="utf-8").splitlines()
+    records = [json.loads(line) for line in runs_lines if line.strip()]
+    inventory = read_jsonl(suite_dir / "corpus_chunks.jsonl")
+    try:
+        labels = read_labels(sheet_path, records, inventory)
+    except SheetError as exc:
+        print(f"merge: {exc}; nothing was written", file=sys.stderr)
+        for problem in exc.problems:
+            print(f"  - {problem}", file=sys.stderr)
+        return 1
+
+    cases = build_cases(records, labels, annotator=args.annotator, annotation_date=args.date)
+    _, runs_hash, _, compute_suite_hash = _backend_imports()
+    lines = [json.dumps(case, ensure_ascii=False) for case in cases]
+    suite_hash = compute_suite_hash(lines)
+    label_counts: dict[str, int] = {}
+    for case in cases:
+        label_counts[case["failure_label"]] = label_counts.get(case["failure_label"], 0) + 1
+    ambiguous = sum(1 for c in cases if len(c["acceptable_primary_codes"]) > 1)
+    manifest = {
+        "suite_id": "live_v1",
+        "suite_version": "1.0.0",
+        "suite_hash": suite_hash,
+        "case_count": len(cases),
+        "taxonomy_version": "1.0",
+        "annotator": args.annotator,
+        "annotation_date": args.date,
+        "provenance": (
+            "Real pipeline runs recorded in runs.jsonl, labelled blind by the author from "
+            "data/labelling/live_v1_sheet.csv. Injected conditions are tags, not labels."
+        ),
+        "runs_hash": runs_hash(runs_lines),
+        "labels_sheet_sha256": "sha256:" + hashlib.sha256(sheet_path.read_bytes()).hexdigest(),
+        "label_counts": dict(sorted(label_counts.items())),
+        "cases_with_alternative_codes": ambiguous,
+    }
+    print(f"merge: {len(cases)} cases, {ambiguous} with alternative codes; labels {manifest['label_counts']}")
+    if args.dry_run:
+        print("merge: dry run, nothing written")
+        return 0
+    cases_path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+    (suite_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n")
+    runs_manifest_path = suite_dir / "runs_manifest.json"
+    if runs_manifest_path.is_file():
+        runs_manifest = json.loads(runs_manifest_path.read_text(encoding="utf-8"))
+        runs_manifest["status"] = "recorded and labelled"
+        runs_manifest_path.write_text(json.dumps(runs_manifest, indent=2) + "\n", encoding="utf-8", newline="\n")
+    print(f"wrote {cases_path} ({suite_hash}) and manifest.json")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
@@ -156,6 +407,14 @@ def main() -> int:
     p.add_argument("--out-dir", default=str(OUT_DIR))
     p.add_argument("--force", action="store_true", help="Overwrite an existing sheet")
     p.set_defaults(func=export)
+    m = sub.add_parser("merge", help="Merge the labelled sheet into cases.jsonl")
+    m.add_argument("--suite-dir", default=str(SUITE_DIR))
+    m.add_argument("--sheet", default=str(OUT_DIR / "live_v1_sheet.csv"))
+    m.add_argument("--annotator", default="author")
+    m.add_argument("--date", default=date.today().isoformat(), help="Annotation date (YYYY-MM-DD)")
+    m.add_argument("--dry-run", action="store_true", help="Validate and summarise; write nothing")
+    m.add_argument("--force", action="store_true", help="Replace an existing cases.jsonl")
+    m.set_defaults(func=merge)
     args = parser.parse_args()
     return args.func(args)
 

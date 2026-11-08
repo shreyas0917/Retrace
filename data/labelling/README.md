@@ -2,7 +2,7 @@
 
 Two separate jobs live here.
 
-- **live_v1 (blind).** `live_v1_sheet.csv` is the labelling sheet for the live benchmark: one row per real pipeline run, with the question, the ranked retrieved chunks and the answer. Read the cases in `live_v1_sheet.html`, pick gold chunks from `live_v1_corpus_chunks.csv`, and follow [docs/labelling-guide.md](../../docs/labelling-guide.md). The sheet does not show how a run was produced or what Retrace predicted; please keep it that way until labelling is done.
+- **live_v1 (blind).** `live_v1_sheet.csv` is the labelling sheet for the live benchmark: one row per real pipeline run, with the question, the ranked retrieved chunks and the answer. Read the cases in `live_v1_sheet.html`, pick gold chunks from `live_v1_corpus_chunks.csv`, and follow [docs/labelling-guide.md](../../docs/labelling-guide.md). The sheet does not show how a run was produced or what Retrace predicted; please keep it that way until labelling is done. When you are done, the guide's last section has the merge and report commands.
 - **Judge label review.** Below.
 
 ## Judge label review

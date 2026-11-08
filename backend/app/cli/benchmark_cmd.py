@@ -25,6 +25,7 @@ from app.services.diagnosis.calibration import (
     save_calibration,
 )
 from app.services.diagnosis.classifiers import LLMClassifier
+from app.services.diagnosis.taxonomy import short_code
 from app.services.eval.classifier_bench import (
     compare_classifiers,
     default_classifiers,
@@ -377,32 +378,53 @@ def render_markdown(report: dict[str, Any]) -> str:
 
 
 def _abbrev(label: str) -> str:
-    table = {
-        "RETRIEVAL_EMPTY": "R-EMPTY",
-        "RETRIEVAL_MISS": "R-MISS",
-        "RETRIEVAL_DISTRACTOR_DOMINANT": "R-DISTR",
-        "RETRIEVAL_INSUFFICIENT_CONTEXT": "R-INSUF",
-        "GROUNDING_UNSUPPORTED": "G-UNSUP",
-        "GROUNDING_PARTIAL": "G-PART",
-        "GENERATION_HALLUCINATION": "GEN-HALL",
-        "GENERATION_CONTRADICTION": "GEN-CONTRA",
-        "ABSTENTION_FALSE_NEGATIVE": "ABS-FN",
-        "ABSTENTION_FALSE_POSITIVE": "ABS-FP",
-        "OK_GROUNDED": "OK",
-        "OK_CORRECT_ABSTENTION": "OK-ABS",
-        "EVAL_MODEL_TIMEOUT": "E-TIMEOUT",
-        "EVAL_JUDGE_MALFORMED": "E-MALFORM",
-        "EVAL_MISSING_CONTEXT": "E-MISSING",
-        "EVAL_INTERNAL_ERROR": "E-INTERNAL",
-        "DIAGNOSIS_UNCERTAIN": "UNCERTAIN",
-    }
-    return table.get(label, label)
+    return short_code(label)
 
 
 # --------------------------------------------------------------------------
 # CLI wiring
 # --------------------------------------------------------------------------
+HELDOUT_DEFAULT_OUT = "/data/reports/heldout_report.json"
+
+
+def cmd_live_report(args: argparse.Namespace) -> int:
+    """live_* suites: real runs with blind labels (services/eval/live_report.py)."""
+    from app.db import session as db_session
+    from app.services.eval.live_report import render_live_markdown, run_live_report
+
+    db_session.init_db()
+    assert db_session.SessionLocal is not None
+    db = db_session.SessionLocal()
+    try:
+        report = run_live_report(db, suite_id=args.suite, suite_version=args.suite_version)
+    except Exception as exc:  # noqa: BLE001
+        print(f"Benchmark error: {exc}", file=sys.stderr)
+        return 2
+    finally:
+        db.close()
+    out = args.out if args.out and args.out != HELDOUT_DEFAULT_OUT else f"/data/reports/{args.suite}_report.json"
+    path = Path(out)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(report, indent=2, default=str) + "\n", encoding="utf-8")
+    print(f"wrote {path}")
+    if args.markdown:
+        md = Path(args.markdown)
+        md.parent.mkdir(parents=True, exist_ok=True)
+        md.write_text(render_live_markdown(report), encoding="utf-8")
+        print(f"wrote {md}")
+    s, ci = report["summary"], report["confidence_intervals"]
+    print(
+        f"{report['suite_id']}: lenient {s['failure_code_accuracy']:.3f} "
+        f"[{ci['lenient_accuracy']['low']}, {ci['lenient_accuracy']['high']}] strict {s['strict_accuracy']:.3f} "
+        f"macro_f1 {s['macro_f1']} uncertain_rate {s['selective']['uncertain_rate']} misses {len(report['misses'])}"
+    )
+    return 0
+
+
 def cmd_benchmark_report(args: argparse.Namespace) -> int:
+    if str(args.suite).startswith("live_"):
+        return cmd_live_report(args)
+
     from app.db import session as db_session
 
     db_session.init_db()

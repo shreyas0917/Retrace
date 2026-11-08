@@ -136,7 +136,16 @@ would be a defensible alternative.
 
 ## When you are done
 
-Save the CSV in place and tell me. The merge step checks that every row has a
-valid `failure_label`, that every code and chunk id exists, and then writes
+Save the CSV in place. Then:
+
+```bash
+scripts/dev_test.sh python /scripts/live_labelling.py merge --dry-run   # check the sheet, write nothing
+scripts/dev_test.sh python /scripts/live_labelling.py merge             # write the suite
+scripts/dev_test.sh python -m app.cli.retrace benchmark report --suite live_v1 --markdown /docs/benchmarks/live_v1.md
+```
+
+The merge lists every problem in the sheet at once (an unknown code, a chunk
+id that is not in the 13 policies, an empty field, a row missing or edited)
+and writes nothing until all are fixed. It then writes
 `backend/datasets/suites/live_v1/v1.0.0/cases.jsonl` with your labels and the
-recorded runs, records the annotator as the author, and recomputes the hash.
+recorded runs, records the annotator as the author, and computes the hash.
