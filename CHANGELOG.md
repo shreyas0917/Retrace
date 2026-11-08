@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### NLI pair cap
+- The default `NLI_MAX_PAIRS` is now 500 (was 2000). At the measured CPU rate that bounds one answer at roughly 16 s instead of about a minute; the recorded live runs used 51 to 146 pairs, so normal answers are not truncated. Still configurable (minimum 20).
+
 ### Live benchmark, recording and blind labelling (Phase 3)
 - `scripts/build_live_suite.py` records about 50 real pipeline runs for `live_v1` (real retrieval, generation and judges) and appends each run record to `runs.jsonl` as soon as it finishes, so an interrupted build resumes where it stopped. `--verify-replay` checks that offline replay reproduces every live diagnosis; `--freeze` writes `runs_manifest.json`, which `build_heldout_suite.py --check` now verifies (ADR-046).
 - Eval-only generator faults (`wrong_facts`, `extra_unsupported_claim`) through `run_rag(eval_fault=...)`; the public `POST /api/v1/generate` cannot set them. Corpus variants without four documents, or with six near-topic documents, are ingested as separate corpora and never change `demo`.
@@ -15,7 +18,7 @@
 - Results keep the rules' schema (`faithfulness_score`, claims) and add per-claim evidence, the pinned model and revision, and an `nli_contradiction` cross-check signal that no rule reads yet. The LLM judge remains available with `FAITHFULNESS_BACKEND=llm`.
 - Replay rule: suites with recorded judge outputs replay them whatever the backend; recorded NLI results (`faithfulness_nli`) replay too, for `live_v1`.
 - `retrace judges validate --faithfulness-backend llm|nli|both` (default `both`) adds claim-level, answer-level and contradiction-flag metrics for NLI, plus a threshold sensitivity table with grouped cross-validation. No new numbers are published until the label review is applied.
-- `NLI_MAX_PAIRS` (default 2000, minimum 20) caps the claim and premise pairs scored per answer. Chunks are scored from the highest retrieval similarity down; when the cap stops scoring early the result records `truncated: true`, `max_pairs`, `chunks_total` and `chunks_skipped`.
+- `NLI_MAX_PAIRS` (default 500, minimum 20) caps the claim and premise pairs scored per answer. Chunks are scored from the highest retrieval similarity down; when the cap stops scoring early the result records `truncated: true`, `max_pairs`, `chunks_total` and `chunks_skipped`.
 - `scripts/measure_nli_latency.py` writes `docs/benchmarks/nli_latency.md`: claims, pairs scored and CPU milliseconds for the three example traces and for one synthetic answer at the cap.
 - The Docker image now installs `torch==2.14.1` and every other package against `backend/constraints.txt`: the exact 116 versions from the image the published benchmarks ran in. Before this, a rebuild pulled newer unpinned versions (for example torch 2.15 and python-dateutil 4).
 

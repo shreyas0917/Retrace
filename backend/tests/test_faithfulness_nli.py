@@ -258,6 +258,15 @@ def test_judge_output_records_truncation() -> None:
     assert result.claims[0].best_chunk_id == "d0:c0"
 
 
+def test_nli_max_pairs_default_is_500(monkeypatch) -> None:
+    from app.core.config import get_settings
+    from app.services.judges.faithfulness_nli import DEFAULT_MAX_PAIRS
+
+    monkeypatch.delenv("NLI_MAX_PAIRS", raising=False)
+    assert DEFAULT_MAX_PAIRS == 500
+    assert get_settings().nli_max_pairs == DEFAULT_MAX_PAIRS
+
+
 def test_nli_max_pairs_setting_reaches_the_judge(monkeypatch) -> None:
     from app.core.config import get_settings
     from app.services.judges.faithfulness_router import judge_faithfulness_routed

@@ -52,7 +52,7 @@ def _examples_dir() -> Path:
 
 
 def _synthetic_cap_case() -> dict:
-    """20 claims x 100 one-sentence chunks = 2000 pairs, the default cap."""
+    """MAX_CLAIMS claims x (DEFAULT_MAX_PAIRS / MAX_CLAIMS) one-sentence chunks: exactly the default cap."""
     claims = [f"Policy item {i} applies to every full-time employee in the company." for i in range(MAX_CLAIMS)]
     chunks = [
         {"chunk_id": f"synthetic:c{i:03d}", "text": f"Section {i} describes the rules for office access badges.", "retrieval_score": 1 - i / 1000}

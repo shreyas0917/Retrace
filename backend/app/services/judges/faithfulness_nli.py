@@ -43,7 +43,7 @@ WINDOW_OVERLAP_TOKENS = 64
 SPECIAL_TOKENS = 3
 PREDICT_BATCH_SIZE = 32
 # Upper bound on (claim, premise window) pairs per answer; NLI_MAX_PAIRS overrides.
-DEFAULT_MAX_PAIRS = 2000
+DEFAULT_MAX_PAIRS = 500
 
 REQUIRED_LABELS = ("contradiction", "entailment", "neutral")
 
