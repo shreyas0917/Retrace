@@ -302,7 +302,7 @@ def ingest_corpus_version(
             chroma_service.delete_collection_if_exists(version_id)
         except Exception:  # noqa: BLE001
             pass
-        if isinstance(exc, (ConflictError, EmbeddingError, NotFoundError)):
+        if isinstance(exc, ConflictError | EmbeddingError | NotFoundError):
             raise
         raise ConflictError(
             "Ingestion failed",

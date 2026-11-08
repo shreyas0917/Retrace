@@ -13,6 +13,7 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 
 from app.db import session as db_session
 from app.db.models import JudgeResult
@@ -285,7 +286,7 @@ def test_nli_max_pairs_setting_reaches_the_judge(monkeypatch) -> None:
     )
     assert result.max_pairs == 20 and result.pair_count == 20 and result.truncated
     monkeypatch.setenv("NLI_MAX_PAIRS", "5")
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         get_settings()
 
 

@@ -172,7 +172,7 @@ def _signal_summary(signals: SignalBag) -> str:
         relevant = sum(
             1
             for i in rel
-            if i.get("relevant") is True or (isinstance(i.get("score"), (int, float)) and float(i["score"]) >= 0.5)
+            if i.get("relevant") is True or (isinstance(i.get("score"), int | float) and float(i["score"]) >= 0.5)
         )
         frac = signals.irrelevant_frac
         frac_txt = f"{frac:.0%}" if frac is not None else "unknown"

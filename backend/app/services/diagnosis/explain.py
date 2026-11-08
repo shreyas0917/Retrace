@@ -27,7 +27,7 @@ def _relevant_count(signals: SignalBag) -> int | None:
     count = 0
     for item in items:
         score = item.get("score")
-        if item.get("relevant") is True or (isinstance(score, (int, float)) and float(score) >= TAU_REL):
+        if item.get("relevant") is True or (isinstance(score, int | float) and float(score) >= TAU_REL):
             count += 1
     return count
 

@@ -410,8 +410,8 @@ def run_retrieval_ablation(
         bm25 = BM25Index(texts)
         retrievers: list[tuple[str, str | None, Callable[[str], tuple[list[int], np.ndarray | None]]]] = []
 
-        def _bm25_run(query: str) -> tuple[list[int], np.ndarray]:
-            scores = bm25.scores(query)
+        def _bm25_run(query: str, _bm25: BM25Index = bm25) -> tuple[list[int], np.ndarray]:
+            scores = _bm25.scores(query)
             return _argsort_desc(scores), scores
 
         retrievers.append(("bm25", None, _bm25_run))
@@ -423,9 +423,11 @@ def run_retrieval_ablation(
                 scores = _dense.scores(query)
                 return _argsort_desc(scores), scores
 
-            def _hybrid_run(query: str, _dense: DenseIndex = dense) -> tuple[list[int], np.ndarray | None]:
+            def _hybrid_run(
+                query: str, _dense: DenseIndex = dense, _bm25: BM25Index = bm25
+            ) -> tuple[list[int], np.ndarray | None]:
                 d_rank = _dense.rank(query)
-                b_rank = bm25.rank(query)
+                b_rank = _bm25.rank(query)
                 return rrf_fuse([d_rank, b_rank]), None
 
             retrievers.append(("dense", model_name, _dense_run))

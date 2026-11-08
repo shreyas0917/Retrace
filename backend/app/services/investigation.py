@@ -29,7 +29,7 @@ def _chunk_status(
     if rel is not None:
         label = str(rel.get("label") or "").lower()
         score = rel.get("score")
-        if label in {"relevant", "yes", "true"} or (isinstance(score, (int, float)) and score >= 0.5):
+        if label in {"relevant", "yes", "true"} or (isinstance(score, int | float) and score >= 0.5):
             return "relevant"
         return "distractor"
     return "retrieved"

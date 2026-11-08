@@ -115,7 +115,7 @@ def aggregate(per_query: list[dict[str, Any]]) -> dict[str, Any]:
         values = [
             float(row[key])
             for row in rows
-            if isinstance(row.get(key), (int, float)) and not isinstance(row.get(key), bool)
+            if isinstance(row.get(key), int | float) and not isinstance(row.get(key), bool)
         ]
         out[key] = (sum(values) / len(values)) if values else None
     return out

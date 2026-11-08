@@ -472,7 +472,7 @@ def score_claims(
 def _similarity(chunk: dict[str, Any]) -> float | None:
     for key in ("retrieval_score", "score"):
         value = chunk.get(key)
-        if isinstance(value, (int, float)) and not isinstance(value, bool):
+        if isinstance(value, int | float) and not isinstance(value, bool):
             return float(value)
     return None
 
