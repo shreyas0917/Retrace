@@ -50,7 +50,7 @@ The diagnosis is only as good as the judges. With the default local `llama3.2` (
 
 ![The Investigate screen: verdict, stage strip, answer beside the best evidence chunk, and the next step](docs/assets/console-investigate.png)
 
-## Quickstart (about 5 minutes)
+## Quickstart
 
 Needs Docker with Compose. No LLM is required to see the console.
 
@@ -59,7 +59,7 @@ git clone https://github.com/shreyas0917/Retrace.git && cd Retrace
 make demo
 ```
 
-`make demo` creates `.env` with a generated `API_KEY` (an existing `.env` is never changed), starts the stack, waits until it is ready, seeds a 13-document demo corpus, posts an example trace and prints the console URL and a link straight to its diagnosis. Sign in with the `API_KEY` from `.env`. It is safe to run again.
+`make demo` creates `.env` with a generated `API_KEY` (an existing `.env` is never changed), starts the stack, waits until it is ready, seeds a 13-document demo corpus, posts an example trace and prints the console URL and a link straight to its diagnosis. Sign in with the `API_KEY` from `.env`. It is safe to run again. The first run builds the backend image (PyTorch, sentence-transformers and two small models), which took about 17 minutes on the author's machine; later runs take a few minutes.
 
 To run the LLM judges locally, install [Ollama](https://ollama.com), `ollama pull llama3.2:latest` (or set `MODEL_*` in `.env` to any OpenAI-compatible endpoint), and run `make demo` again: it then posts the contradiction example above.
 
