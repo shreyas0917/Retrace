@@ -1,6 +1,6 @@
 """OpenAI-compatible chat completion client with retries (v1.0).
 
-Temperature is fixed at 0 per PRD. Tests inject a fake provider via
+Temperature is fixed at 0 for reproducibility. Tests inject a fake provider via
 set_llm_provider, or a fake HTTP layer via `transport=httpx.MockTransport(...)`
 / set_llm_transport().
 

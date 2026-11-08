@@ -1,4 +1,4 @@
-"""Pydantic schemas for judge structured outputs (PRD §11–12)."""
+"""Pydantic schemas for judge structured outputs."""
 
 from __future__ import annotations
 

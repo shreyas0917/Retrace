@@ -1,6 +1,6 @@
 """Chroma vector-store client.
 
-PRD / ADR-005: one Chroma collection per corpus_version_id → cv_{id}.
+ADR-005: one Chroma collection per corpus_version_id → cv_{id}.
 """
 
 from __future__ import annotations

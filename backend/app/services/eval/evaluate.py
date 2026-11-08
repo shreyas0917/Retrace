@@ -19,7 +19,7 @@ from app.services.eval.thresholds_config import load_thresholds
 
 APP_VERSION = "1.0.0"
 
-# Exit codes (PRD §16)
+# Exit codes: 0 pass, 1 regression, 2 error
 EXIT_PASS = 0
 EXIT_REGRESSION = 1
 EXIT_ERROR = 2

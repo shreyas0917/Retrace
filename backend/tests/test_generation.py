@@ -1,4 +1,4 @@
-"""Phase 3 tests — generation, RAG execution, abstention, traces (fake LLM)."""
+"""Generation, RAG execution, abstention and traces (fake LLM)."""
 
 from __future__ import annotations
 

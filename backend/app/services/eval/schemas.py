@@ -1,4 +1,4 @@
-"""Gold / planted case schemas (PRD §5)."""
+"""Gold / planted case schemas."""
 
 from __future__ import annotations
 

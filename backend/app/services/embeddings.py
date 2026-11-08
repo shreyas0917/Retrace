@@ -1,4 +1,4 @@
-"""Embedding service — PRD-locked model only."""
+"""Embedding service — the pinned model only."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 
-_PRD_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+_PINNED_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 _model = None
 _model_revision: str | None = None
 
@@ -21,7 +21,7 @@ def embedding_revision() -> str:
     if _model_revision:
         return _model_revision
     # Local install pin — not a HuggingFace commit; documented in ADR.
-    _model_revision = f"{_PRD_MODEL}@sentence-transformers-local"
+    _model_revision = f"{_PINNED_EMBEDDING_MODEL}@sentence-transformers-local"
     return _model_revision
 
 
@@ -32,8 +32,10 @@ def get_embedding_model(settings: Settings | None = None):
         return _model
 
     settings = settings or get_settings()
-    if settings.embedding_model != _PRD_MODEL:
-        raise EmbeddingError(f"Refusing to load non-PRD embedding model: {settings.embedding_model}")
+    if settings.embedding_model != _PINNED_EMBEDDING_MODEL:
+        raise EmbeddingError(
+            f"Refusing to load an embedding model other than the pinned one: {settings.embedding_model}"
+        )
 
     try:
         from sentence_transformers import SentenceTransformer
@@ -44,15 +46,15 @@ def get_embedding_model(settings: Settings | None = None):
         ) from exc
 
     try:
-        logger.info("embedding_model_loading", model=_PRD_MODEL)
-        _model = SentenceTransformer(_PRD_MODEL)
-        logger.info("embedding_model_ready", model=_PRD_MODEL)
+        logger.info("embedding_model_loading", model=_PINNED_EMBEDDING_MODEL)
+        _model = SentenceTransformer(_PINNED_EMBEDDING_MODEL)
+        logger.info("embedding_model_ready", model=_PINNED_EMBEDDING_MODEL)
         return _model
     except Exception as exc:  # noqa: BLE001
         logger.error("embedding_model_load_failed", error=str(exc))
         raise EmbeddingError(
             "Failed to load embedding model",
-            details={"model": _PRD_MODEL, "error": str(exc)},
+            details={"model": _PINNED_EMBEDDING_MODEL, "error": str(exc)},
         ) from exc
 
 

@@ -4,7 +4,7 @@
 
 Decision: Use PostgreSQL for durable metadata and Chroma for vector storage.
 
-Reason: Matches the locked Retrace Technical PRD (§8, §9). Chroma selected for Compose simplicity and persistent local collections.
+Reason: Matches the original technical design. Chroma selected for Compose simplicity and persistent local collections.
 
 Status: Accepted
 
@@ -14,7 +14,7 @@ Status: Accepted
 
 Decision: Schema changes go through Alembic. Do not use `Base.metadata.create_all()` as the deployment path.
 
-Reason: Reproducible schema evolution across environments; PRD requirement.
+Reason: Reproducible schema evolution across environments.
 
 Status: Accepted
 
@@ -24,7 +24,7 @@ Status: Accepted
 
 Decision: Validate `Authorization: Bearer` against the `API_KEY` environment variable (constant-time compare). The `api_keys` table exists for later hashed multi-key support but is not required for Phase 1.
 
-Reason: Smallest conventional solution that preserves the PRD Bearer contract without user accounts/OAuth/RBAC.
+Reason: Smallest conventional solution that preserves the Bearer-token contract without user accounts/OAuth/RBAC.
 
 Status: Accepted
 
@@ -34,7 +34,7 @@ Status: Accepted
 
 Decision: `EMBEDDING_MODEL` must equal `sentence-transformers/all-MiniLM-L6-v2`. Settings validation rejects substitutes.
 
-Reason: PRD lock; prevents silent model drift that would invalidate reproducibility.
+Reason: Pinned model; prevents silent model drift that would invalidate reproducibility.
 
 Status: Accepted
 
@@ -44,7 +44,7 @@ Status: Accepted
 
 Decision: `collection_name_for_corpus_version(id) -> "cv_{id}"`.
 
-Reason: PRD: one Chroma collection per `corpus_version_id`.
+Reason: One Chroma collection per `corpus_version_id` keeps versions isolated.
 
 Status: Accepted
 
@@ -64,7 +64,7 @@ Status: Accepted
 
 Decision: Compose stack is backend, postgres, chroma, frontend only.
 
-Reason: PRD and Step 6 scope forbid unnecessary brokers; async job queue is optional later when suite size demands it.
+Reason: The scope rules out unnecessary brokers; async job queue is optional later when suite size demands it.
 
 Status: Accepted
 
@@ -84,7 +84,7 @@ Status: Accepted
 
 Decision: Status values `CREATED | INGESTING | READY | FAILED`. Retrieval requires `READY`.
 
-Reason: Step 7 / PRD immutability — never mark READY on partial failure.
+Reason: Corpus versions are immutable — never mark READY on partial failure.
 
 Status: Accepted
 
@@ -94,7 +94,7 @@ Status: Accepted
 
 Decision: MVP strategy `recursive_character` implemented as deterministic character windows (`chunk_size` / `chunk_overlap`). Chunk IDs: `{document_id}:c{ordinal:03d}`.
 
-Reason: Smallest reproducible chunker matching PRD config fields; no tokenizer drift.
+Reason: Smallest reproducible chunker matching the corpus config fields; no tokenizer drift.
 
 Status: Accepted
 
@@ -134,7 +134,7 @@ Status: Accepted
 
 Decision: Empty/blank retrieval → `ABSTAINED` + `INSUFFICIENT_CONTEXT`, no provider call.
 
-Reason: Matches PRD no-evidence behavior; prevents unnecessary hallucination risk before judges exist.
+Reason: Matches the designed no-evidence behaviour; prevents unnecessary hallucination risk before judges exist.
 
 Status: Accepted
 
@@ -154,7 +154,7 @@ Status: Accepted
 
 Decision: Diagnosis evaluates ordered rules R00–R40. Infrastructure / empty retrieval / gold miss short-circuit without calling judges. Relevance runs when needed; faithfulness and contradiction run only when context is judged sufficient and an answer was produced.
 
-Reason: PRD: LLMs must not override deterministic failures; empty retrieval is not a semantic question.
+Reason: LLMs must not override deterministic failures; empty retrieval is not a semantic question.
 
 Status: Accepted
 
@@ -184,7 +184,7 @@ Status: Accepted
 
 Decision: Confidence is only `high` | `medium` | `low`. Judge scores and future human-suite accuracy are separate concepts.
 
-Reason: PRD §4 — do not present rule heuristics as calibrated probability.
+Reason: Do not present rule heuristics as calibrated probability.
 
 Status: Accepted
 
@@ -194,7 +194,7 @@ Status: Accepted
 
 Decision: Planted-failure cases build ephemeral retrieve/answer snapshots and scripted judges. The READY demo Chroma collection is never deleted or rewritten during benchmark runs.
 
-Reason: Reproducible injections without corrupting the canonical corpus; matches PRD offline diagnose mode.
+Reason: Reproducible injections without corrupting the canonical corpus; matches the offline diagnose mode.
 
 Status: Accepted
 
@@ -202,7 +202,7 @@ Status: Accepted
 
 ## ADR-021 — Suite files under backend/datasets
 
-Decision: Versioned suites live at `backend/datasets/suites/{suite_id}/v{semver}/` with `cases.jsonl` + `manifest.json` (PRD §5.3 layout).
+Decision: Versioned suites live at `backend/datasets/suites/{suite_id}/v{semver}/` with `cases.jsonl` + `manifest.json` (versioned layout).
 
 Reason: Copied into the backend image; hash-verified on load; independent of gitignored `data/gold` placeholders.
 
@@ -214,7 +214,7 @@ Status: Accepted
 
 Decision: A case scores correct when `predicted_primary ∈ acceptable_primary_codes`. `failure_label` is the intended primary under the designed fixture.
 
-Reason: PRD §5.2 / §15 diagnosis_accuracy definition.
+Reason: One definition of diagnosis accuracy across suites.
 
 Status: Accepted
 
@@ -224,7 +224,7 @@ Status: Accepted
 
 Decision: Baselines are created only via `retrace baseline promote` / `POST /api/v1/baselines/promote`. Successful eval does not auto-promote.
 
-Reason: PRD §16 — first green run is measured, then explicitly accepted.
+Reason: The first green run is measured, then explicitly accepted.
 
 Status: Accepted
 
@@ -234,7 +234,7 @@ Status: Accepted
 
 Decision: `retrace eval` returns 0=pass, 1=regression (gate fail), 2=config/integrity/runtime error.
 
-Reason: PRD §16; regressions are successful executions that miss thresholds, not infrastructure failures.
+Reason: Regressions are successful executions that miss thresholds, not infrastructure failures.
 
 Status: Accepted
 
@@ -254,7 +254,7 @@ Status: Accepted
 
 Decision: Phase 7 metrics live in-process (`app.core.metrics`). Exposed via `GET /metrics`. Not durable; reset on restart.
 
-Reason: PRD MVP observability without deploying a metrics backend.
+Reason: MVP observability without deploying a metrics backend.
 
 Status: Accepted
 
@@ -274,7 +274,7 @@ Status: Accepted
 
 Decision: structlog pipeline includes `redact_event_dict` before JSON render. Sensitive keys (api_key, authorization, password, token, …) become `[REDACTED]`.
 
-Reason: PRD §17/§18 — never log secrets.
+Reason: Never log secrets.
 
 Status: Accepted
 
@@ -292,7 +292,7 @@ Status: Accepted
 
 ## ADR-030 — Phase 9 is validation/release only
 
-Decision: Phase 9 adds no product features. Deliverables are clean-room validation (`scripts/validate_phase9.py`), demo/release docs, and version 0.9.0. No Phase 10.
+Decision: Phase 9 adds no product features. Deliverables are clean-room validation (`scripts/validate_release.py`), demo/release docs, and version 0.9.0. No Phase 10.
 
 Reason: Project scope ends at reproducible, demonstrable engineering completeness.
 

@@ -1,4 +1,4 @@
-"""Phase 6 — experiments, baselines, retrace eval CLI."""
+"""Experiments, baselines and the retrace eval CLI."""
 
 from __future__ import annotations
 

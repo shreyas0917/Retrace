@@ -1,4 +1,4 @@
-"""Failure taxonomy 1.0 — machine-readable codes from the locked PRD."""
+"""Failure taxonomy 1.0 — machine-readable failure codes."""
 
 from __future__ import annotations
 

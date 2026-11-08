@@ -1,4 +1,4 @@
-"""Phase 1 SQLAlchemy models — foundation schema per PRD §8."""
+"""SQLAlchemy models for the Retrace schema."""
 
 from __future__ import annotations
 
