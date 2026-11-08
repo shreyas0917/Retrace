@@ -38,6 +38,8 @@ jobs:
           fi
       - name: Held-out and calibration suite hashes match manifests
         run: python scripts/build_heldout_suite.py --check
+      - name: docs/concepts.md rule table matches the rule catalog
+        run: python scripts/gen_concepts.py --check
 
   types:
     name: Types (mypy, diagnosis and eval)
