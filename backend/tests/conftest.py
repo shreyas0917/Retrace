@@ -24,14 +24,19 @@ os.environ.setdefault(
     "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
 )
 os.environ.setdefault("LOG_LEVEL", "WARNING")
+# Test-only settings below are assigned, not defaulted: CI copies .env.example
+# into the containers' environment, and its production values (a 120/minute
+# rate limit, FAITHFULNESS_BACKEND=nli) would otherwise win over these.
+#
 # The whole test process shares one API key and therefore one rate-limit
 # budget; keep it out of the way unless a test configures the limiter itself.
-os.environ.setdefault("RATE_LIMIT_PER_MINUTE", "100000")
-os.environ.setdefault("AUTH_RATE_LIMIT_PER_MINUTE", "100000")
+os.environ["RATE_LIMIT_PER_MINUTE"] = "100000"
+os.environ["AUTH_RATE_LIMIT_PER_MINUTE"] = "100000"
 # Most tests drive the engine with scripted LLM judge replies (ScriptedJudgeLLM),
-# so faithfulness defaults to the LLM path here. NLI tests opt in explicitly
-# with FAITHFULNESS_BACKEND=nli and a fake scorer; production defaults to nli.
-os.environ.setdefault("FAITHFULNESS_BACKEND", "llm")
+# so faithfulness uses the LLM path here. NLI tests opt in explicitly with
+# monkeypatch.setenv("FAITHFULNESS_BACKEND", "nli") and a fake scorer;
+# production defaults to nli.
+os.environ["FAITHFULNESS_BACKEND"] = "llm"
 
 
 @pytest.fixture(scope="session")
