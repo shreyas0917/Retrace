@@ -36,9 +36,7 @@ def compare_metrics(
     error_rate = (incorrect / total) if total > 0 else 0.0
     max_err = float(thresholds.get("fail_on_eval_error_rate_gt", 0.02))
     if total > 0 and error_rate > max_err:
-        violations.append(
-            f"eval_error_rate {error_rate:.4f} > {max_err:.4f}"
-        )
+        violations.append(f"eval_error_rate {error_rate:.4f} > {max_err:.4f}")
 
     drop_map = {
         "failure_code_accuracy": "require_failure_code_accuracy_drop_lt",
@@ -70,9 +68,7 @@ def compare_metrics(
                 # Regression when accuracy drops by >= drop_lt
                 if (base - cur) >= drop_lt - 1e-12:
                     status = "FAIL"
-                    violations.append(
-                        f"{key} drop {base - cur:.4f} >= {drop_lt:.4f}"
-                    )
+                    violations.append(f"{key} drop {base - cur:.4f} >= {drop_lt:.4f}")
                 elif status != "FAIL":
                     if abs(delta) < 1e-12:
                         status = "UNCHANGED"

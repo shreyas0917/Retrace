@@ -37,6 +37,7 @@ STATUS_ABSTAINED = "ABSTAINED"
 # No answer and no abstention: the diagnosis engine treats this as missing (R02).
 STATUS_ANSWER_MISSING = "ANSWER_MISSING"
 
+
 def build_snapshot(req: TraceRequest) -> list[dict[str, Any]]:
     """Chunk list in the same shape as an internal trace's snapshot."""
     snapshot: list[dict[str, Any]] = []
@@ -66,10 +67,7 @@ def _warnings(
 ) -> list[str]:
     out: list[str] = []
     if not req.gold_chunk_ids:
-        out.append(
-            "gold_chunk_ids not provided: retrieval-miss detection (rule R11) is unavailable "
-            "for this trace."
-        )
+        out.append("gold_chunk_ids not provided: retrieval-miss detection (rule R11) is unavailable " "for this trace.")
     if req.answer is None and not abstained:
         out.append("answer is missing: diagnosed as EVAL_MISSING_CONTEXT without running judges.")
     if not snapshot:
@@ -248,9 +246,7 @@ def ingest_batch(
     results: list[dict[str, Any]] = []
     for index, raw in enumerate(items):
         if isinstance(raw, _ParseFailure):
-            results.append(
-                {"index": index, "ok": False, "error": {"code": "INVALID_REQUEST", "message": raw.message}}
-            )
+            results.append({"index": index, "ok": False, "error": {"code": "INVALID_REQUEST", "message": raw.message}})
             continue
         try:
             req = TraceRequest.model_validate(raw)

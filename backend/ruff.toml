@@ -1,8 +1,8 @@
-# Lint gate used by CI (.github/workflows/ci.yml).
-# Scope: syntax errors and pyflakes (unused imports/variables, undefined names).
-# Formatting is not enforced.
+# Lint and format gate used by CI (.github/workflows/ci.yml).
 target-version = "py311"
 line-length = 120
+# Migrations are frozen once released: never reformat or autofix them.
+extend-exclude = ["**/alembic/versions/**"]
 
 [lint]
 select = ["E9", "F"]

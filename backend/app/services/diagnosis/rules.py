@@ -104,18 +104,12 @@ def apply_rules(signals: SignalBag) -> DiagnosisDecision:
         # Distractors dominate and the system correctly/incorrectly abstained —
         # retrieval is the primary localization. Answered+insufficient is R20.
         refs = [f"chunk:{cid}" for cid in signals.retrieved_ids[:5]]
-        return _decision(
-            "RETRIEVAL_DISTRACTOR_DOMINANT", "R12", signals, evidence=refs
-        )
+        return _decision("RETRIEVAL_DISTRACTOR_DOMINANT", "R12", signals, evidence=refs)
 
     # R13 is advisory secondary only — primary decided below
 
     if signals.context_sufficient is False and signals.answer_is_abstention:
-        secondary = (
-            ["RETRIEVAL_INSUFFICIENT_CONTEXT"]
-            if signals.n_retrieved > 0
-            else []
-        )
+        secondary = ["RETRIEVAL_INSUFFICIENT_CONTEXT"] if signals.n_retrieved > 0 else []
         return _decision(
             "OK_CORRECT_ABSTENTION",
             "R14",
@@ -127,10 +121,7 @@ def apply_rules(signals: SignalBag) -> DiagnosisDecision:
     # --- Abstention ---
     if signals.context_sufficient is False and not signals.answer_is_abstention:
         secondary = ["RETRIEVAL_INSUFFICIENT_CONTEXT"]
-        if (
-            signals.irrelevant_frac is not None
-            and signals.irrelevant_frac >= TAU_DISTRACTOR_FRAC
-        ):
+        if signals.irrelevant_frac is not None and signals.irrelevant_frac >= TAU_DISTRACTOR_FRAC:
             secondary = ["RETRIEVAL_DISTRACTOR_DOMINANT"]
         return _decision(
             "ABSTENTION_FALSE_NEGATIVE",
@@ -157,12 +148,7 @@ def apply_rules(signals: SignalBag) -> DiagnosisDecision:
     supported = (signals.supported_claim_count or 0) > 0
     faith = signals.faithfulness_score
 
-    if (
-        signals.context_sufficient is True
-        and unsupported
-        and supported
-        and not signals.answer_contradicts_context
-    ):
+    if signals.context_sufficient is True and unsupported and supported and not signals.answer_contradicts_context:
         return _decision(
             "GROUNDING_PARTIAL",
             "R33",
@@ -170,12 +156,7 @@ def apply_rules(signals: SignalBag) -> DiagnosisDecision:
             evidence=[f"chunk:{cid}" for cid in signals.retrieved_ids[:5]],
         )
 
-    if (
-        signals.context_sufficient is True
-        and unsupported
-        and faith is not None
-        and faith < TAU_FAITHFUL
-    ):
+    if signals.context_sufficient is True and unsupported and faith is not None and faith < TAU_FAITHFUL:
         return _decision(
             "GENERATION_HALLUCINATION",
             "R31",

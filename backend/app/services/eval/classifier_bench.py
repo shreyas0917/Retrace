@@ -51,11 +51,11 @@ def cohens_kappa(a: Sequence[str], b: Sequence[str]) -> float | None:
 
 def load_cases_from_experiment(db: Session, experiment_id: str) -> list[dict[str, Any]]:
     """Join experiment case results with the persisted diagnosis signal bags."""
-    rows = db.execute(
-        select(ExperimentCaseResult).where(
-            ExperimentCaseResult.experiment_id == experiment_id
-        )
-    ).scalars().all()
+    rows = (
+        db.execute(select(ExperimentCaseResult).where(ExperimentCaseResult.experiment_id == experiment_id))
+        .scalars()
+        .all()
+    )
     if not rows:
         return []
     # acceptable codes come from the suite definition
@@ -82,9 +82,7 @@ def load_cases_from_experiment(db: Session, experiment_id: str) -> list[dict[str
             {
                 "case_id": r.case_id,
                 "expected_failure_code": r.expected_failure_code,
-                "acceptable_primary_codes": acceptable.get(
-                    r.case_id, [r.expected_failure_code]
-                ),
+                "acceptable_primary_codes": acceptable.get(r.case_id, [r.expected_failure_code]),
                 "stored_prediction": r.predicted_failure_code,
                 "stored_rule_id": r.predicted_rule_id,
                 "signals": signals,
@@ -167,9 +165,7 @@ def compare_classifiers(
             pa = [r["predicted_failure_code"] for r in results[a]]
             pb = [r["predicted_failure_code"] for r in results[b]]
             agreement[f"{a}~{b}"] = {
-                "raw_agreement": round(sum(1 for x, y in zip(pa, pb) if x == y) / len(pa), 6)
-                if pa
-                else None,
+                "raw_agreement": round(sum(1 for x, y in zip(pa, pb) if x == y) / len(pa), 6) if pa else None,
                 "cohens_kappa": cohens_kappa(pa, pb),
             }
 
@@ -181,8 +177,7 @@ def compare_classifiers(
         comparable = [r for r in rows if r.get("stored_prediction")]
         if comparable:
             consistency = round(
-                sum(1 for r in comparable if r["predicted_failure_code"] == r["stored_prediction"])
-                / len(comparable),
+                sum(1 for r in comparable if r["predicted_failure_code"] == r["stored_prediction"]) / len(comparable),
                 6,
             )
 

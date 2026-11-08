@@ -50,9 +50,7 @@ class Settings(BaseSettings):
     # --- Abuse controls (v1.0) ---
     rate_limit_enabled: bool = Field(default=True, alias="RATE_LIMIT_ENABLED")
     rate_limit_per_minute: int = Field(default=120, alias="RATE_LIMIT_PER_MINUTE")
-    auth_rate_limit_per_minute: int = Field(
-        default=10, alias="AUTH_RATE_LIMIT_PER_MINUTE"
-    )
+    auth_rate_limit_per_minute: int = Field(default=10, alias="AUTH_RATE_LIMIT_PER_MINUTE")
     max_query_chars: int = Field(default=4000, alias="MAX_QUERY_CHARS")
     max_request_bytes: int = Field(default=1_048_576, alias="MAX_REQUEST_BYTES")
 
@@ -72,12 +70,8 @@ class Settings(BaseSettings):
 
     # --- LLM resilience (v1.0) ---
     model_max_retries: int = Field(default=2, alias="MODEL_MAX_RETRIES")
-    model_retry_backoff_seconds: float = Field(
-        default=0.5, alias="MODEL_RETRY_BACKOFF_SECONDS"
-    )
-    model_connect_timeout_seconds: float = Field(
-        default=10.0, alias="MODEL_CONNECT_TIMEOUT_SECONDS"
-    )
+    model_retry_backoff_seconds: float = Field(default=0.5, alias="MODEL_RETRY_BACKOFF_SECONDS")
+    model_connect_timeout_seconds: float = Field(default=10.0, alias="MODEL_CONNECT_TIMEOUT_SECONDS")
 
     # --- Durable telemetry + cost accounting (v1.0) ---
     telemetry_durable: bool = Field(default=True, alias="TELEMETRY_DURABLE")
@@ -95,9 +89,7 @@ class Settings(BaseSettings):
     def embedding_model_must_match_prd(cls, value: str) -> str:
         expected = "sentence-transformers/all-MiniLM-L6-v2"
         if value != expected:
-            raise ValueError(
-                f"EMBEDDING_MODEL must be '{expected}' (PRD-locked); got '{value}'"
-            )
+            raise ValueError(f"EMBEDDING_MODEL must be '{expected}' (PRD-locked); got '{value}'")
         return value
 
     @property

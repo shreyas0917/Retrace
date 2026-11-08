@@ -45,9 +45,7 @@ class TraceChunk(BaseModel):
     score: float | None = Field(default=None, allow_inf_nan=False)
     rank: int | None = Field(default=None, ge=1)
     source_name: str | None = Field(default=None, max_length=512)
-    document_id: str | None = Field(
-        default=None, min_length=1, max_length=256, pattern=CHUNK_ID_PATTERN
-    )
+    document_id: str | None = Field(default=None, min_length=1, max_length=256, pattern=CHUNK_ID_PATTERN)
 
     @field_validator("text")
     @classmethod

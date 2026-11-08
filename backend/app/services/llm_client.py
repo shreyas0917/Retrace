@@ -54,8 +54,7 @@ class LLMResult:
 
 
 class LLMProvider(Protocol):
-    def complete(self, messages: list[dict[str, str]], *, model: str, timeout: float) -> LLMResult:
-        ...
+    def complete(self, messages: list[dict[str, str]], *, model: str, timeout: float) -> LLMResult: ...
 
 
 # ----------------------------------------------------------------------------
@@ -122,9 +121,7 @@ class OpenAICompatibleProvider:
         self._sleep = sleep
         # Per-instance client only when a transport is injected (tests);
         # otherwise the process-wide pooled client.
-        self._client: httpx.Client | None = (
-            httpx.Client(transport=transport) if transport is not None else None
-        )
+        self._client: httpx.Client | None = httpx.Client(transport=transport) if transport is not None else None
 
     @property
     def client(self) -> httpx.Client:

@@ -54,9 +54,7 @@ def default_thresholds_path(suite_id: str | None = None) -> Path:
     return configs / "thresholds.default.yaml"
 
 
-def load_thresholds(
-    path: str | Path | None = None, *, suite_id: str | None = None
-) -> dict[str, Any]:
+def load_thresholds(path: str | Path | None = None, *, suite_id: str | None = None) -> dict[str, Any]:
     """Load YAML thresholds; missing default file falls back to DEFAULT_THRESHOLDS."""
     if path is None:
         path = default_thresholds_path(suite_id)

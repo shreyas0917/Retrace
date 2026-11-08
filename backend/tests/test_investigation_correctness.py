@@ -150,9 +150,7 @@ def _insert_execution(
         db.close()
 
 
-def test_gold_hit_not_evaluated_without_gold(
-    client: TestClient, api_key: str
-) -> None:
+def test_gold_hit_not_evaluated_without_gold(client: TestClient, api_key: str) -> None:
     chunks = [
         {
             "chunk_id": "pto:c000",
@@ -165,9 +163,7 @@ def test_gold_hit_not_evaluated_without_gold(
         ScriptedJudgeLLM(
             {
                 "relevance": [_relevance_json(["pto:c000"], sufficient=True)],
-                "faithfulness": [
-                    _faithfulness_json(score=1.0, supported=1, unsupported=0)
-                ],
+                "faithfulness": [_faithfulness_json(score=1.0, supported=1, unsupported=0)],
                 "contradiction": [_contradiction_json(False)],
             }
         )
@@ -186,9 +182,7 @@ def test_gold_hit_not_evaluated_without_gold(
     assert d.json()["signals"]["gold_hit"] is None
     assert d.json()["signals"]["gold_ids"] == []
 
-    inv = client.get(
-        f"/api/v1/investigations/{eid}", headers=_auth(api_key)
-    ).json()
+    inv = client.get(f"/api/v1/investigations/{eid}", headers=_auth(api_key)).json()
     assert inv["retrieval"]["gold_hit"] is None
     assert inv["retrieval"]["gold_ids"] == []
     # Snapshot score key is retrieval_score — must surface as score.
@@ -262,9 +256,7 @@ def test_gold_hit_true_and_false(client: TestClient, api_key: str) -> None:
     assert miss.json()["failure_code"] == "RETRIEVAL_MISS"
     assert miss.json()["signals"]["gold_hit"] is False
 
-    inv_miss = client.get(
-        f"/api/v1/investigations/{eid_miss}", headers=_auth(api_key)
-    ).json()
+    inv_miss = client.get(f"/api/v1/investigations/{eid_miss}", headers=_auth(api_key)).json()
     assert inv_miss["retrieval"]["gold_hit"] is False
 
 
@@ -281,9 +273,7 @@ def test_latency_phases_are_consistent(client: TestClient, api_key: str) -> None
     fake = ScriptedJudgeLLM(
         {
             "relevance": [_relevance_json(["pto:c000"], sufficient=True)],
-            "faithfulness": [
-                _faithfulness_json(score=1.0, supported=1, unsupported=0)
-            ],
+            "faithfulness": [_faithfulness_json(score=1.0, supported=1, unsupported=0)],
             "contradiction": [_contradiction_json(False)],
         }
     )
@@ -293,9 +283,7 @@ def test_latency_phases_are_consistent(client: TestClient, api_key: str) -> None
         answer="Full-time employees accrue 1.25 days of PTO per month.",
         chunks=chunks,
     )
-    d = client.post(
-        "/api/v1/diagnose", headers=_auth(api_key), json={"execution_id": eid}
-    )
+    d = client.post("/api/v1/diagnose", headers=_auth(api_key), json={"execution_id": eid})
     assert d.status_code == 200, d.text
     metrics = d.json()["metrics"]
     diag_ms = metrics["diagnosis_latency_ms"]
@@ -310,9 +298,7 @@ def test_latency_phases_are_consistent(client: TestClient, api_key: str) -> None
     # Judges run sequentially inside diagnose wall-clock.
     assert diag_ms + 1e-6 >= judge_sum
 
-    inv = client.get(
-        f"/api/v1/investigations/{eid}", headers=_auth(api_key)
-    ).json()
+    inv = client.get(f"/api/v1/investigations/{eid}", headers=_auth(api_key)).json()
     # Prefer explicit score when both present.
     assert inv["retrieval"]["chunks"][0]["score"] == 0.91
     ops = [t["operation"] for t in inv["timeline"]]

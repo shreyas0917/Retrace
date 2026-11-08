@@ -79,9 +79,7 @@ def create_app() -> FastAPI:
         enabled=settings.rate_limit_enabled,
     )
     application.add_middleware(RateLimitMiddleware)
-    application.add_middleware(
-        RequestHardeningMiddleware, max_request_bytes=settings.max_request_bytes
-    )
+    application.add_middleware(RequestHardeningMiddleware, max_request_bytes=settings.max_request_bytes)
     application.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
@@ -106,9 +104,7 @@ def create_app() -> FastAPI:
     @application.exception_handler(AppError)
     async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
         request_id = getattr(request.state, "request_id", None)
-        headers: dict[str, str] | None = (
-            {"X-Request-ID": request_id} if request_id else None
-        )
+        headers: dict[str, str] | None = {"X-Request-ID": request_id} if request_id else None
         return JSONResponse(
             status_code=exc.status_code,
             content={
@@ -123,9 +119,7 @@ def create_app() -> FastAPI:
         )
 
     @application.exception_handler(RequestValidationError)
-    async def validation_handler(
-        request: Request, exc: RequestValidationError
-    ) -> JSONResponse:
+    async def validation_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
         request_id = getattr(request.state, "request_id", None)
         headers = {"X-Request-ID": request_id} if request_id else None
         return JSONResponse(

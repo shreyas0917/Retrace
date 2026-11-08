@@ -35,9 +35,7 @@ _EXEMPT_GET_PREFIXES = ("/api/v1/runbooks",)
 class RateLimiter:
     """Thread-safe sliding window counter per key."""
 
-    def __init__(
-        self, per_minute: int = 120, auth_per_minute: int = 10, enabled: bool = True
-    ) -> None:
+    def __init__(self, per_minute: int = 120, auth_per_minute: int = 10, enabled: bool = True) -> None:
         self._lock = threading.Lock()
         self._hits: dict[str, deque[float]] = {}
         self.per_minute = per_minute

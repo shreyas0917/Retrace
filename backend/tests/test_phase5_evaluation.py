@@ -73,9 +73,7 @@ def test_duplicate_case_ids_rejected(tmp_path: Path) -> None:
         "annotation_date": "2026-09-27",
         "taxonomy_version": "1.0",
     }
-    (d / "cases.jsonl").write_text(
-        json.dumps(case) + "\n" + json.dumps(case) + "\n", encoding="utf-8"
-    )
+    (d / "cases.jsonl").write_text(json.dumps(case) + "\n" + json.dumps(case) + "\n", encoding="utf-8")
     with pytest.raises(SuiteValidationError, match="duplicate"):
         load_suite("bad_v1", "1.0.0", root=root)
 
@@ -118,9 +116,7 @@ def test_planted_mutations_build_fixtures() -> None:
     cases, _, _ = load_suite("planted_v1", "1.0.0")
     by_id = {c.case_id: c for c in cases}
     fx = build_offline_execution(by_id["P01"])
-    assert by_id["P01"].relevant_chunk_ids[0] not in [
-        c["chunk_id"] for c in fx.retrieved_chunks
-    ]
+    assert by_id["P01"].relevant_chunk_ids[0] not in [c["chunk_id"] for c in fx.retrieved_chunks]
     fx6 = build_offline_execution(by_id["P06"])
     assert "10 days" in (fx6.answer or "")
     fx7 = build_offline_execution(by_id["P07"])

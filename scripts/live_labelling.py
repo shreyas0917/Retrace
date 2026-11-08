@@ -115,7 +115,9 @@ def answer_text(record: dict) -> str:
 
 
 def blind_row(sheet_id: str, record: dict) -> dict[str, str]:
-    retrieved = "\n\n".join(f"#{rank} [{cid}]\n{text}" for rank, cid, text in chunk_lines(record)) or "(no chunks retrieved)"
+    retrieved = (
+        "\n\n".join(f"#{rank} [{cid}]\n{text}" for rank, cid, text in chunk_lines(record)) or "(no chunks retrieved)"
+    )
     row = {"sheet_id": sheet_id, "query": record["query"], "retrieved_chunks": retrieved, "answer": answer_text(record)}
     row.update({c: "" for c in LABEL_COLUMNS})
     return row
@@ -148,8 +150,12 @@ def render_html(rows: list[tuple[str, dict]]) -> str:
         if not lines:
             parts.append("<div class='chunk'>(no chunks retrieved)</div>")
         for rank, cid, text in lines:
-            parts.append(f"<div class='chunk'><span class='cid'>#{rank} {html.escape(cid)}</span>\n{html.escape(text)}</div>")
-        parts.append(f"<div class='k'>Answer</div><div class='answer'>{html.escape(answer_text(record))}</div></section>")
+            parts.append(
+                f"<div class='chunk'><span class='cid'>#{rank} {html.escape(cid)}</span>\n{html.escape(text)}</div>"
+            )
+        parts.append(
+            f"<div class='k'>Answer</div><div class='answer'>{html.escape(answer_text(record))}</div></section>"
+        )
     parts.append("</main></body></html>")
     return "\n".join(parts) + "\n"
 

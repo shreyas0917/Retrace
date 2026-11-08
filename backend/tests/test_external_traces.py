@@ -72,9 +72,7 @@ def _contradiction_judges() -> ScriptedJudgeLLM:
 
 def _abstention_judges() -> ScriptedJudgeLLM:
     ids = ["employee_handbook:c000", "employee_handbook:c001"]
-    return ScriptedJudgeLLM(
-        {"relevance": [relevance_json(ids, sufficient=False, scores=[0.7, 0.6])]}
-    )
+    return ScriptedJudgeLLM({"relevance": [relevance_json(ids, sufficient=False, scores=[0.7, 0.6])]})
 
 
 def _post(client: TestClient, api_key: str, body: dict):
@@ -340,9 +338,7 @@ def test_cli_errors_exit_2(tmp_path: Path, capsys) -> None:
     assert _cli([]) == diagnose_cmd.EXIT_ERROR
     assert _cli(["--file", str(tmp_path / "missing.json")]) == diagnose_cmd.EXIT_ERROR
     batch = tmp_path / "traces.jsonl"
-    batch.write_text(
-        json.dumps(_example("retrieval_miss.json")) + "\n{broken\n", encoding="utf-8"
-    )
+    batch.write_text(json.dumps(_example("retrieval_miss.json")) + "\n{broken\n", encoding="utf-8")
     # A bad line wins over a clean diagnosis: exit 2, and the good trace is still reported.
     assert _cli(["--batch", str(batch)]) == diagnose_cmd.EXIT_ERROR
     out = capsys.readouterr().out

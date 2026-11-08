@@ -85,9 +85,7 @@ def cmd_judges_validate(args: argparse.Namespace) -> int:
 
     nli_section = None
     if backend == "both":
-        nli_section = validate_nli_faithfulness(
-            examples, get_nli_scorer(), llm_report=report, llm_variant=primary
-        )
+        nli_section = validate_nli_faithfulness(examples, get_nli_scorer(), llm_report=report, llm_variant=primary)
         report["nli_faithfulness"] = nli_section
 
     source_label = (

@@ -150,7 +150,9 @@ def test_premise_windows_overlap_and_exact_substrings() -> None:
     assert all(w in text for w in windows)
     # Consecutive windows share the overlap tokens.
     assert windows[0].split()[-3:] == windows[1].split()[:3]
-    assert premise_windows("short text", budget_tokens=10, overlap_tokens=3, token_spans=whitespace_spans) == ["short text"]
+    assert premise_windows("short text", budget_tokens=10, overlap_tokens=3, token_spans=whitespace_spans) == [
+        "short text"
+    ]
     with pytest.raises(ValueError):
         premise_windows(text, budget_tokens=0, overlap_tokens=0, token_spans=whitespace_spans)
 
@@ -206,7 +208,10 @@ def test_claims_are_scored_against_sentences_and_support_beats_contradiction() -
 )
 def test_label_order_is_read_from_the_model_config(order) -> None:
     fake = FakeScorer(order)
-    claims = ["Full-time employees accrue 1.25 days of PTO per month.", "Full-time employees accrue 3 days of PTO per month."]
+    claims = [
+        "Full-time employees accrue 1.25 days of PTO per month.",
+        "Full-time employees accrue 3 days of PTO per month.",
+    ]
     results, _ = score_claims(claims, [{"chunk_id": "h:c0", "text": PTO}], fake.scorer())
     assert [r.supported for r in results] == [True, False]
     assert [r.contradicted for r in results] == [False, True]
@@ -275,7 +280,9 @@ def test_nli_max_pairs_setting_reaches_the_judge(monkeypatch) -> None:
     monkeypatch.setenv("NLI_MAX_PAIRS", "20")
     set_nli_scorer(FakeScorer().scorer())
     chunks = [{"chunk_id": f"d{i}:c0", "text": PTO, "retrieval_score": 0.5} for i in range(30)]
-    result, _, _ = judge_faithfulness_routed("q", "Full-time employees accrue 1.25 days of PTO per month.", chunks, get_settings())
+    result, _, _ = judge_faithfulness_routed(
+        "q", "Full-time employees accrue 1.25 days of PTO per month.", chunks, get_settings()
+    )
     assert result.max_pairs == 20 and result.pair_count == 20 and result.truncated
     monkeypatch.setenv("NLI_MAX_PAIRS", "5")
     with pytest.raises(Exception):
@@ -287,7 +294,9 @@ def test_nli_max_pairs_setting_reaches_the_judge(monkeypatch) -> None:
 
 def test_judge_output_schema_and_provenance() -> None:
     answer = "Full-time employees accrue 1.25 days of PTO per month. They also get a free car."
-    result, meta = judge_faithfulness_nli("q", answer, [{"chunk_id": "h:c0", "text": PTO}], scorer=FakeScorer().scorer())
+    result, meta = judge_faithfulness_nli(
+        "q", answer, [{"chunk_id": "h:c0", "text": PTO}], scorer=FakeScorer().scorer()
+    )
     assert result.faithfulness_score == 0.5
     assert [c.supported for c in result.claims] == [True, False]
     assert result.claims[0].supporting_chunk_ids == ["h:c0"]
@@ -295,7 +304,9 @@ def test_judge_output_schema_and_provenance() -> None:
     assert result.version == NLI_FAITHFULNESS_VERSION
     assert result.label_order == ["contradiction", "entailment", "neutral"]
     assert meta["schema_ok"] and meta["backend"] == "nli"
-    empty, _ = judge_faithfulness_nli("q", "I don't know.", [{"chunk_id": "h:c0", "text": PTO}], scorer=FakeScorer().scorer())
+    empty, _ = judge_faithfulness_nli(
+        "q", "I don't know.", [{"chunk_id": "h:c0", "text": PTO}], scorer=FakeScorer().scorer()
+    )
     assert empty.faithfulness_score is None and empty.claims == []
 
 
@@ -408,8 +419,10 @@ def test_recorded_nli_output_replays_without_the_model(client: TestClient, api_k
     monkeypatch.setenv("FAITHFULNESS_BACKEND", "nli")
     set_nli_scorer(ExplodingScorer().scorer())
     recorded, _ = judge_faithfulness_nli(
-        "q", "Full-time employees accrue 1.25 days of PTO per month.",
-        [{"chunk_id": "h:c0", "text": PTO}], scorer=FakeScorer().scorer(),
+        "q",
+        "Full-time employees accrue 1.25 days of PTO per month.",
+        [{"chunk_id": "h:c0", "text": PTO}],
+        scorer=FakeScorer().scorer(),
     )
     scripts = _scripts(["h:c0"]) | {"faithfulness_nli": recorded.model_dump()}
     set_llm_provider(ScriptedJudgeLLM(scripts))
@@ -452,18 +465,36 @@ def test_validate_nli_faithfulness_and_markdown() -> None:
     supported = "Full-time employees accrue 1.25 days of PTO per month."
     invented = "Employees get a company car."
     examples = [
-        _example("f1", "faithfulness", answer=supported, claims=[{"claim": supported, "supported": True}], faithfulness_band=[1.0, 1.0]),
-        _example("f2", "faithfulness", answer=f"{supported} {invented}",
-                 claims=[{"claim": supported, "supported": True}, {"claim": invented, "supported": False}],
-                 faithfulness_band=[0.5, 0.5]),
-        _example("f3", "faithfulness", answer=invented, claims=[{"claim": invented, "supported": False}], faithfulness_band=[0.0, 0.0]),
+        _example(
+            "f1",
+            "faithfulness",
+            answer=supported,
+            claims=[{"claim": supported, "supported": True}],
+            faithfulness_band=[1.0, 1.0],
+        ),
+        _example(
+            "f2",
+            "faithfulness",
+            answer=f"{supported} {invented}",
+            claims=[{"claim": supported, "supported": True}, {"claim": invented, "supported": False}],
+            faithfulness_band=[0.5, 0.5],
+        ),
+        _example(
+            "f3",
+            "faithfulness",
+            answer=invented,
+            claims=[{"claim": invented, "supported": False}],
+            faithfulness_band=[0.0, 0.0],
+        ),
         _example("c1", "contradiction", answer="Full-time employees accrue 3 days of PTO per month.", contradicts=True),
         _example("c2", "contradiction", answer=supported, contradicts=False),
     ]
-    llm_report = {"predictions": [
-        {"judge": "contradiction", "variant": "v1", "schema_ok": True, "example_id": "c1", "contradicts": True},
-        {"judge": "contradiction", "variant": "v1", "schema_ok": True, "example_id": "c2", "contradicts": True},
-    ]}
+    llm_report = {
+        "predictions": [
+            {"judge": "contradiction", "variant": "v1", "schema_ok": True, "example_id": "c1", "contradicts": True},
+            {"judge": "contradiction", "variant": "v1", "schema_ok": True, "example_id": "c2", "contradicts": True},
+        ]
+    }
     section = validate_nli_faithfulness(examples, FakeScorer().scorer(), llm_report=llm_report, k_folds=3)
     assert section["claim_level"]["n"] == 4 and section["claim_level"]["accuracy"] == 1.0
     assert section["answer_level"]["has_unsupported_claim"]["accuracy"] == 1.0
@@ -471,7 +502,14 @@ def test_validate_nli_faithfulness_and_markdown() -> None:
     assert section["contradiction"]["vs_llm_judge"]["raw_agreement"] == 0.5
     assert len(section["sensitivity"]["sweep"]) == 9
     assert section["sensitivity"]["cross_validation"]["folds"]
-    md = format_nli_markdown(section, llm_faithfulness={"has_unsupported_claim": section["answer_level"]["has_unsupported_claim"], "score_mae": 0.1, "score_in_band_rate": 0.5})
+    md = format_nli_markdown(
+        section,
+        llm_faithfulness={
+            "has_unsupported_claim": section["answer_level"]["has_unsupported_claim"],
+            "score_mae": 0.1,
+            "score_in_band_rate": 0.5,
+        },
+    )
     assert "not used to choose the rule" in md and DECISION_RULE in md and "| llm |" in md
 
 

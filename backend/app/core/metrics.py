@@ -73,12 +73,8 @@ class MetricsRegistry:
                 latency_stats[name] = {
                     "count": n,
                     "avg_ms": None if avg is None else round(avg, 2),
-                    "p50_ms": None
-                    if not ordered
-                    else round(_percentile(ordered, 50) or 0, 2),
-                    "p95_ms": None
-                    if not ordered
-                    else round(_percentile(ordered, 95) or 0, 2),
+                    "p50_ms": None if not ordered else round(_percentile(ordered, 50) or 0, 2),
+                    "p95_ms": None if not ordered else round(_percentile(ordered, 95) or 0, 2),
                 }
 
         def rate(num: str, den: str) -> float | None:
@@ -97,19 +93,11 @@ class MetricsRegistry:
             "latencies": latency_stats,
             "derived": {
                 "request_error_rate": rate("http.requests_5xx", "http.requests_total"),
-                "retrieval_empty_rate": rate(
-                    "retrieval.empty", "retrieval.attempts"
-                ),
-                "generation_timeout_rate": rate(
-                    "generation.timeout", "generation.attempts"
-                ),
+                "retrieval_empty_rate": rate("retrieval.empty", "retrieval.attempts"),
+                "generation_timeout_rate": rate("generation.timeout", "generation.attempts"),
                 "judge_timeout_rate": rate("judge.timeout", "judge.attempts"),
-                "judge_malformed_rate": rate(
-                    "judge.malformed", "judge.attempts"
-                ),
-                "retrieval_miss_rate": rate(
-                    "diagnosis.code.RETRIEVAL_MISS", "diagnosis.total"
-                ),
+                "judge_malformed_rate": rate("judge.malformed", "judge.attempts"),
+                "retrieval_miss_rate": rate("diagnosis.code.RETRIEVAL_MISS", "diagnosis.total"),
             },
         }
 

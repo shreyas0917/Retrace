@@ -303,8 +303,7 @@ def _ingest_corpus(client: TestClient, api_key: str) -> str:
         {
             "id": "pto_doc",
             "text": (
-                "Full-time employees accrue 1.25 days of PTO per month. "
-                "Unused PTO may be carried over up to 5 days."
+                "Full-time employees accrue 1.25 days of PTO per month. " "Unused PTO may be carried over up to 5 days."
             ),
             "source_name": "pto.md",
         },
@@ -314,16 +313,12 @@ def _ingest_corpus(client: TestClient, api_key: str) -> str:
             "source_name": "refund.md",
         },
     ]
-    r = client.post(
-        f"/api/v1/corpora/{corpus_id}/versions", headers=headers, json={"documents": docs}
-    )
+    r = client.post(f"/api/v1/corpora/{corpus_id}/versions", headers=headers, json={"documents": docs})
     assert r.status_code == 200, r.text
     return r.json()["id"]
 
 
-def test_llm_timeout_via_api_persists_generation_timeout_trace(
-    client: TestClient, api_key: str
-) -> None:
+def test_llm_timeout_via_api_persists_generation_timeout_trace(client: TestClient, api_key: str) -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         raise httpx.ReadTimeout("read timed out", request=request)
 
@@ -428,9 +423,7 @@ def test_twenty_concurrent_generate_calls(client: TestClient, api_key: str) -> N
     assert len({r.request_id for r in rows}) == 20
 
 
-def test_chroma_failure_returns_503_and_not_ready(
-    client: TestClient, api_key: str, monkeypatch
-) -> None:
+def test_chroma_failure_returns_503_and_not_ready(client: TestClient, api_key: str, monkeypatch) -> None:
     version_id = _ingest_corpus(client, api_key)
 
     def boom(*args: Any, **kwargs: Any) -> dict:

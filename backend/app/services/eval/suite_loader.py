@@ -69,9 +69,7 @@ def compute_suite_hash(raw_lines: list[str]) -> str:
         if not line:
             continue
         obj = json.loads(line)
-        canonical_lines.append(
-            json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-        )
+        canonical_lines.append(json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False))
     payload = "\n".join(canonical_lines) + ("\n" if canonical_lines else "")
     digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
     return f"sha256:{digest}"

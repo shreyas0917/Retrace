@@ -26,9 +26,7 @@ score must be between 0 and 1.
 """
 
 
-def build_relevance_messages(
-    query: str, chunks: Sequence[dict[str, Any]]
-) -> list[dict[str, str]]:
+def build_relevance_messages(query: str, chunks: Sequence[dict[str, Any]]) -> list[dict[str, str]]:
     lines = ["<chunks>"]
     for c in chunks:
         lines.append(f"[chunk_id={c.get('chunk_id')}]")

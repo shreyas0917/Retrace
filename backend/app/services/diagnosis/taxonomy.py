@@ -29,9 +29,7 @@ class FailureCode:
 
 
 FAILURE_CODES: dict[str, FailureCode] = {
-    "RETRIEVAL_EMPTY": FailureCode(
-        "RETRIEVAL_EMPTY", Layer.RETRIEVAL, "No chunks returned"
-    ),
+    "RETRIEVAL_EMPTY": FailureCode("RETRIEVAL_EMPTY", Layer.RETRIEVAL, "No chunks returned"),
     "RETRIEVAL_MISS": FailureCode(
         "RETRIEVAL_MISS",
         Layer.RETRIEVAL,
@@ -112,17 +110,13 @@ FAILURE_CODES: dict[str, FailureCode] = {
         Layer.ABSTENTION,
         "Abstained despite sufficient evidence",
     ),
-    "OK_GROUNDED": FailureCode(
-        "OK_GROUNDED", Layer.NONE, "Answer grounded; no failure"
-    ),
+    "OK_GROUNDED": FailureCode("OK_GROUNDED", Layer.NONE, "Answer grounded; no failure"),
     "OK_CORRECT_ABSTENTION": FailureCode(
         "OK_CORRECT_ABSTENTION",
         Layer.ABSTENTION,
         "Correctly abstained under insufficient evidence",
     ),
-    "EVAL_MODEL_TIMEOUT": FailureCode(
-        "EVAL_MODEL_TIMEOUT", Layer.INFRA, "Generator or judge timed out"
-    ),
+    "EVAL_MODEL_TIMEOUT": FailureCode("EVAL_MODEL_TIMEOUT", Layer.INFRA, "Generator or judge timed out"),
     "EVAL_JUDGE_MALFORMED": FailureCode(
         "EVAL_JUDGE_MALFORMED",
         Layer.INFRA,
@@ -133,9 +127,7 @@ FAILURE_CODES: dict[str, FailureCode] = {
         Layer.INFRA,
         "Required retrieve/answer fields missing",
     ),
-    "EVAL_INTERNAL_ERROR": FailureCode(
-        "EVAL_INTERNAL_ERROR", Layer.INFRA, "Unexpected pipeline exception"
-    ),
+    "EVAL_INTERNAL_ERROR": FailureCode("EVAL_INTERNAL_ERROR", Layer.INFRA, "Unexpected pipeline exception"),
     "DIAGNOSIS_UNCERTAIN": FailureCode(
         "DIAGNOSIS_UNCERTAIN",
         Layer.UNCERTAIN,

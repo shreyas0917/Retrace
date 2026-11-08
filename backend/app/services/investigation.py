@@ -29,9 +29,7 @@ def _chunk_status(
     if rel is not None:
         label = str(rel.get("label") or "").lower()
         score = rel.get("score")
-        if label in {"relevant", "yes", "true"} or (
-            isinstance(score, (int, float)) and score >= 0.5
-        ):
+        if label in {"relevant", "yes", "true"} or (isinstance(score, (int, float)) and score >= 0.5):
             return "relevant"
         return "distractor"
     return "retrieved"
@@ -206,15 +204,11 @@ def build_investigation(db: Session, execution_id: str) -> dict[str, Any]:
     if not execution:
         raise NotFoundError(f"Execution not found: {execution_id}")
 
-    diagnosis = db.execute(
-        select(Diagnosis).where(Diagnosis.execution_id == execution_id)
-    ).scalars().first()
+    diagnosis = db.execute(select(Diagnosis).where(Diagnosis.execution_id == execution_id)).scalars().first()
 
     judges = (
         db.execute(
-            select(JudgeResult)
-            .where(JudgeResult.execution_id == execution_id)
-            .order_by(JudgeResult.judge_type.asc())
+            select(JudgeResult).where(JudgeResult.execution_id == execution_id).order_by(JudgeResult.judge_type.asc())
         )
         .scalars()
         .all()
@@ -229,13 +223,7 @@ def build_investigation(db: Session, execution_id: str) -> dict[str, Any]:
         signals = diagnosis.signals if isinstance(diagnosis.signals, dict) else {}
         rule = get_rule(diagnosis.rule_id)
         rows = (
-            db.execute(
-                select(DiagnosisEvidence).where(
-                    DiagnosisEvidence.diagnosis_id == diagnosis.id
-                )
-            )
-            .scalars()
-            .all()
+            db.execute(select(DiagnosisEvidence).where(DiagnosisEvidence.diagnosis_id == diagnosis.id)).scalars().all()
         )
         evidence_rows = [
             {
@@ -339,16 +327,8 @@ def build_investigation(db: Session, execution_id: str) -> dict[str, Any]:
             "chunks": _enrich_chunks(chunks, signals),
             "gold_ids": signals.get("gold_ids") or [],
             # No gold reference ⇒ not evaluated (null). Preserve true/false only when gold_ids present.
-            "gold_hit": (
-                signals.get("gold_hit")
-                if (signals.get("gold_ids") or [])
-                else None
-            ),
-            "gold_recall_at_k": (
-                signals.get("gold_recall_at_k")
-                if (signals.get("gold_ids") or [])
-                else None
-            ),
+            "gold_hit": (signals.get("gold_hit") if (signals.get("gold_ids") or []) else None),
+            "gold_recall_at_k": (signals.get("gold_recall_at_k") if (signals.get("gold_ids") or []) else None),
             "n_retrieved": signals.get("n_retrieved", len(chunks)),
             "context_sufficient": signals.get("context_sufficient"),
             "irrelevant_frac": signals.get("irrelevant_frac"),
@@ -359,8 +339,7 @@ def build_investigation(db: Session, execution_id: str) -> dict[str, Any]:
         "why": {
             "engine": "deterministic_rule_engine",
             "note": (
-                "Diagnosis is produced by ordered rules (first match wins), "
-                "not by a free-form LLM explanation."
+                "Diagnosis is produced by ordered rules (first match wins), " "not by a free-form LLM explanation."
             ),
             "explanation": signals.get("explanation"),
             "calibrated_confidence": signals.get("calibrated_confidence"),

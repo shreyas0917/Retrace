@@ -59,8 +59,7 @@ REVIEWED_SOURCE = (
 ASK = {
     "chunk": "Is this chunk relevant to the question? (true/false)",
     "context_sufficient": (
-        "Do the chunks, taken together, contain enough information to answer the "
-        "question? (true/false)"
+        "Do the chunks, taken together, contain enough information to answer the " "question? (true/false)"
     ),
     "claim": "Is this claim supported by the context? (true/false)",
     "faithfulness_band": (
@@ -68,8 +67,7 @@ ASK = {
         "It should contain supported claims divided by total claims."
     ),
     "contradicts": (
-        "Does the answer contradict the context? Missing or extra information is "
-        "not a contradiction. (true/false)"
+        "Does the answer contradict the context? Missing or extra information is " "not a contradiction. (true/false)"
     ),
 }
 
@@ -95,11 +93,7 @@ def canonical_hash(lines: list[str]) -> str:
 
 
 def load_rows(path: Path) -> list[dict[str, Any]]:
-    return [
-        json.loads(line)
-        for line in path.read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    ]
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
 def write_rows(path: Path, rows: list[dict[str, Any]]) -> list[str]:
@@ -120,9 +114,7 @@ def _fmt_band(band: list[float]) -> str:
 
 
 def _context(row: dict[str, Any]) -> str:
-    return "\n\n".join(
-        f"CHUNK {c.get('chunk_id', '?')}:\n{c.get('text', '')}" for c in row.get("chunks", [])
-    )
+    return "\n\n".join(f"CHUNK {c.get('chunk_id', '?')}:\n{c.get('text', '')}" for c in row.get("chunks", []))
 
 
 def iter_units(rows: list[dict[str, Any]]):
@@ -247,9 +239,7 @@ def export_sheet(dataset: Path, sheet: Path, *, force: bool = False) -> int:
         with sheet.open(encoding="utf-8-sig", newline="") as fh:
             filled = any((r.get("correction") or r.get("notes") or "").strip() for r in csv.DictReader(fh))
         if filled:
-            raise ReviewError(
-                f"{sheet} already contains corrections; refusing to overwrite (use --force)"
-            )
+            raise ReviewError(f"{sheet} already contains corrections; refusing to overwrite (use --force)")
     rows = load_rows(dataset)
     sheet.parent.mkdir(parents=True, exist_ok=True)
     count = 0
@@ -278,9 +268,7 @@ def label_counts(rows: list[dict[str, Any]]) -> dict[str, int]:
     con = [r for r in rows if r["judge"] == "contradiction"]
     return {
         "relevance_chunks_total": sum(len(r.get("chunks", [])) for r in rel),
-        "relevance_chunks_relevant": sum(
-            1 for r in rel for c in r.get("chunks", []) if c.get("relevant")
-        ),
+        "relevance_chunks_relevant": sum(1 for r in rel for c in r.get("chunks", []) if c.get("relevant")),
         "relevance_context_sufficient_true": sum(1 for r in rel if r.get("context_sufficient")),
         "faithfulness_fully_supported": sum(
             1 for r in fai if r.get("claims") and all(c.get("supported") for c in r["claims"])
@@ -332,9 +320,7 @@ def apply_sheet(
     if set(sheet_ids) != set(units):
         extra = sorted(set(sheet_ids) - set(units))[:5]
         absent = sorted(set(units) - set(sheet_ids))[:5]
-        raise ReviewError(
-            f"sheet does not match the dataset (stale?): unknown rows {extra}, missing rows {absent}"
-        )
+        raise ReviewError(f"sheet does not match the dataset (stale?): unknown rows {extra}, missing rows {absent}")
 
     changes: list[dict[str, Any]] = []
     notes: list[dict[str, str]] = []
@@ -404,9 +390,7 @@ def main(argv: list[str] | None = None) -> int:
             n = export_sheet(args.dataset, args.sheet, force=args.force)
             print(f"wrote {n} label rows to {args.sheet}")
             return 0
-        summary = apply_sheet(
-            args.dataset, args.manifest, args.sheet, review_date=args.date, dry_run=args.dry_run
-        )
+        summary = apply_sheet(args.dataset, args.manifest, args.sheet, review_date=args.date, dry_run=args.dry_run)
     except ReviewError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2

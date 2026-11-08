@@ -24,9 +24,7 @@ logger = get_logger(__name__)
 INJECTION_METRIC = "retrieval.injection_suspected"
 
 
-def annotate_injection_flags(
-    results: list[dict[str, Any]], *, request_id: str | None = None
-) -> int:
+def annotate_injection_flags(results: list[dict[str, Any]], *, request_id: str | None = None) -> int:
     """Scan each result's text for prompt-injection patterns.
 
     Sets ``injection_flags`` on every result (empty list when clean), bumps the

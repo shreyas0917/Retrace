@@ -44,9 +44,7 @@ def configure_logging(log_level: str = "INFO", service: str = "retrace-backend")
 
 
 def _add_service(service: str, environment: str):
-    def processor(
-        logger: Any, method_name: str, event_dict: dict[str, Any]
-    ) -> dict[str, Any]:
+    def processor(logger: Any, method_name: str, event_dict: dict[str, Any]) -> dict[str, Any]:
         event_dict.setdefault("service", service)
         event_dict.setdefault("environment", environment)
         return event_dict

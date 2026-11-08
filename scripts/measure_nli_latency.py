@@ -55,7 +55,11 @@ def _synthetic_cap_case() -> dict:
     """MAX_CLAIMS claims x (DEFAULT_MAX_PAIRS / MAX_CLAIMS) one-sentence chunks: exactly the default cap."""
     claims = [f"Policy item {i} applies to every full-time employee in the company." for i in range(MAX_CLAIMS)]
     chunks = [
-        {"chunk_id": f"synthetic:c{i:03d}", "text": f"Section {i} describes the rules for office access badges.", "retrieval_score": 1 - i / 1000}
+        {
+            "chunk_id": f"synthetic:c{i:03d}",
+            "text": f"Section {i} describes the rules for office access badges.",
+            "retrieval_score": 1 - i / 1000,
+        }
         for i in range(DEFAULT_MAX_PAIRS // MAX_CLAIMS)
     ]
     return {"query": "synthetic", "answer": " ".join(claims), "retrieved_chunks": chunks}
@@ -104,7 +108,9 @@ def _machine() -> dict:
     }
 
 
-def render(rows: list[tuple[str, dict]], load_ms: float, machine: dict, repeats: int, cap_repeats: int, load: tuple[str, str]) -> str:
+def render(
+    rows: list[tuple[str, dict]], load_ms: float, machine: dict, repeats: int, cap_repeats: int, load: tuple[str, str]
+) -> str:
     when = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     lines = [
         "# NLI faithfulness latency (CPU)",

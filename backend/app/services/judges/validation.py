@@ -285,9 +285,7 @@ def build_messages(judge_type: str, example: JudgeExample, variant: str) -> list
     return messages
 
 
-def run_judge_on_example(
-    judge_type: str, example: JudgeExample, variant: str, settings: Settings
-) -> dict[str, Any]:
+def run_judge_on_example(judge_type: str, example: JudgeExample, variant: str, settings: Settings) -> dict[str, Any]:
     """Returns a prediction record; never raises for model/schema failures."""
     messages = build_messages(judge_type, example, variant)
     record: dict[str, Any] = {
@@ -328,9 +326,7 @@ def run_judge_on_example(
         items = {item.chunk_id: item for item in parsed.items}
         known = {c.chunk_id for c in example.chunks}
         record["items"] = {
-            cid: {"relevant": items[cid].relevant, "score": items[cid].score}
-            for cid in known
-            if cid in items
+            cid: {"relevant": items[cid].relevant, "score": items[cid].score} for cid in known if cid in items
         }
         record["missing_chunk_ids"] = sorted(known - set(items))
         record["unknown_chunk_ids"] = sorted(set(items) - known)
@@ -343,8 +339,7 @@ def run_judge_on_example(
             for c in parsed.claims
         ]
         record["has_unsupported"] = (
-            any(not c.supported for c in parsed.claims)
-            or parsed.faithfulness_score < FAITHFUL_THRESHOLD
+            any(not c.supported for c in parsed.claims) or parsed.faithfulness_score < FAITHFUL_THRESHOLD
         )
     else:
         assert isinstance(parsed, ContradictionJudgeResult)
@@ -668,9 +663,7 @@ def validate_judges(
                     }
                 )
             if len(variant_list) > 1:
-                sensitivity[judge] = _round(
-                    prompt_sensitivity(judge, judge_examples, preds[judge])
-                )
+                sensitivity[judge] = _round(prompt_sensitivity(judge, judge_examples, preds[judge]))
 
         report = {
             "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -740,10 +733,12 @@ def format_markdown(report: dict[str, Any], *, source_label: str, notes: str = "
     ex = report["examples"]
     lines.append("## Labeled example set")
     lines.append("")
+    lines.append(f"- {ex['n']} examples (" + ", ".join(f"{j}: {n}" for j, n in ex["per_judge"].items()) + ").")
     lines.append(
-        f"- {ex['n']} examples (" + ", ".join(f"{j}: {n}" for j, n in ex["per_judge"].items()) + ")."
+        f"- Example-set hash: `{ex['example_set_hash']}`"
+        + (f"; labels file hash: `{report['labels_file_hash']}`" if report.get("labels_file_hash") else "")
+        + "."
     )
-    lines.append(f"- Example-set hash: `{ex['example_set_hash']}`" + (f"; labels file hash: `{report['labels_file_hash']}`" if report.get("labels_file_hash") else "") + ".")
     lines.append("")
     lines.append("## Prompt versions")
     lines.append("")
@@ -755,15 +750,16 @@ def format_markdown(report: dict[str, Any], *, source_label: str, notes: str = "
     lines.append("")
     lines.append("## Accuracy vs labels (per judge, per prompt variant)")
     lines.append("")
-    lines.append(
-        "| judge | variant | n | metric | acc | prec | rec | F1 | kappa | score MAE | schema fail | mean ms |"
-    )
+    lines.append("| judge | variant | n | metric | acc | prec | rec | F1 | kappa | score MAE | schema fail | mean ms |")
     lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
     for judge, variants in report["per_judge"].items():
         for variant, r in variants.items():
             rel = r["reliability"]
             if judge == "relevance":
-                blocks = [("chunk relevant", r["chunk_relevant"], r["score_mae"]), ("context_sufficient", r["context_sufficient"], None)]
+                blocks = [
+                    ("chunk relevant", r["chunk_relevant"], r["score_mae"]),
+                    ("context_sufficient", r["context_sufficient"], None),
+                ]
             elif judge == "faithfulness":
                 blocks = [("has unsupported claim", r["has_unsupported_claim"], r["score_mae"])]
             else:

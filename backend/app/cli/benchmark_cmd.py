@@ -108,9 +108,7 @@ def run_report(
             "ece_before": table.ece_before,
             "brier_before": table.brier_before,
             "path": str(path) if path else None,
-            "summary": {
-                k: v for k, v in calib["summary"].items() if k not in {"confusion_matrix", "per_class"}
-            },
+            "summary": {k: v for k, v in calib["summary"].items() if k not in {"confusion_matrix", "per_class"}},
         }
 
     # 2. Evaluation, using whichever calibrator is on disk now.
@@ -223,7 +221,9 @@ def render_markdown(report: dict[str, Any]) -> str:
     lines.append(f"| Weighted-F1 | {_f(s.get('weighted_f1'))} |")
     sel = s.get("selective") or {}
     lines.append(f"| Uncertain (deferred) rate | {_pct(sel.get('uncertain_rate'))} |")
-    lines.append(f"| Selective accuracy (answered cases only) | {_pct(sel.get('selective_accuracy'))} at {_pct(sel.get('coverage'))} coverage |")
+    lines.append(
+        f"| Selective accuracy (answered cases only) | {_pct(sel.get('selective_accuracy'))} at {_pct(sel.get('coverage'))} coverage |"
+    )
     lines.append(f"| Gate | {report['gate']['status']} (exit {report['gate']['exit_code']}) |")
     lines.append("")
 
@@ -279,8 +279,12 @@ def render_markdown(report: dict[str, Any]) -> str:
     lines.append("")
     lines.append("| | Raw rule score | Calibrated confidence |")
     lines.append("| --- | ---: | ---: |")
-    lines.append(f"| Expected calibration error (lower is better) | {_f(cal.get('raw', {}).get('ece'))} | {_f(cal.get('calibrated', {}).get('ece'))} |")
-    lines.append(f"| Brier score (lower is better) | {_f(cal.get('raw', {}).get('brier'))} | {_f(cal.get('calibrated', {}).get('brier'))} |")
+    lines.append(
+        f"| Expected calibration error (lower is better) | {_f(cal.get('raw', {}).get('ece'))} | {_f(cal.get('calibrated', {}).get('ece'))} |"
+    )
+    lines.append(
+        f"| Brier score (lower is better) | {_f(cal.get('raw', {}).get('brier'))} | {_f(cal.get('calibrated', {}).get('brier'))} |"
+    )
     lines.append("")
     lines.append("Reliability bins on this suite (calibrated confidence):")
     lines.append("")
@@ -302,7 +306,9 @@ def render_markdown(report: dict[str, Any]) -> str:
         "non-judge branches; `llm` prompts the configured model with the signals and the taxonomy."
     )
     lines.append("")
-    lines.append("| Classifier | Lenient acc. | Strict acc. | Macro-F1 | Weighted-F1 | Uncertain rate | Malformed | Mean latency |")
+    lines.append(
+        "| Classifier | Lenient acc. | Strict acc. | Macro-F1 | Weighted-F1 | Uncertain rate | Malformed | Mean latency |"
+    )
     lines.append("| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |")
     for name, m in clf.items():
         lines.append(
@@ -315,9 +321,7 @@ def render_markdown(report: dict[str, Any]) -> str:
             f"LLM classifier: model `{cc['llm']['model']}`, prompt `{cc['llm']['prompt_version']}`, temperature 0."
         )
     else:
-        lines.append(
-            "LLM classifier not run in this report (requires a live model; run with `--with-llm`)."
-        )
+        lines.append("LLM classifier not run in this report (requires a live model; run with `--with-llm`).")
     lines.append("")
     agree = cc.get("agreement") or {}
     if agree:

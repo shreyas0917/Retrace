@@ -71,12 +71,16 @@ def post_experiment(body: EvalRequest, db: Session = Depends(get_db)) -> dict:
 
 @router.get("/experiments")
 def list_experiments(db: Session = Depends(get_db), limit: int = 20) -> dict:
-    rows = db.execute(
-        select(Experiment)
-        .where(Experiment.suite_id.is_not(None))
-        .order_by(Experiment.created_at.desc())
-        .limit(limit)
-    ).scalars().all()
+    rows = (
+        db.execute(
+            select(Experiment)
+            .where(Experiment.suite_id.is_not(None))
+            .order_by(Experiment.created_at.desc())
+            .limit(limit)
+        )
+        .scalars()
+        .all()
+    )
     return {
         "experiments": [
             {
@@ -122,11 +126,11 @@ def get_experiment_results(experiment_id: str, db: Session = Depends(get_db)) ->
     exp = db.get(Experiment, experiment_id)
     if not exp:
         raise NotFoundError(f"Experiment not found: {experiment_id}")
-    rows = db.execute(
-        select(ExperimentCaseResult).where(
-            ExperimentCaseResult.experiment_id == experiment_id
-        )
-    ).scalars().all()
+    rows = (
+        db.execute(select(ExperimentCaseResult).where(ExperimentCaseResult.experiment_id == experiment_id))
+        .scalars()
+        .all()
+    )
     return {
         "experiment_id": experiment_id,
         "results": [
@@ -164,12 +168,8 @@ def get_experiment_comparison(experiment_id: str, db: Session = Depends(get_db))
         raise NotFoundError("Experiment has no metrics")
     baseline = None
     if exp.suite_id and exp.suite_version:
-        baseline = get_active_baseline(
-            db, suite_id=exp.suite_id, suite_version=exp.suite_version
-        )
-    thresholds = (
-        baseline.thresholds if baseline and baseline.thresholds else load_thresholds()
-    )
+        baseline = get_active_baseline(db, suite_id=exp.suite_id, suite_version=exp.suite_version)
+    thresholds = baseline.thresholds if baseline and baseline.thresholds else load_thresholds()
     comparison = compare_metrics(
         current=metrics.metrics,
         baseline=baseline.metrics if baseline else None,

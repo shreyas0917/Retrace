@@ -38,8 +38,6 @@ def redact_value(key: str, value: Any) -> Any:
     return value
 
 
-def redact_event_dict(
-    _logger: Any, _method: str, event_dict: dict[str, Any]
-) -> dict[str, Any]:
+def redact_event_dict(_logger: Any, _method: str, event_dict: dict[str, Any]) -> dict[str, Any]:
     """structlog processor — strip secrets before JSON render."""
     return {k: redact_value(k, v) for k, v in event_dict.items()}

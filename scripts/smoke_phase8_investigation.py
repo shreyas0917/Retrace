@@ -1,4 +1,5 @@
 """Smoke: generate → diagnose → investigation."""
+
 from __future__ import annotations
 
 import os
@@ -33,11 +34,7 @@ def main() -> None:
     h = {"Authorization": f"Bearer {key}"}
 
     corpora_raw = client.get("/api/v1/corpora", headers=h).json()
-    corpora = (
-        corpora_raw["corpora"]
-        if isinstance(corpora_raw, dict)
-        else corpora_raw
-    )
+    corpora = corpora_raw["corpora"] if isinstance(corpora_raw, dict) else corpora_raw
     vid = None
     for c in corpora:
         cid = c["id"] if isinstance(c, dict) else c
@@ -51,9 +48,7 @@ def main() -> None:
 
     if not vid:
         cid = f"p8_{uuid.uuid4().hex[:8]}"
-        assert client.post(
-            "/api/v1/corpora", headers=h, json={"id": cid, "title": "P8"}
-        ).status_code == 200
+        assert client.post("/api/v1/corpora", headers=h, json={"id": cid, "title": "P8"}).status_code == 200
         r = client.post(
             f"/api/v1/corpora/{cid}/versions",
             headers=h,
@@ -62,8 +57,7 @@ def main() -> None:
                     {
                         "id": "pto",
                         "text": (
-                            "Full-time employees accrue 1.25 days of PTO per month. "
-                            "Unused PTO may carry over."
+                            "Full-time employees accrue 1.25 days of PTO per month. " "Unused PTO may carry over."
                         ),
                         "source_name": "pto.md",
                     },

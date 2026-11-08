@@ -33,9 +33,7 @@ def get_embedding_model(settings: Settings | None = None):
 
     settings = settings or get_settings()
     if settings.embedding_model != _PRD_MODEL:
-        raise EmbeddingError(
-            f"Refusing to load non-PRD embedding model: {settings.embedding_model}"
-        )
+        raise EmbeddingError(f"Refusing to load non-PRD embedding model: {settings.embedding_model}")
 
     try:
         from sentence_transformers import SentenceTransformer

@@ -46,10 +46,7 @@ def main() -> int:
     print(f"suite: {report['suite_id']}@{report['suite_version']}")
     print(f"suite_hash: {report['suite_hash']}")
     print(f"experiment_id: {report['experiment_id']}")
-    print(
-        f"cases: {summary['total_cases']}  correct: {summary['correct']}  "
-        f"incorrect: {summary['incorrect']}"
-    )
+    print(f"cases: {summary['total_cases']}  correct: {summary['correct']}  " f"incorrect: {summary['incorrect']}")
     print(f"failure_code_accuracy: {summary['failure_code_accuracy']}")
     print(f"rule_accuracy: {summary['rule_accuracy']}")
     print(f"evidence_accuracy: {summary['evidence_accuracy']}")

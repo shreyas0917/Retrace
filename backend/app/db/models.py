@@ -33,14 +33,10 @@ class ApiKey(Base):
 
     __tablename__ = "api_keys"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(Text, nullable=False)
     key_hash: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
@@ -49,9 +45,7 @@ class Corpus(Base):
 
     id: Mapped[str] = mapped_column(Text, primary_key=True)
     title: Mapped[str] = mapped_column(Text, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     versions: Mapped[list[CorpusVersion]] = relationship(back_populates="corpus")
 
@@ -70,28 +64,18 @@ class CorpusVersion(Base):
     )
 
     id: Mapped[str] = mapped_column(Text, primary_key=True, default=_uuid_str)
-    corpus_id: Mapped[str] = mapped_column(
-        Text, ForeignKey("corpora.id"), nullable=False, index=True
-    )
+    corpus_id: Mapped[str] = mapped_column(Text, ForeignKey("corpora.id"), nullable=False, index=True)
     corpus_hash: Mapped[str] = mapped_column(Text, nullable=False, index=True)
     chunking_config: Mapped[dict] = mapped_column(JSONB, nullable=False)
     chunking_config_hash: Mapped[str] = mapped_column(Text, nullable=False)
     embedding_model: Mapped[str] = mapped_column(Text, nullable=False)
     embedding_revision: Mapped[str] = mapped_column(Text, nullable=False)
     vector_collection: Mapped[str] = mapped_column(Text, nullable=False)
-    status: Mapped[str] = mapped_column(
-        Text, nullable=False, default="CREATED", server_default="CREATED"
-    )
+    status: Mapped[str] = mapped_column(Text, nullable=False, default="CREATED", server_default="CREATED")
     status_message: Mapped[str | None] = mapped_column(Text)
-    document_count: Mapped[int] = mapped_column(
-        Integer, nullable=False, default=0, server_default="0"
-    )
-    chunk_count: Mapped[int] = mapped_column(
-        Integer, nullable=False, default=0, server_default="0"
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
+    document_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    chunk_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     corpus: Mapped[Corpus] = relationship(back_populates="versions")
     documents: Mapped[list[Document]] = relationship(back_populates="corpus_version")
@@ -100,15 +84,11 @@ class CorpusVersion(Base):
 
 class Document(Base):
     __tablename__ = "documents"
-    __table_args__ = (
-        UniqueConstraint("corpus_version_id", "id", name="uq_document_per_version"),
-    )
+    __table_args__ = (UniqueConstraint("corpus_version_id", "id", name="uq_document_per_version"),)
 
     pk: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     id: Mapped[str] = mapped_column(Text, nullable=False)
-    corpus_version_id: Mapped[str] = mapped_column(
-        Text, ForeignKey("corpus_versions.id"), nullable=False, index=True
-    )
+    corpus_version_id: Mapped[str] = mapped_column(Text, ForeignKey("corpus_versions.id"), nullable=False, index=True)
     source_uri: Mapped[str | None] = mapped_column(Text)
     source_name: Mapped[str | None] = mapped_column(Text)
     text_hash: Mapped[str] = mapped_column(Text, nullable=False)
@@ -131,9 +111,7 @@ class Chunk(Base):
 
     pk: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     id: Mapped[str] = mapped_column(Text, nullable=False, index=True)
-    corpus_version_id: Mapped[str] = mapped_column(
-        Text, ForeignKey("corpus_versions.id"), nullable=False, index=True
-    )
+    corpus_version_id: Mapped[str] = mapped_column(Text, ForeignKey("corpus_versions.id"), nullable=False, index=True)
     document_id: Mapped[str] = mapped_column(Text, nullable=False)
     ordinal: Mapped[int] = mapped_column(Integer, nullable=False)
     text: Mapped[str] = mapped_column(Text, nullable=False)
@@ -151,13 +129,9 @@ class Suite(Base):
     id: Mapped[str] = mapped_column(Text, primary_key=True)
     version: Mapped[str] = mapped_column(Text, primary_key=True)
     suite_hash: Mapped[str] = mapped_column(Text, nullable=False)
-    corpus_id: Mapped[str] = mapped_column(
-        Text, ForeignKey("corpora.id"), nullable=False
-    )
+    corpus_id: Mapped[str] = mapped_column(Text, ForeignKey("corpora.id"), nullable=False)
     taxonomy_version: Mapped[str] = mapped_column(Text, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
 class Case(Base):
@@ -180,24 +154,16 @@ class Experiment(Base):
 
     id: Mapped[str] = mapped_column(Text, primary_key=True, default=_uuid_str)
     name: Mapped[str | None] = mapped_column(Text)
-    api_key_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("api_keys.id")
-    )
-    corpus_version_id: Mapped[str] = mapped_column(
-        Text, ForeignKey("corpus_versions.id"), nullable=False
-    )
+    api_key_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("api_keys.id"))
+    corpus_version_id: Mapped[str] = mapped_column(Text, ForeignKey("corpus_versions.id"), nullable=False)
     suite_id: Mapped[str | None] = mapped_column(Text)
     suite_version: Mapped[str | None] = mapped_column(Text)
     suite_hash: Mapped[str | None] = mapped_column(Text)
     git_commit: Mapped[str | None] = mapped_column(Text)
     pipeline: Mapped[dict] = mapped_column(JSONB, nullable=False)
     status: Mapped[str] = mapped_column(Text, nullable=False)
-    baseline_experiment_id: Mapped[str | None] = mapped_column(
-        Text, ForeignKey("experiments.id")
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
+    baseline_experiment_id: Mapped[str | None] = mapped_column(Text, ForeignKey("experiments.id"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     artifact_uri: Mapped[str | None] = mapped_column(Text)
 
@@ -206,13 +172,9 @@ class Run(Base):
     __tablename__ = "runs"
 
     id: Mapped[str] = mapped_column(Text, primary_key=True, default=_uuid_str)
-    experiment_id: Mapped[str | None] = mapped_column(
-        Text, ForeignKey("experiments.id"), index=True
-    )
+    experiment_id: Mapped[str | None] = mapped_column(Text, ForeignKey("experiments.id"), index=True)
     case_id: Mapped[str | None] = mapped_column(Text)
-    execution_id: Mapped[str | None] = mapped_column(
-        Text, ForeignKey("execution_traces.id"), nullable=True, index=True
-    )
+    execution_id: Mapped[str | None] = mapped_column(Text, ForeignKey("execution_traces.id"), nullable=True, index=True)
     request_id: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
     query: Mapped[str] = mapped_column(Text, nullable=False)
     answer_text: Mapped[str | None] = mapped_column(Text)
@@ -221,17 +183,13 @@ class Run(Base):
     latency_ms: Mapped[dict | None] = mapped_column(JSONB)
     token_usage: Mapped[dict | None] = mapped_column(JSONB)
     error: Mapped[dict | None] = mapped_column(JSONB)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
 class RunChunk(Base):
     __tablename__ = "run_chunks"
 
-    run_id: Mapped[str] = mapped_column(
-        Text, ForeignKey("runs.id"), primary_key=True
-    )
+    run_id: Mapped[str] = mapped_column(Text, ForeignKey("runs.id"), primary_key=True)
     rank: Mapped[int] = mapped_column(Integer, primary_key=True)
     chunk_id: Mapped[str] = mapped_column(Text, nullable=False)
     score: Mapped[float | None] = mapped_column(Float)
@@ -250,9 +208,7 @@ class JudgeResult(Base):
 
     id: Mapped[str] = mapped_column(Text, primary_key=True, default=_uuid_str)
     run_id: Mapped[str | None] = mapped_column(Text, ForeignKey("runs.id"), nullable=True)
-    execution_id: Mapped[str | None] = mapped_column(
-        Text, ForeignKey("execution_traces.id"), nullable=True, index=True
-    )
+    execution_id: Mapped[str | None] = mapped_column(Text, ForeignKey("execution_traces.id"), nullable=True, index=True)
     judge_type: Mapped[str] = mapped_column(Text, nullable=False)
     prompt_version: Mapped[str] = mapped_column(Text, nullable=False)
     model: Mapped[str] = mapped_column(Text, nullable=False)
@@ -267,9 +223,7 @@ class Diagnosis(Base):
     __tablename__ = "diagnoses"
 
     id: Mapped[str] = mapped_column(Text, primary_key=True, default=_uuid_str)
-    run_id: Mapped[str | None] = mapped_column(
-        Text, ForeignKey("runs.id"), unique=True, nullable=True
-    )
+    run_id: Mapped[str | None] = mapped_column(Text, ForeignKey("runs.id"), unique=True, nullable=True)
     execution_id: Mapped[str | None] = mapped_column(
         Text, ForeignKey("execution_traces.id"), unique=True, nullable=True, index=True
     )
@@ -282,18 +236,14 @@ class Diagnosis(Base):
     diagnosis_score: Mapped[float | None] = mapped_column(Float)
     recommendation_code: Mapped[str | None] = mapped_column(Text)
     signals: Mapped[dict] = mapped_column(JSONB, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
 class DiagnosisEvidence(Base):
     __tablename__ = "diagnosis_evidence"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    diagnosis_id: Mapped[str] = mapped_column(
-        Text, ForeignKey("diagnoses.id"), nullable=False, index=True
-    )
+    diagnosis_id: Mapped[str] = mapped_column(Text, ForeignKey("diagnoses.id"), nullable=False, index=True)
     evidence_type: Mapped[str] = mapped_column(Text, nullable=False)
     ref: Mapped[str | None] = mapped_column(Text)
     payload: Mapped[dict | None] = mapped_column(JSONB)
@@ -302,14 +252,10 @@ class DiagnosisEvidence(Base):
 class ExperimentMetric(Base):
     __tablename__ = "experiment_metrics"
 
-    experiment_id: Mapped[str] = mapped_column(
-        Text, ForeignKey("experiments.id"), primary_key=True
-    )
+    experiment_id: Mapped[str] = mapped_column(Text, ForeignKey("experiments.id"), primary_key=True)
     metrics: Mapped[dict] = mapped_column(JSONB, nullable=False)
     confusion_matrix: Mapped[dict | None] = mapped_column(JSONB)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
 class BaselineArtifact(Base):
@@ -317,36 +263,24 @@ class BaselineArtifact(Base):
 
     id: Mapped[str] = mapped_column(Text, primary_key=True, default=_uuid_str)
     name: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
-    experiment_id: Mapped[str] = mapped_column(
-        Text, ForeignKey("experiments.id"), nullable=False
-    )
+    experiment_id: Mapped[str] = mapped_column(Text, ForeignKey("experiments.id"), nullable=False)
     suite_id: Mapped[str] = mapped_column(Text, nullable=False)
     suite_version: Mapped[str] = mapped_column(Text, nullable=False)
     suite_hash: Mapped[str | None] = mapped_column(Text)
     metrics: Mapped[dict] = mapped_column(JSONB, nullable=False)
     thresholds: Mapped[dict] = mapped_column(JSONB, nullable=False)
-    is_active: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, default=False, server_default="false"
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
 class ExperimentCaseResult(Base):
     """Per-case evaluation outcome for an experiment (Phase 6)."""
 
     __tablename__ = "experiment_case_results"
-    __table_args__ = (
-        UniqueConstraint(
-            "experiment_id", "case_id", name="uq_experiment_case_result"
-        ),
-    )
+    __table_args__ = (UniqueConstraint("experiment_id", "case_id", name="uq_experiment_case_result"),)
 
     id: Mapped[str] = mapped_column(Text, primary_key=True, default=_uuid_str)
-    experiment_id: Mapped[str] = mapped_column(
-        Text, ForeignKey("experiments.id"), nullable=False, index=True
-    )
+    experiment_id: Mapped[str] = mapped_column(Text, ForeignKey("experiments.id"), nullable=False, index=True)
     case_id: Mapped[str] = mapped_column(Text, nullable=False)
     query: Mapped[str] = mapped_column(Text, nullable=False)
     expected_failure_code: Mapped[str] = mapped_column(Text, nullable=False)
@@ -358,17 +292,13 @@ class ExperimentCaseResult(Base):
     predicted_evidence_refs: Mapped[list[str] | None] = mapped_column(ARRAY(Text))
     evidence_valid: Mapped[bool | None] = mapped_column(Boolean)
     passed: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    execution_id: Mapped[str | None] = mapped_column(
-        Text, ForeignKey("execution_traces.id")
-    )
+    execution_id: Mapped[str | None] = mapped_column(Text, ForeignKey("execution_traces.id"))
     diagnosis_id: Mapped[str | None] = mapped_column(Text)
     latency_ms: Mapped[dict | None] = mapped_column(JSONB)
     token_usage: Mapped[dict | None] = mapped_column(JSONB)
     cost: Mapped[float | None] = mapped_column(Float)
     error: Mapped[dict | None] = mapped_column(JSONB)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
 class RetrievalTrace(Base):
@@ -378,9 +308,7 @@ class RetrievalTrace(Base):
 
     id: Mapped[str] = mapped_column(Text, primary_key=True, default=_uuid_str)
     request_id: Mapped[str] = mapped_column(Text, nullable=False, index=True)
-    corpus_version_id: Mapped[str] = mapped_column(
-        Text, ForeignKey("corpus_versions.id"), nullable=False, index=True
-    )
+    corpus_version_id: Mapped[str] = mapped_column(Text, ForeignKey("corpus_versions.id"), nullable=False, index=True)
     query: Mapped[str] = mapped_column(Text, nullable=False)
     top_k: Mapped[int] = mapped_column(Integer, nullable=False)
     retrieved_chunk_ids: Mapped[list[str] | None] = mapped_column(ARRAY(Text))
@@ -388,9 +316,7 @@ class RetrievalTrace(Base):
     latency_ms: Mapped[float | None] = mapped_column(Float)
     embedding_model: Mapped[str] = mapped_column(Text, nullable=False)
     result_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
 class ExecutionTrace(Base):
@@ -406,16 +332,12 @@ class ExecutionTrace(Base):
         Text, ForeignKey("corpus_versions.id"), nullable=True, index=True
     )
     # "internal" (Retrace's own pipeline) or "external" (POST /api/v1/traces).
-    source: Mapped[str] = mapped_column(
-        Text, nullable=False, default="internal", server_default="internal", index=True
-    )
+    source: Mapped[str] = mapped_column(Text, nullable=False, default="internal", server_default="internal", index=True)
     # External traces: caller metadata, expected_abstention, gold ids, how
     # abstention was detected. Never used by the diagnosis rules.
     trace_metadata: Mapped[dict | None] = mapped_column(JSONB)
     query: Mapped[str] = mapped_column(Text, nullable=False)
-    retrieval_trace_id: Mapped[str | None] = mapped_column(
-        Text, ForeignKey("retrieval_traces.id"), index=True
-    )
+    retrieval_trace_id: Mapped[str | None] = mapped_column(Text, ForeignKey("retrieval_traces.id"), index=True)
     top_k: Mapped[int] = mapped_column(Integer, nullable=False)
     retrieved_chunks: Mapped[list | None] = mapped_column(JSONB)
     embedding_model: Mapped[str | None] = mapped_column(Text)
@@ -437,9 +359,7 @@ class ExecutionTrace(Base):
     # v1.0 cost accounting (migration 007): estimated USD from configs/pricing.yaml
     cost_usd: Mapped[float | None] = mapped_column(Float)
     pricing_version: Mapped[str | None] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
 class MetricEvent(Base):
@@ -453,9 +373,7 @@ class MetricEvent(Base):
     __table_args__ = (Index("ix_metric_events_name_ts", "name", "ts"),)
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    ts: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False, index=True
-    )
+    ts: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
     kind: Mapped[str] = mapped_column(Text, nullable=False)  # 'counter' | 'latency'
     name: Mapped[str] = mapped_column(Text, nullable=False, index=True)
     value: Mapped[float] = mapped_column(Float, nullable=False)

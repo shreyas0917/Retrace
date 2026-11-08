@@ -32,9 +32,7 @@ STATUS_FAILED = "FAILED"
 STATUS_GENERATION_TIMEOUT = "GENERATION_TIMEOUT"
 
 
-def _chunk_snapshot(
-    corpus_version_id: str, results: list[dict[str, Any]]
-) -> list[dict[str, Any]]:
+def _chunk_snapshot(corpus_version_id: str, results: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Compact chunk references stored on the execution trace."""
     snapshot = []
     for item in results:
@@ -198,9 +196,7 @@ def run_rag(
 
     total_latency_ms = round((time.perf_counter() - total_started) * 1000, 2)
     retrieval_latency_ms = retrieval["latency_ms"] if retrieval else None
-    chunk_refs = (
-        _chunk_snapshot(corpus_version_id, retrieval["results"]) if retrieval else []
-    )
+    chunk_refs = _chunk_snapshot(corpus_version_id, retrieval["results"]) if retrieval else []
 
     # Pins from corpus version when available
     embedding_model = (
@@ -208,9 +204,8 @@ def run_rag(
         or (retrieval or {}).get("embedding_model")
         or settings.embedding_model
     )
-    embedding_revision = (
-        (version.embedding_revision if version else None)
-        or (retrieval or {}).get("embedding_revision")
+    embedding_revision = (version.embedding_revision if version else None) or (retrieval or {}).get(
+        "embedding_revision"
     )
 
     trace = ExecutionTrace(

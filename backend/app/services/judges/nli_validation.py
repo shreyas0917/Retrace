@@ -119,7 +119,9 @@ def _contradiction(
         records.append({"example_id": ex.example_id, "nli_contradiction": flag})
     out: dict[str, Any] = {"vs_labels": binary_metrics(y_true, y_pred), "vs_llm_judge": None}
     if llm_verdicts:
-        paired = [(r["nli_contradiction"], llm_verdicts[r["example_id"]]) for r in records if r["example_id"] in llm_verdicts]
+        paired = [
+            (r["nli_contradiction"], llm_verdicts[r["example_id"]]) for r in records if r["example_id"] in llm_verdicts
+        ]
         if paired:
             nli, llm = [p[0] for p in paired], [p[1] for p in paired]
             out["vs_llm_judge"] = {
@@ -156,7 +158,9 @@ def threshold_sensitivity(units: Sequence[dict[str, Any]], *, k_folds: int = 5) 
             if not train or not test:
                 continue
             scored = [_metrics_at(train, t) for t in SWEEP_THRESHOLDS]
-            best = max(scored, key=lambda m: ((m["kappa"] if m["kappa"] is not None else -2.0), -abs(m["threshold"] - 0.5)))
+            best = max(
+                scored, key=lambda m: ((m["kappa"] if m["kappa"] is not None else -2.0), -abs(m["threshold"] - 0.5))
+            )
             held = _metrics_at(test, best["threshold"])
             folds.append(
                 {
@@ -208,9 +212,7 @@ def validate_nli_faithfulness(
 
     claim_metrics, claim_units = _claim_level(faith, scorer)
     answer_metrics, answer_records = _answer_level(faith, scorer)
-    contra_metrics, contra_records = _contradiction(
-        contra, scorer, llm_contradiction_verdicts(llm_report, llm_variant)
-    )
+    contra_metrics, contra_records = _contradiction(contra, scorer, llm_contradiction_verdicts(llm_report, llm_variant))
     return {
         "backend": "nli",
         "version": NLI_FAITHFULNESS_VERSION,

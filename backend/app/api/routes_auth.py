@@ -81,9 +81,7 @@ def create_session(
 
 
 @router.post("/logout", response_model=AuthStateResponse)
-def logout(
-    response: Response, settings: Settings = Depends(get_settings)
-) -> AuthStateResponse:
+def logout(response: Response, settings: Settings = Depends(get_settings)) -> AuthStateResponse:
     response.delete_cookie(
         key=SESSION_COOKIE_NAME,
         path="/",

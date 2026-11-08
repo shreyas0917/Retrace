@@ -20,9 +20,7 @@ os.environ.setdefault("CHROMA_PORT", "8001")
 os.environ.setdefault("MODEL_BASE_URL", "https://api.openai.com/v1")
 os.environ.setdefault("MODEL_API_KEY", "test-model-key")
 os.environ.setdefault("MODEL_NAME", "gpt-4.1-mini")
-os.environ.setdefault(
-    "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
-)
+os.environ.setdefault("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
 os.environ.setdefault("LOG_LEVEL", "WARNING")
 # Test-only settings below are assigned, not defaulted: CI copies .env.example
 # into the containers' environment, and its production values (a 120/minute

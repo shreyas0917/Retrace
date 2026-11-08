@@ -139,15 +139,21 @@ def test_qrels_schema_rejects_bad_rows(tmp_path: Path) -> None:
         load_qrels(bad)
     with pytest.raises(ValueError):
         RetrievalQuery(
-            query_id="q", query="long?", difficulty="easy",
+            query_id="q",
+            query="long?",
+            difficulty="easy",
             relevant=[{"document_id": "d", "must_contain": "x" * (MAX_MUST_CONTAIN_CHARS + 1)}],
         )
 
 
 def test_relevance_is_chunking_independent() -> None:
     docs = [("doc", "alpha " * 100 + "the magic phrase here " + "beta " * 100)]
-    q = RetrievalQuery(query_id="q", query="magic?", difficulty="easy",
-                       relevant=[{"document_id": "doc", "must_contain": "MAGIC   phrase"}])
+    q = RetrievalQuery(
+        query_id="q",
+        query="magic?",
+        difficulty="easy",
+        relevant=[{"document_id": "doc", "must_contain": "MAGIC   phrase"}],
+    )
     for size, overlap in ((64, 32), (256, 32), (512, 64)):
         chunks = build_chunks(docs, size, overlap)
         rel = relevant_chunk_ids(q, chunks)
@@ -230,14 +236,34 @@ def _tiny_corpus(tmp_path: Path) -> tuple[Path, Path]:
         encoding="utf-8",
     )
     rows = [
-        {"query_id": "q1", "query": "How much PTO accrues per month?", "difficulty": "easy", "tags": [],
-         "relevant": [{"document_id": "pto", "must_contain": "1.25 days of PTO per month"}]},
-        {"query_id": "q2", "query": "refund window after purchase", "difficulty": "medium", "tags": [],
-         "relevant": [{"document_id": "refund", "must_contain": "within 30 days of purchase"}]},
-        {"query_id": "q3", "query": "minimum password length characters", "difficulty": "hard", "tags": [],
-         "relevant": [{"document_id": "passwords", "must_contain": "at least 14 characters"}]},
-        {"query_id": "q4", "query": "pet policy at the office", "difficulty": "hard", "tags": ["unanswerable"],
-         "relevant": []},
+        {
+            "query_id": "q1",
+            "query": "How much PTO accrues per month?",
+            "difficulty": "easy",
+            "tags": [],
+            "relevant": [{"document_id": "pto", "must_contain": "1.25 days of PTO per month"}],
+        },
+        {
+            "query_id": "q2",
+            "query": "refund window after purchase",
+            "difficulty": "medium",
+            "tags": [],
+            "relevant": [{"document_id": "refund", "must_contain": "within 30 days of purchase"}],
+        },
+        {
+            "query_id": "q3",
+            "query": "minimum password length characters",
+            "difficulty": "hard",
+            "tags": [],
+            "relevant": [{"document_id": "passwords", "must_contain": "at least 14 characters"}],
+        },
+        {
+            "query_id": "q4",
+            "query": "pet policy at the office",
+            "difficulty": "hard",
+            "tags": ["unanswerable"],
+            "relevant": [],
+        },
     ]
     qrels = tmp_path / "qrels.jsonl"
     qrels.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
@@ -251,7 +277,8 @@ def test_run_retrieval_ablation_end_to_end(tmp_path: Path) -> None:
         raise RuntimeError("no network in tests")
 
     report = run_retrieval_ablation(
-        corpus, qrels,
+        corpus,
+        qrels,
         configs=[(128, 16), (512, 64)],
         ks=(1, 3, 5, 10),
         embedding_models=["BAAI/bge-small-en-v1.5"],
@@ -278,7 +305,9 @@ def test_run_retrieval_ablation_end_to_end(tmp_path: Path) -> None:
     assert len(report["worst_queries_production_dense"]) == 3
     assert report["abstention_production_config"]["bm25"]["unanswerable"][0]["query_id"] == "q4"
 
-    md = format_markdown(report, existing_markdown="x\n<!-- interpretation:start -->\nKEEP ME\n<!-- interpretation:end -->")
+    md = format_markdown(
+        report, existing_markdown="x\n<!-- interpretation:start -->\nKEEP ME\n<!-- interpretation:end -->"
+    )
     assert "| config | retriever |" in md and "KEEP ME" in md
     assert "**[production]**" in md
 
@@ -286,8 +315,16 @@ def test_run_retrieval_ablation_end_to_end(tmp_path: Path) -> None:
 def test_ablation_rejects_qrels_not_matching_corpus(tmp_path: Path) -> None:
     corpus, qrels = _tiny_corpus(tmp_path)
     qrels.write_text(
-        json.dumps({"query_id": "q", "query": "x?", "difficulty": "easy", "tags": [],
-                    "relevant": [{"document_id": "pto", "must_contain": "not in the doc"}]}) + "\n",
+        json.dumps(
+            {
+                "query_id": "q",
+                "query": "x?",
+                "difficulty": "easy",
+                "tags": [],
+                "relevant": [{"document_id": "pto", "must_contain": "not in the doc"}],
+            }
+        )
+        + "\n",
         encoding="utf-8",
     )
     with pytest.raises(QrelsValidationError):

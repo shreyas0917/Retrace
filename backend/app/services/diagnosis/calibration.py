@@ -73,9 +73,7 @@ def _bin_index(score: float, n_bins: int) -> int:
     return min(idx, n_bins - 1)
 
 
-def reliability_bins(
-    scores: Sequence[float], correct: Sequence[bool], n_bins: int = 10
-) -> list[CalibrationBin]:
+def reliability_bins(scores: Sequence[float], correct: Sequence[bool], n_bins: int = 10) -> list[CalibrationBin]:
     """Equal-width bins over [0, 1] with mean score and empirical accuracy."""
     if n_bins <= 0:
         raise ValueError("n_bins must be > 0")
