@@ -14,6 +14,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+      # First start initialises the data directory, which can take a minute on a busy machine.
+      start_period: 60s
 
   chroma:
     image: chromadb/chroma:0.5.23
