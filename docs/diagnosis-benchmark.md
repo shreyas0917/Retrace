@@ -10,10 +10,10 @@ calibration and how the rule engine compares with other classifiers.
 
 | Suite | Cases | Purpose | Used for tuning? |
 | --- | ---: | --- | --- |
-| `planted_v1` | 12 | One unambiguous scenario per failure class; CI smoke gate | Rules were written against these semantics |
+| `planted_v1` | 12 | One unambiguous scenario per failure class; CI smoke gate; AI-drafted, not yet reviewed | Rules were written against these semantics |
 | `calib_v1` | 80 | Fit the confidence calibrator | Only for calibration, never for rules |
 | `heldout_v1` | 160 | Per-class precision/recall/F1, calibration check, classifier comparison | Never |
-| `gold_v1` | 2 | Hand-written offline executions | No |
+| `gold_v1` | 2 | Offline executions; AI-drafted, not yet reviewed | No |
 
 `heldout_v1` and `calib_v1` are produced by `scripts/build_heldout_suite.py`
 from a bank of 26 policy facts across 13 documents and 12 scenario templates

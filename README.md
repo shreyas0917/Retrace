@@ -222,10 +222,10 @@ CLI (inside the backend container, `python -m app.cli.retrace ...`):
 
 | Suite | Cases | Role |
 | --- | ---: | --- |
-| `planted_v1` | 12 | One unambiguous scenario per failure class; CI smoke gate (2% error ceiling) |
+| `planted_v1` | 12 | One unambiguous scenario per failure class; CI smoke gate (2% error ceiling); AI-drafted, not yet reviewed |
 | `heldout_v1` | 160 | Generated from scenario semantics with 15% boundary cases; never used for tuning |
 | `calib_v1` | 80 | Fits the confidence calibrator; disjoint from the held-out suite |
-| `gold_v1` | 2 | Hand-written offline executions |
+| `gold_v1` | 2 | Offline executions; AI-drafted, not yet reviewed |
 
 ```bash
 docker compose exec backend python -m app.cli.retrace eval --suite heldout_v1

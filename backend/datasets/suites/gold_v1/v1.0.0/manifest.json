@@ -1,7 +1,8 @@
 {
   "suite_id": "gold_v1",
   "suite_version": "1.0.0",
-  "suite_hash": "sha256:41d65f339396a74c42d780b4cb7e50940c3c02a6145c92536ed1dbcb8f24a61a",
+  "suite_hash": "sha256:102a431a771a264c98de38360fb82ffa0591ae572c19bf29aa0fda6bf2b12e0d",
   "case_count": 2,
-  "taxonomy_version": "1.0"
+  "taxonomy_version": "1.0",
+  "provenance": "AI-drafted, not yet reviewed (annotator ai_draft)"
 }

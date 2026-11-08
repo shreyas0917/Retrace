@@ -3,7 +3,8 @@
 
 Why a generator
 ---------------
-The planted suite has 12 hand-written scenarios, one per failure class. That
+The planted suite has 12 scenarios, one per failure class (AI-drafted, not
+yet reviewed; annotator `ai_draft`). That
 is enough to prove the rule engine is wired correctly, but not enough to
 estimate precision/recall per class or to calibrate confidence. This script
 produces a larger, seeded, reproducible set of offline execution fixtures

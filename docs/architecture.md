@@ -51,10 +51,10 @@ After the rule fires, the engine attaches a calibrated confidence (histogram bin
 
 | Suite | Cases | Role |
 | --- | ---: | --- |
-| `planted_v1` | 12 | One scenario per failure class; CI gate with a 2% error ceiling |
+| `planted_v1` | 12 | One scenario per failure class; CI gate with a 2% error ceiling; AI-drafted, not yet reviewed |
 | `heldout_v1` | 160 | Generated from scenario semantics, 15% boundary cases; per-class P/R/F1, calibration check, classifier comparison |
 | `calib_v1` | 80 | Fits the calibrator; disjoint from the held-out suite |
-| `gold_v1` | 2 | Hand-written offline executions |
+| `gold_v1` | 2 | Offline executions; AI-drafted, not yet reviewed |
 
 `retrace eval` runs a suite, persists an experiment with per-class metrics, compares it with the active baseline using per-suite thresholds and exits 0 / 1 / 2. `retrace benchmark report` additionally fits the calibrator, measures calibration error, and compares the rule engine with majority, heuristic and LLM classifiers on identical persisted signal bags. Reports are committed under `docs/benchmarks/`.
 
