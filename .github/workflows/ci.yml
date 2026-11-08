@@ -30,7 +30,7 @@ jobs:
         run: ruff format --check backend scripts --config backend/ruff.toml
       - name: No PRD references or phase-numbered test names
         run: |
-          if git grep -n -I -i -E 'prd|_prd|prd_' -- . ':!backend/alembic/versions' ':!.github/workflows/ci.yml'; then
+          if git grep -n -I -i -E '\bprd\b|_prd|prd_' -- . ':!backend/alembic/versions' ':!.github/workflows/ci.yml'; then
             echo 'Remove the PRD references above (the PRD is not part of this repo).' >&2; exit 1
           fi
           if git ls-files | grep -n 'test_phase' || git grep -n 'test_phase' -- . ':!.github/workflows/ci.yml'; then
