@@ -1,4 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Literal
+
 from pydantic import Field, field_validator
 
 
@@ -59,6 +61,14 @@ class Settings(BaseSettings):
     max_trace_chunk_chars: int = Field(default=8000, alias="MAX_TRACE_CHUNK_CHARS")
     max_trace_answer_chars: int = Field(default=20000, alias="MAX_TRACE_ANSWER_CHARS")
     max_trace_batch: int = Field(default=25, alias="MAX_TRACE_BATCH")
+
+    # --- Faithfulness judge (ADR-045) ---
+    # "nli": claim-level NLI cross-encoder (default). "llm": the LLM judge.
+    # Suites with recorded judge outputs replay them whatever this says.
+    faithfulness_backend: Literal["nli", "llm"] = Field(default="nli", alias="FAITHFULNESS_BACKEND")
+    # Cap on (claim, premise window) pairs the NLI judge scores per answer. At
+    # least MAX_CLAIMS (20) so every claim gets one window.
+    nli_max_pairs: int = Field(default=2000, ge=20, alias="NLI_MAX_PAIRS")
 
     # --- LLM resilience (v1.0) ---
     model_max_retries: int = Field(default=2, alias="MODEL_MAX_RETRIES")

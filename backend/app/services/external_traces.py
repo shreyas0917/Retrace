@@ -8,7 +8,6 @@ diagnosis runs through the same engine as internal executions.
 from __future__ import annotations
 
 import json
-import re
 import uuid
 from dataclasses import dataclass
 from typing import Any
@@ -22,8 +21,12 @@ from app.core.logging import get_logger
 from app.core.metrics import get_metrics
 from app.db.models import ExecutionTrace
 from app.schemas.traces import TraceRequest
+from app.services.abstention import (  # noqa: F401 - re-exported for callers and tests
+    REFUSAL_MAX_CHARS,
+    REFUSAL_PHRASES,
+    detect_abstention,
+)
 from app.services.diagnosis.engine import diagnose_execution
-from app.services.prompts import ABSTENTION_ANSWER
 from app.services.retrieval import annotate_injection_flags
 
 logger = get_logger(__name__)
@@ -33,51 +36,6 @@ STATUS_COMPLETED = "COMPLETED"
 STATUS_ABSTAINED = "ABSTAINED"
 # No answer and no abstention: the diagnosis engine treats this as missing (R02).
 STATUS_ANSWER_MISSING = "ANSWER_MISSING"
-
-# Refusal phrases recognised when the caller leaves `abstained` unset. Matching
-# is case-insensitive and only applies to answers of at most REFUSAL_MAX_CHARS
-# characters, so a long answer that merely mentions one of them is not treated
-# as an abstention. Set `abstained` explicitly whenever your app knows.
-REFUSAL_PHRASES: tuple[str, ...] = (
-    "i don't know",
-    "i do not know",
-    "i cannot answer",
-    "i can't answer",
-    "i am unable to answer",
-    "i'm unable to answer",
-    "not enough information to answer",
-    "the provided context does not contain",
-    "the context does not contain",
-    "the documents do not contain",
-    "no relevant information",
-)
-REFUSAL_MAX_CHARS = 300
-
-
-def _normalize(text: str) -> str:
-    text = text.replace("’", "'").replace("‘", "'")
-    return re.sub(r"\s+", " ", text).strip().lower()
-
-
-def detect_abstention(answer: str | None, explicit: bool | None) -> tuple[bool, str]:
-    """Return (abstained, how it was decided).
-
-    Order: the caller's explicit flag, then Retrace's abstention sentinel, then
-    the refusal phrase list. A missing answer is not an abstention.
-    """
-    if explicit is not None:
-        return explicit, "explicit"
-    if answer is None:
-        return False, "none"
-    if answer.strip() == ABSTENTION_ANSWER:
-        return True, "sentinel"
-    norm = _normalize(answer)
-    if len(norm) <= REFUSAL_MAX_CHARS:
-        for phrase in REFUSAL_PHRASES:
-            if phrase in norm:
-                return True, f"refusal_phrase:{phrase}"
-    return False, "none"
-
 
 def build_snapshot(req: TraceRequest) -> list[dict[str, Any]]:
     """Chunk list in the same shape as an internal trace's snapshot."""

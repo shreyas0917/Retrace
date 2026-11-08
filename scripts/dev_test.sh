@@ -34,6 +34,7 @@ exec docker compose run --rm --no-deps \
   -v "$B/configs:/app/configs" \
   -v "$B/alembic:/app/alembic" \
   -v "$B/prompts:/app/prompts" \
+  -v "$B/Dockerfile:/app/Dockerfile:ro" \
   -v "$ROOT/scripts:/scripts:ro" \
   -v "$ROOT/examples:/examples:ro" \
   -v "$ROOT/data:/data" \

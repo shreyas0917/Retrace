@@ -25,7 +25,7 @@ Query → Retrieve (top-k, injection flags) → Generate (retries, tokens, cost)
 | Edge | Session login, dual auth dependency, CSRF guard, sliding-window rate limit, payload limit, security headers, input validation | `core/security.py`, `core/ratelimit.py`, `core/hardening.py`, `api/routes_auth.py`, `schemas/` |
 | Retrieval | Versioned ingest, chunking, MiniLM embeddings, Chroma cosine top-k, retrieval trace, prompt-injection flags | `services/ingestion.py`, `services/retrieval.py`, `core/injection.py` |
 | Generation | OpenAI-compatible client with connect/read timeouts, bounded retries on 429/5xx, token usage and cost per execution | `services/llm_client.py`, `services/rag.py`, `services/pricing.py` |
-| Judges | Relevance, faithfulness, contradiction; structured JSON, one retry, versioned prompts | `services/judges/` |
+| Judges | Relevance and contradiction as LLM judges (structured JSON, one retry, versioned prompts); faithfulness by claim-level NLI by default, LLM judge selectable (ADR-045) | `services/judges/` |
 | Diagnosis | Ordered rules, `DIAGNOSIS_UNCERTAIN` (R90), histogram calibration, templated explanation, evidence refs | `services/diagnosis/` |
 | Evaluation | Suites (planted, held-out, calibration, gold), experiments, per-class metrics, baselines, regression gate, classifier comparison | `services/eval/`, `services/metrics/diagnosis.py`, `cli/benchmark_cmd.py` |
 | Measurement | Retrieval ablation (Recall@k, MRR, nDCG; chunking, dense vs BM25 vs hybrid), judge validation (labels, kappa, prompt sensitivity) | `services/retrieval_eval.py`, `services/judges/validation.py` |
