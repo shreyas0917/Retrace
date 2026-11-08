@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Judge validation (PROVISIONAL — AI-drafted labels, not yet reviewed by the author)
+- A second, fresh AI agent checked all 173 judge labels from the review sheet alone and suggested no changes (notes on 3 borderline rows). Applied with `judge_labels_review.py apply --annotator ai_draft_blind`: label values unchanged, annotator `ai_draft_blind`, manifest marked provisional, new hash.
+- `docs/benchmarks/judge_validation.md` regenerated with `judges validate --faithfulness-backend both`: the LLM and NLI faithfulness backends side by side, a PROVISIONAL banner, the label provenance read from the manifest, the exact command, and a Limits section.
+- `judge_labels_review.py apply --annotator` takes `ai_draft_author_reviewed` (default, after the author's review) or `ai_draft_blind`.
+
 ### Calibration, cross-validated on live_v1 (PROVISIONAL — AI-drafted labels, not yet reviewed by the author)
 - `retrace benchmark calibration-cv` runs k-fold calibration on a labelled suite (5 folds, stratified on correct/incorrect): the histogram calibrator is fitted on four folds and scored on the fifth. It reports ECE and Brier with bootstrap CIs for the raw score, the committed `calib_v1` calibrator and the cross-validated live calibrator, paired CIs of each difference from the raw score, reliability tables with the case count per bin, the number of distinct raw score values, and the spread over 20 fold splits. It never writes `backend/configs/calibration.json`.
 - `docs/benchmarks/calibration_live_v1.md` is its provisional report. The claim follows a fixed rule (both paired CIs below zero).
