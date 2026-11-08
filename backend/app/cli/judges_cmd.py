@@ -9,6 +9,8 @@ import time
 from pathlib import Path
 
 from app.core.config import get_settings
+from app.services.judges.faithfulness_nli import get_nli_scorer
+from app.services.judges.nli_validation import format_nli_markdown, validate_nli_faithfulness
 from app.services.judges.prompt_variants import PRODUCTION_VARIANT, available_variants
 from app.services.judges.validation import (
     JudgeLabelsValidationError,
@@ -58,9 +60,14 @@ def cmd_judges_validate(args: argparse.Namespace) -> int:
             last_print[0] = now
             print(f"  [{done}/{total}] {label} ({now - started:.0f}s)", file=sys.stderr, flush=True)
 
+    backend = getattr(args, "faithfulness_backend", "both")
+    if backend == "nli":
+        return _run_nli_only(args, examples, labels_hash)
+
     print(
         f"validating {len(examples)} examples with model {settings.model_name} "
-        f"variants={variants} consistency={not args.skip_consistency}",
+        f"variants={variants} consistency={not args.skip_consistency} "
+        f"faithfulness_backend={backend}",
         file=sys.stderr,
     )
     report = validate_judges(
@@ -76,6 +83,13 @@ def cmd_judges_validate(args: argparse.Namespace) -> int:
     report["labels_file_hash"] = labels_hash
     report["limit"] = args.limit
 
+    nli_section = None
+    if backend == "both":
+        nli_section = validate_nli_faithfulness(
+            examples, get_nli_scorer(), llm_report=report, llm_variant=primary
+        )
+        report["nli_faithfulness"] = nli_section
+
     source_label = (
         f"live model run ({settings.model_name} via {report['model']['base_url']})"
         if args.source_label is None
@@ -89,7 +103,11 @@ def cmd_judges_validate(args: argparse.Namespace) -> int:
     if args.markdown:
         md = Path(args.markdown)
         md.parent.mkdir(parents=True, exist_ok=True)
-        md.write_text(format_markdown(report, source_label=source_label), encoding="utf-8")
+        text = format_markdown(report, source_label=source_label)
+        if nli_section is not None:
+            llm_faith = (report.get("per_judge", {}).get("faithfulness") or {}).get(primary)
+            text = text.rstrip("\n") + "\n\n" + format_nli_markdown(nli_section, llm_faithfulness=llm_faith)
+        md.write_text(text, encoding="utf-8")
         print(f"wrote {md}")
 
     for judge, per_variant in report["per_judge"].items():
@@ -115,6 +133,42 @@ def cmd_judges_validate(args: argparse.Namespace) -> int:
                 print(f"sensitivity {judge:<13} {pair}: flip_rate={s['flip_rate']} kappa={s['kappa']}")
     if report.get("consistency"):
         print("consistency flags:", report["consistency"]["counts"])
+    if nli_section is not None:
+        _print_nli_summary(nli_section)
+    return EXIT_OK
+
+
+def _print_nli_summary(section: dict) -> None:
+    c, a = section["claim_level"], section["answer_level"]["has_unsupported_claim"]
+    v = section["contradiction"]["vs_labels"]
+    print(
+        f"faithfulness  nli  claims n={c['n']} acc={c['accuracy']} kappa={c['kappa']} | "
+        f"answers n={a['n']} acc={a['accuracy']} kappa={a['kappa']} | "
+        f"contradiction flag acc={v['accuracy']} kappa={v['kappa']}"
+    )
+
+
+def _run_nli_only(args: argparse.Namespace, examples: list, labels_hash: str) -> int:
+    """NLI faithfulness only: no LLM calls."""
+    print(f"validating NLI faithfulness on {len(examples)} examples", file=sys.stderr)
+    section = validate_nli_faithfulness(examples, get_nli_scorer())
+    report = {
+        "nli_faithfulness": section,
+        "labels_file": str(args.labels),
+        "labels_file_hash": labels_hash,
+        "limit": args.limit,
+    }
+    if args.out:
+        out = Path(args.out)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        print(f"wrote {out}")
+    if args.markdown:
+        md = Path(args.markdown)
+        md.parent.mkdir(parents=True, exist_ok=True)
+        md.write_text("# NLI faithfulness validation\n\n" + format_nli_markdown(section), encoding="utf-8")
+        print(f"wrote {md}")
+    _print_nli_summary(section)
     return EXIT_OK
 
 
@@ -133,6 +187,12 @@ def add_judges_subparser(sub: argparse._SubParsersAction) -> None:
     )
     p.add_argument("--limit", type=int, default=None, help="Evaluate only the first N examples (interleaved by judge)")
     p.add_argument("--skip-consistency", action="store_true", help="Skip cross-judge consistency calls")
+    p.add_argument(
+        "--faithfulness-backend",
+        choices=("llm", "nli", "both"),
+        default="both",
+        help="Faithfulness backend(s) to validate: the LLM judge, the NLI judge, or both side by side",
+    )
     p.add_argument("--out", default=None, help="Write full JSON report here")
     p.add_argument("--markdown", default=None, help="Write a markdown report here")
     p.add_argument(

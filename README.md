@@ -82,7 +82,7 @@ Full details: [docs/architecture.md](docs/architecture.md), decisions in [docs/d
 | --- | --- |
 | Corpus and retrieval | Versioned ingest, chunking, `all-MiniLM-L6-v2` embeddings, Chroma top-k with traces, injection flags on chunks |
 | Generation | OpenAI-compatible client with connect/read timeouts, retries on 429/5xx, token usage and `cost_usd` per execution |
-| Judges | Relevance, faithfulness, contradiction; structured JSON, one retry, versioned prompts, validation tooling |
+| Judges | Relevance and contradiction as LLM judges with structured JSON, one retry and versioned prompts; faithfulness by claim-level NLI (`cross-encoder/nli-deberta-v3-small`, pinned) by default, with the LLM judge behind `FAITHFULNESS_BACKEND=llm`; validation tooling |
 | Diagnosis | Ordered rules R00 to R90, failure taxonomy, `DIAGNOSIS_UNCERTAIN` outcome, calibrated confidence, evidence-based explanation |
 | Investigation | One API and UI view of diagnosis, why, retrieval evidence, judges, timeline, runbooks, raw JSON |
 | Evaluation | Planted (12), held-out (160), calibration (80) and gold suites with hash integrity; per-class metrics; selective-prediction metrics |

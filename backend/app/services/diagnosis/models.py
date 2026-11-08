@@ -48,6 +48,9 @@ class SignalBag:
     judge_schema_ok: bool = True
     stage_error: str | None = None  # TIMEOUT | None
     missing_answer: bool = False
+    # NLI faithfulness only: some claim's top label was contradiction. A
+    # cross-check signal; no rule reads it (the contradiction judge decides).
+    nli_contradiction: bool | None = None
     chunk_relevance: list[dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
@@ -67,5 +70,6 @@ class SignalBag:
             "judge_schema_ok": self.judge_schema_ok,
             "stage_error": self.stage_error,
             "missing_answer": self.missing_answer,
+            "nli_contradiction": self.nli_contradiction,
             "chunk_relevance": self.chunk_relevance,
         }

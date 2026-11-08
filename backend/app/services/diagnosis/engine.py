@@ -31,10 +31,7 @@ from app.services.judges.contradiction import (
     CONTRADICTION_PROMPT_VERSION,
     judge_contradiction,
 )
-from app.services.judges.faithfulness import (
-    FAITHFULNESS_PROMPT_VERSION,
-    judge_faithfulness,
-)
+from app.services.judges.faithfulness_router import judge_faithfulness_routed
 from app.services.judges.relevance import RELEVANCE_PROMPT_VERSION, judge_relevance
 from app.services.prompts import ABSTENTION_ANSWER
 
@@ -300,14 +297,14 @@ def diagnose_execution(
             and not signals.answer_is_abstention
             and signals.context_sufficient is True
         ):
-            faith, faith_meta = judge_faithfulness(
+            faith, faith_meta, faith_version = judge_faithfulness_routed(
                 execution.query, answer, chunks, settings=settings
             )
             _persist_judge(
                 db,
                 execution_id=execution.id,
                 judge_type="faithfulness",
-                prompt_version=FAITHFULNESS_PROMPT_VERSION,
+                prompt_version=faith_version,
                 meta=faith_meta,
                 output=faith.model_dump(),
                 input_payload={
@@ -322,6 +319,8 @@ def diagnose_execution(
                 1 for c in faith.claims if not c.supported
             )
             signals.supported_claim_count = sum(1 for c in faith.claims if c.supported)
+            signals.nli_contradiction = getattr(faith, "nli_contradiction", None)
+            metrics["faithfulness_backend"] = faith_meta.get("backend")
 
             contra, contra_meta = judge_contradiction(
                 execution.query, answer, chunks, settings=settings

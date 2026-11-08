@@ -441,3 +441,21 @@ Rule R02 (`EVAL_MISSING_CONTEXT`) now fires whenever the answer is missing, and 
 Reason: external apps can legitimately send no answer, and diagnosing a non-existent answer is wrong. The change cannot affect internal executions or existing suites: the missing-answer signal excludes the `ABSTAINED`, `GENERATION_TIMEOUT` and `FAILED` statuses, which are the only ones the internal pipeline stores without an answer, and no suite case has a null answer with another status. The rule was not tuned on any benchmark.
 
 Status: Accepted
+
+---
+
+## ADR-045 — Claim-level NLI faithfulness by default
+
+Decision: The faithfulness judge defaults to a claim-level NLI backend (`FAITHFULNESS_BACKEND=nli`). The answer is split into claims by a deterministic sentence splitter; each claim is scored by `cross-encoder/nli-deberta-v3-small`, pinned to commit `fa2804872c3b4bd748f38c0185cc85775361e735` and pre-downloaded in the Docker image, against premise units cut from every retrieved chunk: each sentence and each adjacent pair of sentences. Whole chunks were the first design; a manual check showed the model scoring a verbatim supporting sentence as neutral inside a paragraph, so premises follow the SummaC approach instead. A unit longer than the model's token limit is split into overlapping windows, and all pairs are scored in one batched call. The label order is read from the model config, never assumed.
+
+A claim is supported when entailment is the top NLI label for at least one premise unit, and flagged contradicted only when no unit supports it and some unit's top label is contradiction. These rules are fixed by design and was not tuned: the 24 labelled faithfulness examples are too few to choose a threshold from, and they are AI-drafted and not yet reviewed. Cross-validated thresholds are reported only as a sensitivity table. `faithfulness_score` is supported claims divided by claims, so the rules keep the schema they already read.
+
+The NLI judge also reports `nli_contradiction` when any claim's top label is contradiction. It is stored as a cross-check signal; the LLM contradiction judge still decides rule R30.
+
+Replay rule: suites whose cases carry recorded judge outputs replay them whatever the backend setting. Scripted LLM faithfulness replies replay through the LLM path, as before; a recorded NLI result (`faithfulness_nli`) replays as is. This keeps `heldout_v1`, `calib_v1`, `planted_v1` and `gold_v1` reproducible, and lets `live_v1` record real NLI outputs and re-diagnose them offline.
+
+Rules: no rule changed. Because the score is derived from the claim list, the R90 branch for a low score with no unsupported claim cannot occur with this backend. An answer with no checkable claim gets a null score, which R90 reports as `DIAGNOSIS_UNCERTAIN` with `judge:faithfulness:missing`. The splitter falls back to the whole answer as one claim when every sentence is too short, so short factual answers are still checked.
+
+Reason: the validation run showed the LLM faithfulness judge at near-zero agreement with the labels, returning low scores even for fully supported answers. That left rules R31, R33, R34 and R40 resting on a signal with no measured reliability. An entailment model checks each claim against the evidence directly, deterministically and without an LLM call.
+
+Status: Accepted. Its accuracy against labels will be reported only after the author's label review.

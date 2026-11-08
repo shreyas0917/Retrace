@@ -198,3 +198,28 @@ never be presented as live-model results.
   labels means the judge is as sensitive to wording as it is wrong; that is the
   signal to keep prompts frozen and versioned, which is why prompt sha256 is in
   every report.
+
+## Faithfulness backends
+
+Since ADR-045 the faithfulness judge has two backends. The default, `nli`, works claim by claim:
+
+1. **Claims.** The answer is split into sentences by a deterministic splitter. It handles decimals ("1.25 days"), common abbreviations ("e.g.", "Dr."), initials, line breaks and bullet items. Sentences of fewer than three words and refusal sentences ("I don't know...") are dropped, duplicates are removed, and at most 20 claims are kept. If nothing survives but the answer has words, the whole answer is one claim.
+2. **Scoring.** Each claim is a hypothesis. The premises are cut from every retrieved chunk: each sentence on its own, and each pair of adjacent sentences for claims that span two. A unit longer than the 512-token limit is cut into overlapping windows on token boundaries. Every claim and premise pair is scored in one batched call by `cross-encoder/nli-deberta-v3-small` at a pinned commit.
+3. **Decision.** A claim is supported when entailment is the top of the three labels for at least one premise unit. It is flagged contradicted only when no unit supports it and some unit's top label is contradiction. The score is supported claims divided by claims. Each claim records its best chunk and its highest entailment and contradiction probabilities.
+
+Why sentences rather than whole chunks: small NLI models are trained mostly on one-sentence premises. In a manual check before Phase 2 was committed, this model scored a supporting sentence copied word for word as neutral when it sat inside a three-sentence paragraph, and as entailed when given on its own. Scoring sentence units is the SummaC approach (Laban et al., 2022). The cost is more pairs: roughly claims × (2 × sentences − 1) per chunk. Support takes precedence over contradiction because, with sentence premises, an unrelated sentence of the same chunk ("within 5 business days") can contradict a claim another sentence supports ("within 30 days").
+
+The `llm` backend is the original prompt-based judge. Suites with recorded judge outputs replay them whatever the backend, so synthetic benchmarks stay reproducible.
+
+### Where NLI is expected to be weak
+
+These are known limits of sentence-level entailment models. The validation run will show how much each matters on this data.
+
+- **Numeric reasoning.** "15 days per year" from "1.25 days per month" needs arithmetic, which entailment models do unreliably. A correct derived number may come back unsupported.
+- **Paraphrase and implicature.** Claims that restate a policy in different words, or draw an obvious conclusion from it, can be scored neutral rather than entailed.
+- **Multi-sentence synthesis.** Each claim is checked against one sentence or one adjacent pair at a time. A claim that needs facts from sentences further apart, or from two chunks, will not be entailed by any single unit.
+- **Claim splitting.** One sentence can hold several claims, and some claims span sentences. The splitter does not decompose further, so a partly wrong sentence counts as one unsupported claim.
+- **Pronouns and context.** A sentence such as "It was completed in 1889" loses its subject when scored alone; the adjacent-pair units recover only the previous sentence.
+- **Window boundaries.** Only a single sentence longer than the token limit is windowed; a supporting clause that straddles a window edge appears whole in the overlap only if it is shorter than the 64-token overlap.
+
+`retrace judges validate --faithfulness-backend both` measures both backends side by side: per labelled claim, per answer (the same metrics as the LLM judge), and the NLI contradiction flag against the labels and against the LLM contradiction judge. The threshold sweep and cross-validated thresholds are reported for sensitivity only.

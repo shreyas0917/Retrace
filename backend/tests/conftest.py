@@ -28,6 +28,10 @@ os.environ.setdefault("LOG_LEVEL", "WARNING")
 # budget; keep it out of the way unless a test configures the limiter itself.
 os.environ.setdefault("RATE_LIMIT_PER_MINUTE", "100000")
 os.environ.setdefault("AUTH_RATE_LIMIT_PER_MINUTE", "100000")
+# Most tests drive the engine with scripted LLM judge replies (ScriptedJudgeLLM),
+# so faithfulness defaults to the LLM path here. NLI tests opt in explicitly
+# with FAITHFULNESS_BACKEND=nli and a fake scorer; production defaults to nli.
+os.environ.setdefault("FAITHFULNESS_BACKEND", "llm")
 
 
 @pytest.fixture(scope="session")

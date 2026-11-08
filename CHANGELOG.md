@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Claim-level NLI faithfulness (Phase 2)
+- Faithfulness now defaults to a claim-level NLI judge (`FAITHFULNESS_BACKEND=nli`, ADR-045): a deterministic claim splitter, `cross-encoder/nli-deberta-v3-small` pinned to a commit and pre-downloaded in the image, premises cut into single sentences and adjacent sentence pairs (SummaC-style; whole-paragraph premises made the model call verbatim support neutral), overlapping windows for over-long sentences, and one batched scoring call. The label order is read from the model config. A claim is supported when entailment is its top label for some premise unit, and contradicted only if no unit supports it; nothing was tuned on labels.
+- Results keep the rules' schema (`faithfulness_score`, claims) and add per-claim evidence, the pinned model and revision, and an `nli_contradiction` cross-check signal that no rule reads yet. The LLM judge remains available with `FAITHFULNESS_BACKEND=llm`.
+- Replay rule: suites with recorded judge outputs replay them whatever the backend; recorded NLI results (`faithfulness_nli`) replay too, for `live_v1`.
+- `retrace judges validate --faithfulness-backend llm|nli|both` (default `both`) adds claim-level, answer-level and contradiction-flag metrics for NLI, plus a threshold sensitivity table with grouped cross-validation. No new numbers are published until the label review is applied.
+- The Docker image now installs `torch==2.14.1` and every other package against `backend/constraints.txt`: the exact 116 versions from the image the published benchmarks ran in. Before this, a rebuild pulled newer unpinned versions (for example torch 2.15 and python-dateutil 4).
+
 ### Bring your own trace (Phase 1)
 - `POST /api/v1/traces` stores a trace produced by any RAG app and diagnoses it with the same engine; `diagnose: false` stores it only. `POST /api/v1/traces/batch` takes a JSON array or JSON Lines (up to `MAX_TRACE_BATCH`) and returns one result per trace, so one bad trace never fails the batch. The default cap is 25; larger batches should use the CLI.
 - The caller's chunk texts are what the judges read; Retrace's corpus and vector store are never consulted. Responses include `injection_flags`, `abstention_detected_by` and `warnings` (for example, no `gold_chunk_ids` means retrieval-miss detection is unavailable).

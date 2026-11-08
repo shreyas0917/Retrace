@@ -31,6 +31,7 @@ from app.services.diagnosis.engine import diagnose_execution
 from app.services.diagnosis.taxonomy import TAXONOMY_VERSION
 from app.services.eval.fakes import ScriptedJudgeLLM
 from app.services.eval.planted import build_offline_execution
+from app.services.judges.replay import replaying_judges
 from app.services.eval.schemas import GoldCase
 from app.services.eval.suite_loader import load_suite
 from app.services.llm_client import set_llm_provider
@@ -311,12 +312,14 @@ def run_suite_benchmark(
                     case=case,
                     fixture=fixture,
                 )
-                diagnosis = diagnose_execution(
-                    db,
-                    execution_id=execution_id,
-                    gold_chunk_ids=list(case.relevant_chunk_ids),
-                    settings=settings,
-                )
+                # Recorded judge outputs replay regardless of FAITHFULNESS_BACKEND.
+                with replaying_judges(scripts):
+                    diagnosis = diagnose_execution(
+                        db,
+                        execution_id=execution_id,
+                        gold_chunk_ids=list(case.relevant_chunk_ids),
+                        settings=settings,
+                    )
                 retrieved_ids = [
                     str(c.get("chunk_id"))
                     for c in (fixture.retrieved_chunks or [])

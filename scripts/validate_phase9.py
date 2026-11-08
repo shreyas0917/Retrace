@@ -14,6 +14,10 @@ from __future__ import annotations
 import json
 import os
 import sys
+
+# This script replays scripted judge replies through a fake LLM, so the
+# faithfulness judge must use the LLM path (see ADR-045 and the replay rule).
+os.environ.setdefault("FAITHFULNESS_BACKEND", "llm")
 import uuid
 from pathlib import Path
 
