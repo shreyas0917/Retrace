@@ -1,0 +1,21 @@
+{
+  "suite_id": "live_v1",
+  "suite_version": "1.0.0",
+  "suite_hash": "sha256:3d004c818d9095c70bdd32244d9896e99042592f91a4733f1f2019b6e34d8487",
+  "case_count": 50,
+  "taxonomy_version": "1.0",
+  "annotator": "ai_draft_blind",
+  "annotation_date": "2026-11-08",
+  "provenance": "Real pipeline runs recorded in runs.jsonl, PROVISIONAL: labels drafted by an AI agent that saw only the blind sheet, the labelling guide and the corpus chunks (never the runs, conditions or Retrace's predictions); not yet reviewed by the author. Labels sheet: live_v1_sheet.ai_draft.csv. Injected conditions are tags, not labels.",
+  "provisional": true,
+  "runs_hash": "sha256:3014e6af1922dd49ec6fef5ecc33ee1c44d778fdc5d5091fa84895c362da68f0",
+  "labels_sheet_sha256": "sha256:acdde222ca5e65010dfe667350baaaaca51ecbd71943990f5c2e6e8e3f461187",
+  "label_counts": {
+    "GENERATION_CONTRADICTION": 3,
+    "GROUNDING_PARTIAL": 2,
+    "OK_CORRECT_ABSTENTION": 8,
+    "OK_GROUNDED": 30,
+    "RETRIEVAL_MISS": 7
+  },
+  "cases_with_alternative_codes": 11
+}
