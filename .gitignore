@@ -50,6 +50,10 @@ data/corpus/**
 !data/corpus/.gitkeep
 !data/corpus/demo/
 !data/corpus/demo/**
+# live_v1 corpus variant documents (ADR-046)
+!data/corpus/variants/
+!data/corpus/variants/distractors/
+!data/corpus/variants/distractors/**
 data/gold/**
 !data/gold/.gitkeep
 data/planted/**

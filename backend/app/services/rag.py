@@ -17,6 +17,7 @@ from app.core.errors import (
 from app.core.logging import bind_correlation, get_logger
 from app.core.ops import record_generation
 from app.db.models import CorpusVersion, ExecutionTrace
+from app.services.eval.faults import EvalFault
 from app.services.generation import generate_answer
 from app.services.llm_client import GENERATION_TEMPERATURE
 from app.services.pricing import estimate_cost_usd, pricing_version
@@ -65,9 +66,15 @@ def run_rag(
     top_k: int = 5,
     request_id: str | None = None,
     settings: Settings | None = None,
+    eval_fault: EvalFault | None = None,
 ) -> dict[str, Any]:
-    """Execute retrieve + generate and persist an ExecutionTrace."""
+    """Execute retrieve + generate and persist an ExecutionTrace.
+
+    `eval_fault` is eval-only (scripts/build_live_suite.py); POST /api/v1/generate
+    never passes it. When set, the trace's prompt_version records the variant.
+    """
     settings = settings or get_settings()
+    prompt_version = f"{PROMPT_VERSION}+{eval_fault.prompt_tag}" if eval_fault else PROMPT_VERSION
     request_id = request_id or str(uuid.uuid4())
     execution_id = str(uuid.uuid4())
     total_started = time.perf_counter()
@@ -127,6 +134,7 @@ def run_rag(
                 query=query,
                 retrieved_chunks=results,
                 settings=settings,
+                eval_fault=eval_fault,
             )
             answer = llm.content
             generation_latency_ms = llm.latency_ms
@@ -217,7 +225,7 @@ def run_rag(
         embedding_revision=embedding_revision,
         generation_model=generation_model,
         generation_temperature=GENERATION_TEMPERATURE,
-        prompt_version=PROMPT_VERSION,
+        prompt_version=prompt_version,
         answer_text=answer,
         abstained=abstained,
         status=status,
@@ -291,7 +299,7 @@ def run_rag(
         "generation": {
             "model": generation_model,
             "temperature": GENERATION_TEMPERATURE,
-            "prompt_version": PROMPT_VERSION,
+            "prompt_version": prompt_version,
             "latency_ms": generation_latency_ms,
             "prompt_tokens": prompt_tokens,
             "completion_tokens": completion_tokens,

@@ -151,9 +151,9 @@ def _insert_execution(
             retrieved_chunks=fixture.retrieved_chunks,
             embedding_model="sentence-transformers/all-MiniLM-L6-v2",
             embedding_revision="sentence-transformers/all-MiniLM-L6-v2@sentence-transformers-local",
-            generation_model="gpt-4.1-mini",
+            generation_model=fixture.generation_model or "gpt-4.1-mini",
             generation_temperature=0.0,
-            prompt_version="generator.v1",
+            prompt_version=fixture.prompt_version or "generator.v1",
             answer_text=fixture.answer,
             abstained=fixture.abstained,
             status=fixture.status,
@@ -303,7 +303,7 @@ def run_suite_benchmark(
         for case in cases:
             fixture = build_offline_execution(case)
             scripts = fixture.judge_scripts or {}
-            provider = ScriptedJudgeLLM(scripts)
+            provider = ScriptedJudgeLLM(scripts, timeout_on=fixture.judge_timeout_on)
             set_llm_provider(provider)
             try:
                 execution_id = _insert_execution(

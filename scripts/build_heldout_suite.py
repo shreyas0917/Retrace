@@ -775,6 +775,32 @@ def check(suite_id: str) -> bool:
     return ok
 
 
+def check_live() -> bool:
+    """live_v1: recorded runs (runs.jsonl) and, once labelled, cases.jsonl."""
+    directory = SUITES_ROOT / "live_v1" / "v1.0.0"
+    if not directory.is_dir():
+        return True
+    ok = True
+    runs = directory / "runs.jsonl"
+    runs_manifest = directory / "runs_manifest.json"
+    if runs.is_file():
+        lines = runs.read_text(encoding="utf-8").splitlines()
+        count = len([line for line in lines if line.strip()])
+        if not runs_manifest.is_file():
+            print(f"live_v1: runs.jsonl has {count} records but no runs_manifest.json (run build_live_suite.py --freeze)")
+            return False
+        manifest = json.loads(runs_manifest.read_text(encoding="utf-8"))
+        queries = (directory / "queries.jsonl").read_text(encoding="utf-8").splitlines()
+        runs_ok = manifest["runs_hash"] == _sha_suite(lines) and manifest.get("run_count") == count
+        queries_ok = manifest.get("queries_hash") in (None, _sha_suite(queries))
+        ok = runs_ok and queries_ok
+        state = "OK" if ok else ("HASH MISMATCH" if not runs_ok else "QUERIES CHANGED")
+        print(f"live_v1 runs: {state} ({count} records, {manifest.get('status', '')})")
+    if (directory / "cases.jsonl").is_file():
+        ok = check("live_v1") and ok
+    return ok
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--check", action="store_true", help="verify manifests match cases.jsonl")
@@ -784,7 +810,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.check:
-        return 0 if all(check(s) for s in ("heldout_v1", "calib_v1")) else 1
+        results = [check(s) for s in ("heldout_v1", "calib_v1")] + [check_live()]
+        return 0 if all(results) else 1
 
     for suite_id, seed, dist in (
         ("heldout_v1", args.heldout_seed, DISTRIBUTION_HELDOUT),

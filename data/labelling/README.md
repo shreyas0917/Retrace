@@ -1,8 +1,15 @@
-# Judge label review
+# Labelling
+
+Two separate jobs live here.
+
+- **live_v1 (blind).** `live_v1_sheet.csv` is the labelling sheet for the live benchmark: one row per real pipeline run, with the question, the ranked retrieved chunks and the answer. Read the cases in `live_v1_sheet.html`, pick gold chunks from `live_v1_corpus_chunks.csv`, and follow [docs/labelling-guide.md](../../docs/labelling-guide.md). The sheet does not show how a run was produced or what Retrace predicted; please keep it that way until labelling is done. When you are done, the guide's last section has the merge and report commands.
+- **Judge label review.** Below.
+
+## Judge label review
 
 `judge_labels_v1_review.csv` holds every label in `backend/datasets/judges/judge_labels_v1.jsonl`, one row per label. The labels were drafted by an AI agent and no human has checked them yet. Nothing downstream (Phase 2 threshold work in particular) uses them until this review is done.
 
-## How to review
+### How to review
 
 Open the CSV in a spreadsheet app. For each row, read `what_to_judge` and `input`, then look at `current_label`.
 
@@ -20,7 +27,7 @@ A faithfulness band should contain the share of supported claims. If you flip a 
 | `faithfulness_band` | 24 | Acceptable faithfulness score range |
 | `contradicts` | 18 | Does the answer contradict the context? |
 
-## Applying the review
+### Applying the review
 
 ```bash
 python scripts/judge_labels_review.py apply --dry-run   # preview what will change

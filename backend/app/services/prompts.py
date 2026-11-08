@@ -44,9 +44,13 @@ def build_user_prompt(query: str, retrieved_chunks: Sequence[dict[str, Any]]) ->
 
 
 def build_chat_messages(
-    query: str, retrieved_chunks: Sequence[dict[str, Any]]
+    query: str,
+    retrieved_chunks: Sequence[dict[str, Any]],
+    *,
+    system_suffix: str | None = None,
 ) -> list[dict[str, str]]:
+    # system_suffix is only set by eval-only fault injection (services/eval/faults.py).
     return [
-        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "system", "content": SYSTEM_PROMPT + (system_suffix or "")},
         {"role": "user", "content": build_user_prompt(query, retrieved_chunks)},
     ]

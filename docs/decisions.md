@@ -459,3 +459,24 @@ Rules: no rule changed. Because the score is derived from the claim list, the R9
 Reason: the validation run showed the LLM faithfulness judge at near-zero agreement with the labels, returning low scores even for fully supported answers. That left rules R31, R33, R34 and R40 resting on a signal with no measured reliability. An entailment model checks each claim against the evidence directly, deterministically and without an LLM call.
 
 Status: Accepted. Its accuracy against labels will be reported only after the author's label review.
+
+
+---
+
+## ADR-046 — live_v1: recorded real runs, labelled blind by the author
+
+Decision: `live_v1` is built from about 50 real runs of the pipeline on the demo corpus: real retrieval, generation by the configured model at temperature 0, the configured LLM judges for relevance and contradiction, and the NLI faithfulness judge. Each query has an injected condition: clean, unanswerable, gold document removed, distractor documents added, a wrong-facts generator prompt, or an extra-unsupported-claim prompt.
+
+How conditions are injected:
+
+- Prompt faults are eval-only. `run_rag(eval_fault=...)` appends a fault instruction to the generator's system prompt and records `generator.v1+eval_fault.<kind>.<version>` as the prompt version. `GenerateRequest` has no such field and `POST /api/v1/generate` never passes one; a test posts the field and checks it is ignored.
+- Corpus conditions are separate corpus versions under their own corpus ids (`demo_live_variant_a` without four documents, `demo_live_variant_b` with six near-topic documents added). The main `demo` corpus is never modified. Variants are defined in `corpus_variants.json` next to the queries.
+- The condition is metadata, not the label. A wrong-facts prompt may still produce a correct answer; the author's label says what happened.
+
+Recording: `scripts/build_live_suite.py` appends one run record per query to `runs.jsonl` as soon as it finishes and skips recorded queries on restart, so a long run can be interrupted. A record holds the query, corpus version and hash, the retrieved chunks with ranks and scores, the answer, every raw judge reply in call order (captured by wrapping the real provider), the persisted NLI result, the LLM faithfulness reply for comparison, model and prompt versions, the git commit, a timestamp and Retrace's live diagnosis. Diagnosis runs without gold ids, so every judge that could be needed is recorded. `--verify-replay` re-diagnoses each record offline from its recordings and must reproduce the live code and rule; `--freeze` writes `runs_manifest.json` with the hashes of the runs and the queries, which `build_heldout_suite.py --check` verifies.
+
+Labelling: `scripts/live_labelling.py export` writes a blind sheet: query, ranked chunks and answer only, shuffled into sheet ids by a salted hash so the order says nothing about the condition. It never contains the condition, the fault, the corpus variant, any judge output or Retrace's prediction. The author labels it using `docs/labelling-guide.md`. No labels, including drafts, are written by the tooling. Only after the sheet comes back are labels merged into `cases.jsonl`, the hash recomputed and the benchmark run.
+
+Reason: the headline numbers so far come from synthetic cases whose judge outputs were scripted from the same picture of failures as the rules. Real runs with blind human labels measure the whole system, judges included.
+
+Status: Accepted. Recorded; awaiting labels.
