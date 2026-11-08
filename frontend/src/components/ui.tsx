@@ -143,22 +143,34 @@ export function PageHeader({
   title,
   description,
   actions,
-  eyebrow,
 }: {
   title: string;
   description: string;
   actions?: ReactNode;
+  /** Accepted for call-site compatibility; intentionally not rendered. */
   eyebrow?: string;
 }) {
   return (
     <header className="page-header">
       <div>
-        {eyebrow ? <p className="page-eyebrow">{eyebrow}</p> : null}
         <h1 className="page-title">{title}</h1>
         <p className="page-desc">{description}</p>
       </div>
       {actions ? <div className="page-actions">{actions}</div> : null}
     </header>
+  );
+}
+
+/**
+ * Small inline "what is this?" affordance. Carries its explanation as an
+ * accessible label and a native tooltip, so the information is never
+ * tooltip-only for keyboard or screen-reader users.
+ */
+export function InfoDot({ label }: { label: string }) {
+  return (
+    <span className="info-dot" role="img" aria-label={label} title={label}>
+      i
+    </span>
   );
 }
 
