@@ -76,6 +76,11 @@ class Settings(BaseSettings):
     # --- Durable telemetry + cost accounting (v1.0) ---
     telemetry_durable: bool = Field(default=True, alias="TELEMETRY_DURABLE")
     pricing_path: str | None = Field(default=None, alias="PRICING_PATH")
+    # Retention: `retrace telemetry prune` deletes metric_events older than this.
+    telemetry_retention_days: int = Field(default=14, ge=1, alias="TELEMETRY_RETENTION_DAYS")
+    # Opt-in daily prune in the API process (one worker per round, advisory lock).
+    telemetry_prune_enabled: bool = Field(default=False, alias="TELEMETRY_PRUNE_ENABLED")
+    telemetry_prune_interval_seconds: int = Field(default=86400, ge=60, alias="TELEMETRY_PRUNE_INTERVAL_SECONDS")
 
     @field_validator("api_key")
     @classmethod

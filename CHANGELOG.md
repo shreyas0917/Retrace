@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Lint, types and telemetry retention (Phase 6)
+- The code base is formatted with `ruff format`, and lint now selects E9, F, I, B and UP (import order, bugbear, pyupgrade). Migrations are excluded so they stay frozen. CI checks formatting.
+- `mypy` checks `app/services/diagnosis` and `app/services/eval` with `disallow_untyped_defs` (config in `backend/mypy.ini`), as a new CI job. The faithfulness router now returns the union of its two result types instead of `BaseModel`.
+- Telemetry retention: `TELEMETRY_RETENTION_DAYS` (default 14) and `retrace telemetry prune [--days N] [--dry-run] [--batch-size N]`, which deletes old `metric_events` rows in batches of 5,000. `TELEMETRY_PRUNE_ENABLED=true` runs the prune daily in the API, guarded by a Postgres advisory lock so only one worker prunes per round. See `docs/observability.md`.
+- Fixed a closure in the retrieval ablation that read the BM25 index through the loop variable rather than binding it (B023); results are unchanged because each closure ran within its own iteration.
+
 ### NLI pair cap
 - The default `NLI_MAX_PAIRS` is now 500 (was 2000). At the measured CPU rate that bounds one answer at roughly 16 s instead of about a minute; the recorded live runs used 51 to 146 pairs, so normal answers are not truncated. Still configurable (minimum 20).
 
