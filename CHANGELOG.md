@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Docs and onboarding (Phase 5)
+- README rewritten: what Retrace does, a worked example from real `retrace diagnose` output, a `make demo` quickstart, using it on your own RAG app, and a results table whose live_v1 headline is pending the author's labels. Endpoint, CLI and configuration tables moved to `docs/reference.md`; security, observability and benchmark detail stays in `docs/`. The held-out suite is described as an engine logic test on synthetic signals, and the held-out accuracy badge is gone.
+- `docs/concepts.md`: a plain-English glossary and the rule table, generated from `rule_catalog.py` by `scripts/gen_concepts.py` and checked in CI and by `tests/test_concepts_doc.py`.
+- `make demo`: creates `.env` with a generated `API_KEY` if missing, starts the stack, waits for readiness, seeds the demo corpus, posts an example trace and prints the console URL and an Investigate deep link. Needs no LLM: without a reachable model it posts the retrieval-miss example, which the rules decide from gold chunk ids alone.
+- References to the unpublished requirements document are gone, and the phase-numbered tests and scripts are named by what they test (`validate_phase9.py` is now `validate_release.py`); CI fails if either comes back.
+- Scripts no longer fall back to a hard-coded API key; they read `API_KEY` from the environment or `.env` and otherwise exit with a clear message. Fixed the demo corpus count in `docs/demo.md` (13 documents) and the migration head in the development and release docs (008).
+
 ### Console redesign (Phase 7)
 - Merged the parked `console-refresh` branch (light/dark/system theme, Overview page, plain-English diagnosis) and removed `framer-motion`: view and list fades are CSS transitions, and `prefers-reduced-motion` turns them off. No UI library was added.
 - `frontend/src/labels.ts` replaces `taxonomy.ts` and holds the human labels for every failure code in `taxonomy.py` (including reserved codes), recommendation codes, diagnosis and operations signals, evaluation metrics, suites, judges and statuses. A test parses the backend files and fails if a code has no label. Raw codes are still shown, next to their label.
