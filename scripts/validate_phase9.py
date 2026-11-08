@@ -34,7 +34,6 @@ from app.services.investigation import build_investigation
 from app.services.llm_client import LLMResult, set_llm_provider
 from app.services.rag import run_rag
 
-
 API_BASE = os.environ.get("RETRACE_API_BASE", "http://127.0.0.1:8000")
 API_KEY = os.environ.get("API_KEY", "dev-retrace-api-key-change-me")
 CORPUS_DIR_CANDIDATES = [
@@ -74,7 +73,9 @@ class FakeLLM:
                 {
                     "chunk_id": cid,
                     "relevant": "pto" in cid.lower() or "handbook" in cid.lower() or "employee" in cid.lower(),
-                    "score": 0.9 if ("pto" in cid.lower() or "handbook" in cid.lower() or "employee" in cid.lower()) else 0.2,
+                    "score": 0.9
+                    if ("pto" in cid.lower() or "handbook" in cid.lower() or "employee" in cid.lower())
+                    else 0.2,
                     "rationale": "fixture",
                 }
                 for cid in ids
@@ -88,9 +89,7 @@ class FakeLLM:
                         "rationale": "fixture",
                     }
                 ]
-            content = json.dumps(
-                {"items": items, "context_sufficient": True}
-            )
+            content = json.dumps({"items": items, "context_sufficient": True})
         else:
             content = "Full-time employees accrue 1.25 days of PTO per month."
         return LLMResult(
@@ -250,8 +249,7 @@ def check_eval_baseline(client: httpx.Client) -> None:
     summary = body.get("summary") or {}
     _ok(
         "eval planted_v1",
-        f"experiment={exp_id} exit_code={exit_code} "
-        f"accuracy={summary.get('failure_code_accuracy')}",
+        f"experiment={exp_id} exit_code={exit_code} " f"accuracy={summary.get('failure_code_accuracy')}",
     )
 
     # Promote only if completed successfully enough to promote
@@ -329,9 +327,7 @@ def check_migration_head() -> None:
 def main() -> int:
     print("=== Retrace Phase 9 validation ===")
     print(f"API_BASE={API_BASE}")
-    with httpx.Client(
-        base_url=API_BASE, timeout=300.0, headers=_headers()
-    ) as client:
+    with httpx.Client(base_url=API_BASE, timeout=300.0, headers=_headers()) as client:
         check_health(client)
         check_migration_head()
         version_id = seed_demo(client)

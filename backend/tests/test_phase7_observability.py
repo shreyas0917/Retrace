@@ -5,9 +5,9 @@ from __future__ import annotations
 from fastapi.testclient import TestClient
 
 from app.core.metrics import get_metrics
+from app.core.ops import record_diagnosis, record_judge, record_retrieval
 from app.core.redaction import redact_event_dict
 from app.core.signals import evaluate_signals, load_observability_config
-from app.core.ops import record_diagnosis, record_judge, record_retrieval
 
 
 def _auth(api_key: str) -> dict[str, str]:
@@ -54,12 +54,8 @@ def test_ops_helpers_feed_diagnosis_rates() -> None:
     record_retrieval(empty=False, latency_ms=8)
     record_judge(judge_type="relevance", ok=True, latency_ms=3)
     record_judge(judge_type="relevance", ok=False, malformed=True, latency_ms=4)
-    record_diagnosis(
-        failure_code="RETRIEVAL_MISS", rule_id="R11", layer="retrieval", latency_ms=2
-    )
-    record_diagnosis(
-        failure_code="OK_GROUNDED", rule_id="R40", layer="none", latency_ms=2
-    )
+    record_diagnosis(failure_code="RETRIEVAL_MISS", rule_id="R11", layer="retrieval", latency_ms=2)
+    record_diagnosis(failure_code="OK_GROUNDED", rule_id="R40", layer="none", latency_ms=2)
     snap = m.snapshot()
     assert snap["derived"]["retrieval_empty_rate"] == 0.5
     assert snap["derived"]["judge_malformed_rate"] == 0.5
@@ -70,9 +66,7 @@ def test_signals_alert_when_over_threshold() -> None:
     m = get_metrics()
     m.reset()
     # Force miss rate 1.0 > 0.10
-    record_diagnosis(
-        failure_code="RETRIEVAL_MISS", rule_id="R11", layer="retrieval"
-    )
+    record_diagnosis(failure_code="RETRIEVAL_MISS", rule_id="R11", layer="retrieval")
     signals = evaluate_signals()
     miss = next(s for s in signals["signals"] if s["signal"] == "retrieval_miss_rate")
     assert miss["status"] == "ALERT"

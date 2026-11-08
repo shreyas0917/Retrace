@@ -23,7 +23,7 @@ import sys
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
@@ -136,7 +136,7 @@ def run(args: argparse.Namespace) -> dict:
     ok = sum(v for k, v in status_counts.items() if k.isdigit() and int(k) < 400)
     failed = len(latencies) - ok
     result = {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "base_url": args.base_url,
         "endpoint": args.endpoint,
         "corpus_version_id": version_id,
@@ -202,7 +202,7 @@ def main() -> int:
     if not args.no_write:
         out_dir = Path(args.out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
-        ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        ts = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
         out = out_dir / f"load_{ts}_{res['endpoint']}_c{res['concurrency']}.json"
         out.write_text(json.dumps(res, indent=2), encoding="utf-8")
         print(f"\nReport: {out}")

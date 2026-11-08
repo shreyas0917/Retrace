@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Mapping
-
+from typing import Any
 
 DEFAULT_CHUNKING_CONFIG: dict[str, Any] = {
     "strategy": "recursive_character",
@@ -29,10 +29,7 @@ def normalize_chunking_config(config: Mapping[str, Any] | None) -> dict[str, Any
 
     strategy = str(raw.get("strategy", "recursive_character"))
     if strategy != "recursive_character":
-        raise ValueError(
-            f"unsupported chunking strategy '{strategy}'; "
-            "MVP supports only 'recursive_character'"
-        )
+        raise ValueError(f"unsupported chunking strategy '{strategy}'; " "MVP supports only 'recursive_character'")
 
     chunk_size = int(raw["chunk_size"])
     chunk_overlap = int(raw["chunk_overlap"])

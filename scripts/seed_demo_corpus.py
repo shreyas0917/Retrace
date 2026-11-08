@@ -81,15 +81,11 @@ def main() -> int:
         r.raise_for_status()
         for item in r.json()["results"]:
             print(
-                f"  rank={item['rank']} score={item['score']} "
-                f"chunk={item['chunk_id']} source={item['source_name']}"
+                f"  rank={item['rank']} score={item['score']} " f"chunk={item['chunk_id']} source={item['source_name']}"
             )
 
         if not MODEL_API_KEY or MODEL_API_KEY.strip() in {"", "replace-me"}:
-            print(
-                "generate: SKIPPED — MODEL_API_KEY not configured "
-                "(Phase 3 path covered by FakeLLM tests)"
-            )
+            print("generate: SKIPPED — MODEL_API_KEY not configured " "(Phase 3 path covered by FakeLLM tests)")
             return 0
 
         r = client.post(

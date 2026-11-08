@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from app.core.config import Settings
 from app.services.judges.base import run_structured_judge
@@ -26,9 +27,7 @@ score must be between 0 and 1.
 """
 
 
-def build_relevance_messages(
-    query: str, chunks: Sequence[dict[str, Any]]
-) -> list[dict[str, str]]:
+def build_relevance_messages(query: str, chunks: Sequence[dict[str, Any]]) -> list[dict[str, str]]:
     lines = ["<chunks>"]
     for c in chunks:
         lines.append(f"[chunk_id={c.get('chunk_id')}]")

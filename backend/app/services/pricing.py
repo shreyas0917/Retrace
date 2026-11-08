@@ -99,9 +99,7 @@ def pricing_version(path: str | Path | None = None) -> str:
     return str(load_pricing(path)["version"])
 
 
-def resolve_model_pricing(
-    model: str | None, table: dict[str, Any] | None = None
-) -> tuple[str, dict[str, float]]:
+def resolve_model_pricing(model: str | None, table: dict[str, Any] | None = None) -> tuple[str, dict[str, float]]:
     """Return (matched_key, {prompt, completion}): exact, longest prefix, default."""
     table = table or load_pricing()
     models: dict[str, dict[str, float]] = table.get("models") or {}
@@ -128,8 +126,5 @@ def estimate_cost_usd(
     if prompt_tokens is None and completion_tokens is None:
         return None
     _, rates = resolve_model_pricing(model, load_pricing(path))
-    cost = (
-        (prompt_tokens or 0) * rates["prompt"]
-        + (completion_tokens or 0) * rates["completion"]
-    ) / 1_000_000.0
+    cost = ((prompt_tokens or 0) * rates["prompt"] + (completion_tokens or 0) * rates["completion"]) / 1_000_000.0
     return round(cost, 8)

@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Sequence
-
-from pydantic import BaseModel
+from collections.abc import Sequence
+from typing import Any
 
 from app.core.config import Settings, get_settings
 from app.services.judges.faithfulness import FAITHFULNESS_PROMPT_VERSION, judge_faithfulness
@@ -15,6 +14,10 @@ from app.services.judges.faithfulness_nli import (
     judge_faithfulness_nli,
 )
 from app.services.judges.replay import current_replay
+from app.services.judges.schemas import FaithfulnessJudgeResult
+
+# Either backend's output: both have `faithfulness_score` and `claims` with `supported`.
+FaithfulnessResult = NLIFaithfulnessResult | FaithfulnessJudgeResult
 
 
 def judge_faithfulness_routed(
@@ -22,7 +25,7 @@ def judge_faithfulness_routed(
     answer: str,
     chunks: Sequence[dict[str, Any]],
     settings: Settings | None = None,
-) -> tuple[BaseModel, dict[str, Any], str]:
+) -> tuple[FaithfulnessResult, dict[str, Any], str]:
     """Return (result, meta, version). The result always has
     `faithfulness_score` and `claims` (each with `supported`)."""
     settings = settings or get_settings()
@@ -33,21 +36,21 @@ def judge_faithfulness_routed(
             recorded = replay["faithfulness_nli"]
             if isinstance(recorded, str):
                 recorded = json.loads(recorded)
-            result = NLIFaithfulnessResult.model_validate(recorded)
+            recorded_result = NLIFaithfulnessResult.model_validate(recorded)
             meta = {
-                "model": f"{result.model_id}@{result.revision[:12]}",
+                "model": f"{recorded_result.model_id}@{recorded_result.revision[:12]}",
                 "schema_ok": True,
                 "attempts": 1,
                 "latency_ms": 0,
                 "backend": "nli",
                 "replayed": True,
             }
-            return result, meta, result.version
+            return recorded_result, meta, recorded_result.version
         result, meta = judge_faithfulness(query, answer, chunks, settings=settings)
         return result, {**meta, "backend": "llm"}, FAITHFULNESS_PROMPT_VERSION
 
     if settings.faithfulness_backend == "nli":
-        result, meta = judge_faithfulness_nli(query, answer, chunks, max_pairs=settings.nli_max_pairs)
-        return result, meta, NLI_FAITHFULNESS_VERSION
+        nli_result, nli_meta = judge_faithfulness_nli(query, answer, chunks, max_pairs=settings.nli_max_pairs)
+        return nli_result, nli_meta, NLI_FAITHFULNESS_VERSION
     result, meta = judge_faithfulness(query, answer, chunks, settings=settings)
     return result, {**meta, "backend": "llm"}, FAITHFULNESS_PROMPT_VERSION

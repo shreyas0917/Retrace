@@ -43,9 +43,7 @@ def get_corpus_detail(corpus_id: str, db: Session = Depends(get_db)) -> dict:
     corpus = get_corpus(db, corpus_id)
     versions = list(
         db.execute(
-            select(CorpusVersion)
-            .where(CorpusVersion.corpus_id == corpus_id)
-            .order_by(CorpusVersion.created_at.desc())
+            select(CorpusVersion).where(CorpusVersion.corpus_id == corpus_id).order_by(CorpusVersion.created_at.desc())
         ).scalars()
     )
     return {

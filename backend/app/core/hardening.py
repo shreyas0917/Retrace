@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Awaitable, Callable, MutableMapping
+from collections.abc import Awaitable, Callable, MutableMapping
+from typing import Any
 
 from starlette.responses import JSONResponse
 
@@ -69,9 +70,7 @@ class RequestHardeningMiddleware:
 
         declared = self._declared_length(scope)
         if declared is not None and declared > self.max_request_bytes:
-            response = JSONResponse(
-                status_code=413, content=json.loads(_too_large_body(scope, self.max_request_bytes))
-            )
+            response = JSONResponse(status_code=413, content=json.loads(_too_large_body(scope, self.max_request_bytes)))
             await response(scope, receive, send)
             return
 
@@ -103,9 +102,7 @@ class RequestHardeningMiddleware:
 
         return wrapped
 
-    def _hardened_send(
-        self, send: Send, scope: Scope, path: str, guard: _RequestGuard
-    ) -> Send:
+    def _hardened_send(self, send: Send, scope: Scope, path: str, guard: _RequestGuard) -> Send:
         max_bytes = self.max_request_bytes
 
         async def wrapped(message: Message) -> None:

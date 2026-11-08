@@ -84,10 +84,7 @@ def test_labels_load_and_match_manifest() -> None:
     assert all(per_judge[j] >= 15 for j in JUDGE_TYPES)
     # Provenance: AI-drafted until the author reviews them (then
     # "ai_draft_author_reviewed"). Never claim a human label that was not given.
-    assert all(
-        e.annotator in {"ai_draft", "ai_draft_author_reviewed"} and e.annotation_date
-        for e in examples
-    )
+    assert all(e.annotator in {"ai_draft", "ai_draft_author_reviewed"} and e.annotation_date for e in examples)
     assert manifest["annotator"] in {"ai_draft", "ai_draft_author_reviewed"}
     tags = {t for e in examples for t in e.tags}
     assert {"injection", "missing_info_not_contradiction", "numerically_wrong", "partially_supported"} <= tags
@@ -100,9 +97,14 @@ def test_labels_load_and_match_manifest() -> None:
 
 def test_labels_schema_rejects_inconsistent_rows(tmp_path: Path) -> None:
     base: dict[str, Any] = {
-        "example_id": "x", "judge": "faithfulness", "query": "q", "annotator": "author",
-        "annotation_date": "2026-10-26", "chunks": [{"chunk_id": "d:c000", "text": "t"}],
-        "answer": "a", "claims": [{"claim": "c", "supported": True}, {"claim": "d", "supported": False}],
+        "example_id": "x",
+        "judge": "faithfulness",
+        "query": "q",
+        "annotator": "author",
+        "annotation_date": "2026-10-26",
+        "chunks": [{"chunk_id": "d:c000", "text": "t"}],
+        "answer": "a",
+        "claims": [{"claim": "c", "supported": True}, {"claim": "d", "supported": False}],
         "faithfulness_band": [1.0, 1.0],  # band does not contain 0.5
     }
     with pytest.raises(ValueError):
@@ -110,7 +112,12 @@ def test_labels_schema_rejects_inconsistent_rows(tmp_path: Path) -> None:
     with pytest.raises(ValueError):
         JudgeExample.model_validate({**base, "judge": "contradiction", "contradicts": None})
     bad = tmp_path / "bad.jsonl"
-    bad.write_text(json.dumps({**base, "faithfulness_band": [0.5, 0.5]}) + "\n" + json.dumps({**base, "faithfulness_band": [0.5, 0.5]}) + "\n")
+    bad.write_text(
+        json.dumps({**base, "faithfulness_band": [0.5, 0.5]})
+        + "\n"
+        + json.dumps({**base, "faithfulness_band": [0.5, 0.5]})
+        + "\n"
+    )
     with pytest.raises(JudgeLabelsValidationError, match="duplicate"):
         load_judge_labels(bad)
 
@@ -151,9 +158,15 @@ def test_prompt_variants_are_versioned_and_distinct() -> None:
 
 def test_build_messages_swaps_only_system_prompt() -> None:
     ex = JudgeExample(
-        example_id="e", judge="faithfulness", query="q?", annotator="author", annotation_date="2026-10-26",
-        chunks=[{"chunk_id": "d:c000", "text": "ctx"}], answer="ans",
-        claims=[{"claim": "c", "supported": True}], faithfulness_band=[1.0, 1.0],
+        example_id="e",
+        judge="faithfulness",
+        query="q?",
+        annotator="author",
+        annotation_date="2026-10-26",
+        chunks=[{"chunk_id": "d:c000", "text": "ctx"}],
+        answer="ans",
+        claims=[{"claim": "c", "supported": True}],
+        faithfulness_band=[1.0, 1.0],
     )
     prod = faithfulness.build_faithfulness_messages("q?", "ans", [{"chunk_id": "d:c000", "text": "ctx"}])
     v1 = build_messages("faithfulness", ex, "v1")
@@ -188,25 +201,49 @@ class OracleJudgeLLM:
         ex = self._find(messages[-1]["content"] if messages[-1]["role"] == "user" else messages[1]["content"])
         if judge == "relevance":
             items = [
-                {"chunk_id": c.chunk_id, "relevant": bool(c.relevant) if c.relevant is not None else True,
-                 "score": c.label_score if c.relevant is not None else 1.0, "rationale": "oracle"}
+                {
+                    "chunk_id": c.chunk_id,
+                    "relevant": bool(c.relevant) if c.relevant is not None else True,
+                    "score": c.label_score if c.relevant is not None else 1.0,
+                    "rationale": "oracle",
+                }
                 for c in ex.chunks
             ]
-            body = {"items": items, "context_sufficient": ex.context_sufficient if ex.context_sufficient is not None else True}
+            body = {
+                "items": items,
+                "context_sufficient": ex.context_sufficient if ex.context_sufficient is not None else True,
+            }
         elif judge == "faithfulness":
             if ex.claims:
-                claims = [{"claim": c.claim, "supported": c.supported, "supporting_chunk_ids": [ex.chunks[0].chunk_id] if c.supported else []} for c in ex.claims]
+                claims = [
+                    {
+                        "claim": c.claim,
+                        "supported": c.supported,
+                        "supporting_chunk_ids": [ex.chunks[0].chunk_id] if c.supported else [],
+                    }
+                    for c in ex.claims
+                ]
                 score = ex.labeled_faithfulness_score
             else:  # contradiction example: consistent with its label
                 bad = bool(ex.contradicts)
-                claims = [{"claim": ex.answer or "", "supported": not bad, "supporting_chunk_ids": [] if bad else [ex.chunks[0].chunk_id]}]
+                claims = [
+                    {
+                        "claim": ex.answer or "",
+                        "supported": not bad,
+                        "supporting_chunk_ids": [] if bad else [ex.chunks[0].chunk_id],
+                    }
+                ]
                 score = 0.0 if bad else 1.0
             body = {"faithfulness_score": score, "claims": claims}
         else:
             contradicts = bool(ex.contradicts) if ex.contradicts is not None else False
             if self.flip_variant and messages[0]["content"] == get_system_prompt("contradiction", self.flip_variant):
                 contradicts = not contradicts
-            body = {"contradicts": contradicts, "explanation": "oracle", "chunk_ids": [ex.chunks[0].chunk_id] if contradicts else []}
+            body = {
+                "contradicts": contradicts,
+                "explanation": "oracle",
+                "chunk_ids": [ex.chunks[0].chunk_id] if contradicts else [],
+            }
         return LLMResult(content=json.dumps(body), model=model, latency_ms=2.0)
 
 
@@ -219,7 +256,11 @@ def _subset() -> list[JudgeExample]:
             continue
         seen_queries.add(ex.query)
         picked.append(ex)
-    picked = [e for e in picked if e.judge == "relevance"][:4] + [e for e in picked if e.judge == "faithfulness"][:4] + [e for e in picked if e.judge == "contradiction"][:4]
+    picked = (
+        [e for e in picked if e.judge == "relevance"][:4]
+        + [e for e in picked if e.judge == "faithfulness"][:4]
+        + [e for e in picked if e.judge == "contradiction"][:4]
+    )
     assert len(picked) == 12
     return picked
 
@@ -288,7 +329,9 @@ def test_validate_judges_with_scripted_imperfect_outputs() -> None:
             # ex1: two malformed attempts -> schema failure; ex2: predicts True (label False)
             "contradiction": ["not json", "still not json", contradiction_json(True)],
             # all chunks relevant, sufficient=True; label says chunk 2 is irrelevant
-            "relevance": [relevance_json([c.chunk_id for c in rel_ex.chunks], sufficient=True, relevant=True, score=0.9)],
+            "relevance": [
+                relevance_json([c.chunk_id for c in rel_ex.chunks], sufficient=True, relevant=True, score=0.9)
+            ],
             # claims one supported + one unsupported -> score 0.5 vs label 1.0
             "faithfulness": [faithfulness_json(score=0.5, supported=1, unsupported=1)],
         }

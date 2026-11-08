@@ -30,10 +30,11 @@ import math
 import re
 import time
 from collections import Counter, defaultdict
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Callable, Literal, Sequence
+from typing import Any, Literal
 
 import numpy as np
 from pydantic import BaseModel, Field, field_validator
@@ -80,8 +81,7 @@ class RelevantSpan(BaseModel):
         norm = normalize_text(value)
         if len(norm) > MAX_MUST_CONTAIN_CHARS:
             raise ValueError(
-                f"must_contain must be <= {MAX_MUST_CONTAIN_CHARS} normalized chars "
-                f"(got {len(norm)}): {value!r}"
+                f"must_contain must be <= {MAX_MUST_CONTAIN_CHARS} normalized chars " f"(got {len(norm)}): {value!r}"
             )
         return value
 
@@ -140,18 +140,13 @@ def default_qrels_path() -> Path:
 def load_corpus_dir(corpus_dir: str | Path) -> list[tuple[str, str]]:
     """``(document_id, text)`` for every ``*.md`` in the directory (id = file stem)."""
     corpus_dir = Path(corpus_dir)
-    docs = [
-        (path.stem, path.read_text(encoding="utf-8"))
-        for path in sorted(corpus_dir.glob("*.md"))
-    ]
+    docs = [(path.stem, path.read_text(encoding="utf-8")) for path in sorted(corpus_dir.glob("*.md"))]
     if not docs:
         raise QrelsValidationError(f"no markdown documents in {corpus_dir}")
     return docs
 
 
-def check_qrels_against_corpus(
-    queries: Sequence[RetrievalQuery], docs: Sequence[tuple[str, str]]
-) -> list[str]:
+def check_qrels_against_corpus(queries: Sequence[RetrievalQuery], docs: Sequence[tuple[str, str]]) -> list[str]:
     """Return human-readable problems (unknown doc ids, substrings not in the doc)."""
     by_id = {doc_id: normalize_text(text) for doc_id, text in docs}
     problems: list[str] = []
@@ -161,9 +156,7 @@ def check_qrels_against_corpus(
             if doc is None:
                 problems.append(f"{q.query_id}: unknown document_id {span.document_id}")
             elif normalize_text(span.must_contain) not in doc:
-                problems.append(
-                    f"{q.query_id}: {span.must_contain!r} not found in {span.document_id}"
-                )
+                problems.append(f"{q.query_id}: {span.must_contain!r} not found in {span.document_id}")
     return problems
 
 
@@ -197,9 +190,7 @@ class ChunkRecord:
     norm_text: str
 
 
-def build_chunks(
-    docs: Sequence[tuple[str, str]], chunk_size: int, chunk_overlap: int
-) -> list[ChunkRecord]:
+def build_chunks(docs: Sequence[tuple[str, str]], chunk_size: int, chunk_overlap: int) -> list[ChunkRecord]:
     records: list[ChunkRecord] = []
     for doc_id, text in docs:
         for piece in chunk_text(text, chunk_size=chunk_size, chunk_overlap=chunk_overlap):
@@ -252,9 +243,7 @@ class BM25Index:
         df: Counter[str] = Counter()
         for counts in self.tf:
             df.update(counts.keys())
-        self.idf = {
-            term: math.log((self.n - n_t + 0.5) / (n_t + 0.5) + 1.0) for term, n_t in df.items()
-        }
+        self.idf = {term: math.log((self.n - n_t + 0.5) / (n_t + 0.5) + 1.0) for term, n_t in df.items()}
 
     def scores(self, query: str) -> np.ndarray:
         out = np.zeros(self.n, dtype=float)
@@ -352,10 +341,7 @@ def _mean(values: Sequence[float]) -> float | None:
 
 
 def _round_metrics(metrics: dict[str, Any], digits: int = 4) -> dict[str, Any]:
-    return {
-        key: (round(value, digits) if isinstance(value, float) else value)
-        for key, value in metrics.items()
-    }
+    return {key: (round(value, digits) if isinstance(value, float) else value) for key, value in metrics.items()}
 
 
 def run_retrieval_ablation(
@@ -390,9 +376,7 @@ def run_retrieval_ablation(
     unanswerable = [q for q in queries if not q.answerable]
 
     # Embedding models: default first, then extras (best effort).
-    embedders: list[tuple[str, EmbedFn]] = [
-        (DEFAULT_EMBEDDING_MODEL, embed_fn or default_embed_fn)
-    ]
+    embedders: list[tuple[str, EmbedFn]] = [(DEFAULT_EMBEDDING_MODEL, embed_fn or default_embed_fn)]
     model_status: dict[str, dict[str, Any]] = {
         DEFAULT_EMBEDDING_MODEL: {"status": "ok", "source": "project embedder (Settings-locked)"}
     }
@@ -426,8 +410,8 @@ def run_retrieval_ablation(
         bm25 = BM25Index(texts)
         retrievers: list[tuple[str, str | None, Callable[[str], tuple[list[int], np.ndarray | None]]]] = []
 
-        def _bm25_run(query: str) -> tuple[list[int], np.ndarray]:
-            scores = bm25.scores(query)
+        def _bm25_run(query: str, _bm25: BM25Index = bm25) -> tuple[list[int], np.ndarray]:
+            scores = _bm25.scores(query)
             return _argsort_desc(scores), scores
 
         retrievers.append(("bm25", None, _bm25_run))
@@ -440,10 +424,10 @@ def run_retrieval_ablation(
                 return _argsort_desc(scores), scores
 
             def _hybrid_run(
-                query: str, _dense: DenseIndex = dense
+                query: str, _dense: DenseIndex = dense, _bm25: BM25Index = bm25
             ) -> tuple[list[int], np.ndarray | None]:
                 d_rank = _dense.rank(query)
-                b_rank = bm25.rank(query)
+                b_rank = _bm25.rank(query)
                 return rrf_fuse([d_rank, b_rank]), None
 
             retrievers.append(("dense", model_name, _dense_run))
@@ -470,9 +454,7 @@ def run_retrieval_ablation(
                 per_difficulty[q.difficulty].append(metrics)
                 if scores is not None and len(order):
                     answerable_top1.append(float(scores[order[0]]))
-                first_rank = next(
-                    (r for r, cid in enumerate(ranked_ids, start=1) if cid in relevant), None
-                )
+                first_rank = next((r for r, cid in enumerate(ranked_ids, start=1) if cid in relevant), None)
                 details.append(
                     {
                         "query_id": q.query_id,
@@ -499,8 +481,7 @@ def run_retrieval_ablation(
                 "unmatched_queries": unmatched,
                 "metrics": _round_metrics({k: v for k, v in agg.items() if k != "n"}),
                 "by_difficulty": {
-                    diff: _round_metrics(aggregate(rows_))
-                    for diff, rows_ in sorted(per_difficulty.items())
+                    diff: _round_metrics(aggregate(rows_)) for diff, rows_ in sorted(per_difficulty.items())
                 },
                 "mean_latency_ms": round(_mean(latencies) or 0.0, 3),
             }
@@ -516,21 +497,13 @@ def run_retrieval_ablation(
                             "query_id": q.query_id,
                             "query": q.query,
                             "top1_chunk_id": chunks[order[0]].chunk_id if order else None,
-                            "top1_score": (
-                                round(float(scores[order[0]]), 4)
-                                if scores is not None and order
-                                else None
-                            ),
+                            "top1_score": (round(float(scores[order[0]]), 4) if scores is not None and order else None),
                         }
                     )
                 key = retriever_name if model_name is None else f"{retriever_name}::{model_name}"
                 abstention[key] = {
-                    "answerable_top1_score_mean": (
-                        round(_mean(answerable_top1), 4) if answerable_top1 else None
-                    ),
-                    "answerable_top1_score_min": (
-                        round(min(answerable_top1), 4) if answerable_top1 else None
-                    ),
+                    "answerable_top1_score_mean": (round(_mean(answerable_top1), 4) if answerable_top1 else None),
+                    "answerable_top1_score_min": (round(min(answerable_top1), 4) if answerable_top1 else None),
                     "unanswerable": unans_top1,
                     "unanswerable_top1_score_mean": (
                         round(_mean([u["top1_score"] for u in unans_top1 if u["top1_score"] is not None]) or 0.0, 4)
@@ -546,7 +519,7 @@ def run_retrieval_ablation(
                     )[:worst_n]
 
     report = {
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "corpus_dir": str(corpus_dir),
         "document_count": len(docs),
         "document_ids": [doc_id for doc_id, _ in docs],
@@ -597,8 +570,7 @@ def run_retrieval_ablation(
 INTERPRETATION_START = "<!-- interpretation:start -->"
 INTERPRETATION_END = "<!-- interpretation:end -->"
 _DEFAULT_INTERPRETATION = (
-    "_Interpretation not yet written. Edit this section between the markers; the "
-    "generator preserves it on re-runs._"
+    "_Interpretation not yet written. Edit this section between the markers; the " "generator preserves it on re-runs._"
 )
 
 
@@ -698,7 +670,10 @@ def format_markdown(report: dict[str, Any], *, existing_markdown: str | None = N
     lines.append("")
     unmatched = {row["config"]: row["unmatched_queries"] for row in report["results"] if row["unmatched_queries"]}
     if unmatched:
-        lines.append("Queries with no matching chunk (excluded from means): " + "; ".join(f"{k}: {v}" for k, v in unmatched.items()))
+        lines.append(
+            "Queries with no matching chunk (excluded from means): "
+            + "; ".join(f"{k}: {v}" for k, v in unmatched.items())
+        )
         lines.append("")
     lines.append("## Per-difficulty breakdown (MRR / R@5 / nDCG@10)")
     lines.append("")

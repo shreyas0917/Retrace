@@ -10,8 +10,9 @@ from __future__ import annotations
 import threading
 import time
 from collections import deque
+from collections.abc import Awaitable, Callable, MutableMapping
 from hashlib import sha256
-from typing import Any, Awaitable, Callable, MutableMapping
+from typing import Any
 
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -35,9 +36,7 @@ _EXEMPT_GET_PREFIXES = ("/api/v1/runbooks",)
 class RateLimiter:
     """Thread-safe sliding window counter per key."""
 
-    def __init__(
-        self, per_minute: int = 120, auth_per_minute: int = 10, enabled: bool = True
-    ) -> None:
+    def __init__(self, per_minute: int = 120, auth_per_minute: int = 10, enabled: bool = True) -> None:
         self._lock = threading.Lock()
         self._hits: dict[str, deque[float]] = {}
         self.per_minute = per_minute

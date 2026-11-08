@@ -64,9 +64,7 @@ def _finalize(
     calibrated = apply_calibration(table, decision.diagnosis_score)
     decision.calibrated_confidence = round(calibrated, 6)
     decision.calibration_version = table.version if table else None
-    decision.uncertain = (
-        decision.primary_code == "DIAGNOSIS_UNCERTAIN" or calibrated < TAU_UNCERTAIN
-    )
+    decision.uncertain = decision.primary_code == "DIAGNOSIS_UNCERTAIN" or calibrated < TAU_UNCERTAIN
     decision.explanation = build_explanation(decision, signals)
     return decision
 
@@ -92,9 +90,7 @@ def _base_signals(
         gold_hit = None
         recall = None
 
-    abstained = bool(execution.abstained) or (
-        (execution.answer_text or "").strip() == ABSTENTION_ANSWER
-    )
+    abstained = bool(execution.abstained) or ((execution.answer_text or "").strip() == ABSTENTION_ANSWER)
 
     stage_error = None
     if execution.status == "GENERATION_TIMEOUT" or execution.error_code == "GENERATION_TIMEOUT":
@@ -145,9 +141,7 @@ def _persist_diagnosis(
     execution: ExecutionTrace,
     decision: DiagnosisDecision,
 ) -> Diagnosis:
-    existing = db.execute(
-        select(Diagnosis).where(Diagnosis.execution_id == execution.id)
-    ).scalars().first()
+    existing = db.execute(select(Diagnosis).where(Diagnosis.execution_id == execution.id)).scalars().first()
     if existing:
         # Idempotent: return prior diagnosis; do not overwrite history.
         return existing
@@ -232,9 +226,7 @@ def diagnose_execution(
         operation="diagnosis",
     )
 
-    existing = db.execute(
-        select(Diagnosis).where(Diagnosis.execution_id == execution_id)
-    ).scalars().first()
+    existing = db.execute(select(Diagnosis).where(Diagnosis.execution_id == execution_id)).scalars().first()
     if existing:
         logger.info(
             "diagnosis_idempotent_hit",
@@ -260,9 +252,7 @@ def diagnose_execution(
         # Ensure evidence includes retrieval refs for empty case
         if "retrieval:empty" not in decision.evidence_refs and signals.n_retrieved == 0:
             decision.evidence_refs.append("retrieval:empty")
-        decision = _finalize(
-            decision, signals, metrics=metrics, judges_ran=False, started=started
-        )
+        decision = _finalize(decision, signals, metrics=metrics, judges_ran=False, started=started)
         row = _persist_diagnosis(db, execution=execution, decision=decision)
         _emit_ops(decision, started)
         return _to_response(row, execution)
@@ -284,19 +274,13 @@ def diagnose_execution(
 
         scores = [item.score for item in rel.items]
         irrelevant = sum(1 for s in scores if s < TAU_REL)
-        signals.irrelevant_frac = (
-            irrelevant / max(len(scores), 1) if scores else 1.0
-        )
+        signals.irrelevant_frac = irrelevant / max(len(scores), 1) if scores else 1.0
         signals.context_sufficient = bool(rel.context_sufficient)
         signals.chunk_relevance = [i.model_dump() for i in rel.items]
 
         # Faithfulness + contradiction only when context is sufficient and answered
         answer = (execution.answer_text or "").strip()
-        if (
-            answer
-            and not signals.answer_is_abstention
-            and signals.context_sufficient is True
-        ):
+        if answer and not signals.answer_is_abstention and signals.context_sufficient is True:
             faith, faith_meta, faith_version = judge_faithfulness_routed(
                 execution.query, answer, chunks, settings=settings
             )
@@ -315,16 +299,12 @@ def diagnose_execution(
             )
             metrics["faithfulness_judge_latency_ms"] = faith_meta.get("latency_ms")
             signals.faithfulness_score = faith.faithfulness_score
-            signals.unsupported_claim_count = sum(
-                1 for c in faith.claims if not c.supported
-            )
+            signals.unsupported_claim_count = sum(1 for c in faith.claims if not c.supported)
             signals.supported_claim_count = sum(1 for c in faith.claims if c.supported)
             signals.nli_contradiction = getattr(faith, "nli_contradiction", None)
             metrics["faithfulness_backend"] = faith_meta.get("backend")
 
-            contra, contra_meta = judge_contradiction(
-                execution.query, answer, chunks, settings=settings
-            )
+            contra, contra_meta = judge_contradiction(execution.query, answer, chunks, settings=settings)
             _persist_judge(
                 db,
                 execution_id=execution.id,
@@ -342,18 +322,14 @@ def diagnose_execution(
             signals.answer_contradicts_context = bool(contra.contradicts)
         else:
             # Insufficient context or abstained: grounding judges not required
-            signals.faithfulness_score = (
-                1.0 if signals.answer_is_abstention else None
-            )
+            signals.faithfulness_score = 1.0 if signals.answer_is_abstention else None
             signals.unsupported_claim_count = 0
             signals.supported_claim_count = 0
             signals.answer_contradicts_context = False
 
         signals.judge_schema_ok = True
         decision = apply_rules(signals)
-        decision = _finalize(
-            decision, signals, metrics=metrics, judges_ran=judges_ran, started=started
-        )
+        decision = _finalize(decision, signals, metrics=metrics, judges_ran=judges_ran, started=started)
         row = _persist_diagnosis(db, execution=execution, decision=decision)
         logger.info(
             "diagnosis_completed",
@@ -373,9 +349,7 @@ def diagnose_execution(
         signals.judge_schema_ok = False
         decision = apply_rules(signals)
         decision.evidence_refs.append(f"judge:{exc.judge_type}:malformed")
-        decision = _finalize(
-            decision, signals, metrics=metrics, judges_ran=judges_ran, started=started
-        )
+        decision = _finalize(decision, signals, metrics=metrics, judges_ran=judges_ran, started=started)
         row = _persist_diagnosis(db, execution=execution, decision=decision)
         db.commit()
         _emit_ops(decision, started)
@@ -422,11 +396,11 @@ def _evidence_refs_from_db(diagnosis: Diagnosis) -> list[str]:
 
         session = object_session(diagnosis)
         if session is not None:
-            rows = session.execute(
-                select(DiagnosisEvidence).where(
-                    DiagnosisEvidence.diagnosis_id == diagnosis.id
-                )
-            ).scalars().all()
+            rows = (
+                session.execute(select(DiagnosisEvidence).where(DiagnosisEvidence.diagnosis_id == diagnosis.id))
+                .scalars()
+                .all()
+            )
             refs = [r.ref for r in rows if r.ref]
     except Exception:  # noqa: BLE001
         refs = []

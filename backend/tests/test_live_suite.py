@@ -68,8 +68,12 @@ class _ExplodingScorer:
         def boom(pairs):
             raise AssertionError("the NLI model must not run during replay")
 
-        return NLIScorer(predict_probs=boom, id2label={0: "contradiction", 1: "entailment", 2: "neutral"},
-                         token_spans=lambda t: [(0, len(t))], max_length=512)
+        return NLIScorer(
+            predict_probs=boom,
+            id2label={0: "contradiction", 1: "entailment", 2: "neutral"},
+            token_spans=lambda t: [(0, len(t))],
+            max_length=512,
+        )
 
 
 def _entailing_scorer() -> NLIScorer:
@@ -84,8 +88,12 @@ def _entailing_scorer() -> NLIScorer:
             pos = start + len(word)
         return out
 
-    return NLIScorer(predict_probs=predict, id2label={0: "contradiction", 1: "entailment", 2: "neutral"},
-                     token_spans=spans, max_length=512)
+    return NLIScorer(
+        predict_probs=predict,
+        id2label={0: "contradiction", 1: "entailment", 2: "neutral"},
+        token_spans=spans,
+        max_length=512,
+    )
 
 
 # --- eval-only faults --------------------------------------------------------
@@ -104,10 +112,18 @@ def test_generate_route_never_passes_a_fault(client: TestClient, api_key: str, m
 
     def fake_run_rag(db, **kwargs):
         seen.update(kwargs)
-        return {"request_id": "r", "execution_id": "e", "corpus_version_id": "v", "query": "q",
-                "answer": "a", "abstained": False, "status": "COMPLETED",
-                "retrieval": {"retrieval_trace_id": None, "top_k": 5, "latency_ms": 1.0, "results": []},
-                "generation": {}, "latency_ms": {}}
+        return {
+            "request_id": "r",
+            "execution_id": "e",
+            "corpus_version_id": "v",
+            "query": "q",
+            "answer": "a",
+            "abstained": False,
+            "status": "COMPLETED",
+            "retrieval": {"retrieval_trace_id": None, "top_k": 5, "latency_ms": 1.0, "results": []},
+            "generation": {},
+            "latency_ms": {},
+        }
 
     monkeypatch.setattr(routes_generate, "run_rag", fake_run_rag)
     resp = client.post(
@@ -140,7 +156,8 @@ def test_unknown_fault_is_rejected() -> None:
     with pytest.raises(ValueError):
         get_fault("delete_everything")
     assert {f.prompt_tag for f in EVAL_FAULTS.values()} == {
-        "eval_fault.wrong_facts.v1", "eval_fault.extra_unsupported_claim.v1"
+        "eval_fault.wrong_facts.v1",
+        "eval_fault.extra_unsupported_claim.v1",
     }
 
 
@@ -178,21 +195,40 @@ def _record(answer: str, *, nli_result: dict, contradicts: bool = False) -> dict
             "faithfulness_nli": nli_result,
             "timeouts": [],
         },
-        "live_diagnosis": {"failure_code": "SECRET_LIVE_CODE", "rule_id": "R31", "explanation": "LIVE EXPLANATION TEXT"},
+        "live_diagnosis": {
+            "failure_code": "SECRET_LIVE_CODE",
+            "rule_id": "R31",
+            "explanation": "LIVE EXPLANATION TEXT",
+        },
     }
 
 
 def test_offline_execution_accepts_a_recorded_nli_object() -> None:
-    nli, _ = judge_faithfulness_nli("q", "Employees accrue 1.25 days of PTO per month.", CHUNKS, scorer=_entailing_scorer())
-    fixture = record_to_offline_execution(_record("Employees accrue 1.25 days of PTO per month.", nli_result=nli.model_dump()))
+    nli, _ = judge_faithfulness_nli(
+        "q", "Employees accrue 1.25 days of PTO per month.", CHUNKS, scorer=_entailing_scorer()
+    )
+    fixture = record_to_offline_execution(
+        _record("Employees accrue 1.25 days of PTO per month.", nli_result=nli.model_dump())
+    )
     assert fixture.judge_scripts["faithfulness_nli"]["version"] == nli.version
     assert fixture.generation_model == "llama3.2:latest"
-    GoldCase.model_validate({
-        "case_id": "x", "suite_id": "live_v1", "suite_version": "1.0.0", "corpus_id": "demo",
-        "corpus_version_pin": "recorded", "query": "q", "expected_abstention": False,
-        "relevant_chunk_ids": [], "failure_label": "OK_GROUNDED", "acceptable_primary_codes": ["OK_GROUNDED"],
-        "annotator": "test", "annotation_date": "2026-11-08", "offline_execution": fixture.model_dump(),
-    })
+    GoldCase.model_validate(
+        {
+            "case_id": "x",
+            "suite_id": "live_v1",
+            "suite_version": "1.0.0",
+            "corpus_id": "demo",
+            "corpus_version_pin": "recorded",
+            "query": "q",
+            "expected_abstention": False,
+            "relevant_chunk_ids": [],
+            "failure_label": "OK_GROUNDED",
+            "acceptable_primary_codes": ["OK_GROUNDED"],
+            "annotator": "test",
+            "annotation_date": "2026-11-08",
+            "offline_execution": fixture.model_dump(),
+        }
+    )
 
 
 @pytest.mark.parametrize(
@@ -202,7 +238,9 @@ def test_offline_execution_accepts_a_recorded_nli_object() -> None:
         ("Employees accrue 3 days of PTO per month.", True, "GENERATION_CONTRADICTION"),
     ],
 )
-def test_replay_reproduces_from_recorded_outputs_without_live_models(answer, contradicts, expected, monkeypatch) -> None:
+def test_replay_reproduces_from_recorded_outputs_without_live_models(
+    answer, contradicts, expected, monkeypatch
+) -> None:
     monkeypatch.setenv("FAITHFULNESS_BACKEND", "nli")
     nli, _ = judge_faithfulness_nli("q", answer, CHUNKS, scorer=_entailing_scorer())
     set_nli_scorer(_ExplodingScorer().scorer())
@@ -210,7 +248,9 @@ def test_replay_reproduces_from_recorded_outputs_without_live_models(answer, con
     db = db_session.SessionLocal()
     try:
         stub = _ensure_eval_corpus(db)
-        diagnosis = replay_record(db, _record(answer, nli_result=nli.model_dump(), contradicts=contradicts), corpus_version_id=stub)
+        diagnosis = replay_record(
+            db, _record(answer, nli_result=nli.model_dump(), contradicts=contradicts), corpus_version_id=stub
+        )
     finally:
         db.close()
         set_nli_scorer(None)
@@ -237,7 +277,9 @@ def test_corpus_variants_remove_and_add_documents() -> None:
     assert len(main) == 13
     assert removed == main - set(config["variants"]["gold_removed"]["remove"])
     assert main < added and len(added - main) == 6
-    queries = [json.loads(line) for line in (suite / "queries.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
+    queries = [
+        json.loads(line) for line in (suite / "queries.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()
+    ]
     assert len(queries) == 50 and len({q["query_id"] for q in queries}) == 50
     assert {q["corpus_variant"] for q in queries} <= set(config["variants"])
     assert {q["eval_fault"] for q in queries} - {None} <= set(EVAL_FAULTS)
@@ -252,14 +294,19 @@ def test_labelling_sheet_is_blind_and_stable(tmp_path: Path) -> None:
     suite.mkdir()
     records = []
     for i, (condition, fault, variant) in enumerate(
-        [("wrong_answer_prompt", "wrong_facts", "main"), ("gold_removed", None, "gold_removed"),
-         ("distractors", None, "distractors")]
+        [
+            ("wrong_answer_prompt", "wrong_facts", "main"),
+            ("gold_removed", None, "gold_removed"),
+            ("distractors", None, "distractors"),
+        ]
     ):
         rec = _record(f"Answer number {i}.", nli_result={})
         rec.update(query_id=f"L{i:02d}", condition=condition, eval_fault=fault, corpus_variant=variant)
         records.append(rec)
     (suite / "runs.jsonl").write_text("\n".join(json.dumps(r) for r in records) + "\n", encoding="utf-8")
-    (suite / "corpus_chunks.jsonl").write_text(json.dumps({"chunk_id": "a:c000", "document_id": "a", "text": "t"}) + "\n", encoding="utf-8")
+    (suite / "corpus_chunks.jsonl").write_text(
+        json.dumps({"chunk_id": "a:c000", "document_id": "a", "text": "t"}) + "\n", encoding="utf-8"
+    )
     out = tmp_path / "out"
 
     class Args:
@@ -268,10 +315,26 @@ def test_labelling_sheet_is_blind_and_stable(tmp_path: Path) -> None:
         force = False
 
     assert sheet_tool.export(Args) == 0
-    text = (out / "live_v1_sheet.csv").read_text(encoding="utf-8") + (out / "live_v1_sheet.html").read_text(encoding="utf-8")
-    for leaked in ("wrong_answer_prompt", "wrong_facts", "gold_removed", "distractors", "eval_fault",
-                   "SECRET_LIVE_CODE", "LIVE EXPLANATION TEXT", "R31", "L00", "L01", "L02", "llama3.2",
-                   "relevance", "faithfulness", "contradiction"):
+    text = (out / "live_v1_sheet.csv").read_text(encoding="utf-8") + (out / "live_v1_sheet.html").read_text(
+        encoding="utf-8"
+    )
+    for leaked in (
+        "wrong_answer_prompt",
+        "wrong_facts",
+        "gold_removed",
+        "distractors",
+        "eval_fault",
+        "SECRET_LIVE_CODE",
+        "LIVE EXPLANATION TEXT",
+        "R31",
+        "L00",
+        "L01",
+        "L02",
+        "llama3.2",
+        "relevance",
+        "faithfulness",
+        "contradiction",
+    ):
         assert leaked not in text, leaked
     with (out / "live_v1_sheet.csv").open(encoding="utf-8", newline="") as fh:
         rows = list(csv.DictReader(fh))

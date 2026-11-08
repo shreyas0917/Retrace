@@ -210,8 +210,14 @@ def test_per_class_and_aggregate_f1() -> None:
     ]
     pc = per_class_metrics(rows)
     assert pc["A"] == {
-        "support": 2, "predicted": 2, "tp": 1, "fp": 1, "fn": 1,
-        "precision": 0.5, "recall": 0.5, "f1": 0.5,
+        "support": 2,
+        "predicted": 2,
+        "tp": 1,
+        "fp": 1,
+        "fn": 1,
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5,
     }
     assert pc["B"]["precision"] == pytest.approx(2 / 3)
     assert pc["B"]["recall"] == 1.0
@@ -273,8 +279,13 @@ class _ScriptedClassifierLLM:
 
 
 def test_llm_classifier_parses_and_falls_back() -> None:
-    bag = SignalBag(n_retrieved=1, retrieved_ids=["d:c000"], context_sufficient=True,
-                    faithfulness_score=0.1, unsupported_claim_count=1)
+    bag = SignalBag(
+        n_retrieved=1,
+        retrieved_ids=["d:c000"],
+        context_sufficient=True,
+        faithfulness_score=0.1,
+        unsupported_claim_count=1,
+    )
     good = _ScriptedClassifierLLM(
         ['```json\n{"failure_code": "generation_hallucination", "confidence": 0.8, "rationale": "r"}\n```']
     )
@@ -342,8 +353,12 @@ def test_heldout_suites_load_and_match_manifest() -> None:
         assert meta["manifest"]["suite_hash"] == suite_hash
         labels = {c.failure_label for c in cases}
         assert {
-            "RETRIEVAL_MISS", "GENERATION_HALLUCINATION", "GROUNDING_PARTIAL",
-            "OK_GROUNDED", "ABSTENTION_FALSE_NEGATIVE", "EVAL_MODEL_TIMEOUT",
+            "RETRIEVAL_MISS",
+            "GENERATION_HALLUCINATION",
+            "GROUNDING_PARTIAL",
+            "OK_GROUNDED",
+            "ABSTENTION_FALSE_NEGATIVE",
+            "EVAL_MODEL_TIMEOUT",
         } <= labels
         assert all(c.offline_execution is not None for c in cases)
         assert all(c.annotator == "synthetic_generator_v1" for c in cases)

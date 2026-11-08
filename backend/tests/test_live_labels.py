@@ -45,8 +45,12 @@ def _exploding_scorer() -> NLIScorer:
     def boom(pairs):
         raise AssertionError("the NLI model must not run: live_v1 replays recorded outputs")
 
-    return NLIScorer(predict_probs=boom, id2label={0: "contradiction", 1: "entailment", 2: "neutral"},
-                     token_spans=lambda t: [(0, len(t))], max_length=512)
+    return NLIScorer(
+        predict_probs=boom,
+        id2label={0: "contradiction", 1: "entailment", 2: "neutral"},
+        token_spans=lambda t: [(0, len(t))],
+        max_length=512,
+    )
 
 
 @pytest.fixture()
@@ -58,7 +62,11 @@ def workspace(tmp_path: Path, monkeypatch):
     root = tmp_path / "suites"
     suite = root / "live_v1" / "v1.0.0"
     suite.mkdir(parents=True)
-    records = [json.loads(line) for line in (REAL_SUITE / "runs.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
+    records = [
+        json.loads(line)
+        for line in (REAL_SUITE / "runs.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
     # One record per condition first, so every condition is represented, then fill up.
     picked, seen = [], set()
     for r in records:
@@ -98,7 +106,11 @@ def _fill(sheet: Path, records: list[dict], edit=None) -> None:
         )
     if rows:
         # A main-corpus chunk id; distractor chunks are not valid gold ids.
-        inventory = {json.loads(line)["chunk_id"] for line in (REAL_SUITE / "corpus_chunks.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()}
+        inventory = {
+            json.loads(line)["chunk_id"]
+            for line in (REAL_SUITE / "corpus_chunks.jsonl").read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        }
         retrieved = re.findall(r"#\d+ \[([^\]]+)\]", rows[0]["retrieved_chunks"])
         rows[0]["gold_chunk_ids"] = next((c for c in retrieved if c in inventory), sorted(inventory)[0])
         rows[-1]["gold_chunk_ids"] = "employee_handbook"  # a document id, expanded to its chunks
@@ -111,8 +123,14 @@ def _fill(sheet: Path, records: list[dict], edit=None) -> None:
 
 
 def _merge_args(ws, **kw):
-    return SimpleNamespace(suite_dir=str(ws.suite), sheet=str(ws.sheet), annotator="author",
-                           date="2026-11-08", dry_run=kw.get("dry_run", False), force=kw.get("force", False))
+    return SimpleNamespace(
+        suite_dir=str(ws.suite),
+        sheet=str(ws.sheet),
+        annotator="author",
+        date="2026-11-08",
+        dry_run=kw.get("dry_run", False),
+        force=kw.get("force", False),
+    )
 
 
 # --- merge -------------------------------------------------------------------
@@ -122,9 +140,14 @@ def test_label_codes_match_the_taxonomy_and_the_guide() -> None:
     assert set(tool.LABEL_CODES) <= set(FAILURE_CODES)
     assert not {"DIAGNOSIS_UNCERTAIN", "EVAL_JUDGE_MALFORMED"} & set(tool.LABEL_CODES)
     assert not any(FAILURE_CODES[c].reserved for c in tool.LABEL_CODES)
-    for guide in (Path(__file__).resolve().parents[2] / "docs" / "labelling-guide.md", Path("/docs/labelling-guide.md")):
+    for guide in (
+        Path(__file__).resolve().parents[2] / "docs" / "labelling-guide.md",
+        Path("/docs/labelling-guide.md"),
+    ):
         if guide.is_file():
-            table = guide.read_text(encoding="utf-8").split("## Failure codes in plain English", 1)[1].split("## ", 1)[0]
+            table = (
+                guide.read_text(encoding="utf-8").split("## Failure codes in plain English", 1)[1].split("## ", 1)[0]
+            )
             assert set(re.findall(r"^\| `([A-Z_]+)` \|", table, flags=re.M)) == set(tool.LABEL_CODES)
             break
 
@@ -139,7 +162,10 @@ def test_merge_writes_a_valid_suite_from_the_sheet(workspace) -> None:
     manifest = json.loads((workspace.suite / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["suite_hash"] == suite_hash and manifest["case_count"] == len(workspace.records)
     assert manifest["annotator"] == "author" and manifest["cases_with_alternative_codes"] == 1
-    assert json.loads((workspace.suite / "runs_manifest.json").read_text(encoding="utf-8"))["status"] == "recorded and labelled"
+    assert (
+        json.loads((workspace.suite / "runs_manifest.json").read_text(encoding="utf-8"))["status"]
+        == "recorded and labelled"
+    )
     by_id = {c.case_id: c for c in cases}
     assert set(by_id) == {r["query_id"] for r in workspace.records}
     for record in workspace.records:
@@ -169,9 +195,16 @@ def test_merge_reports_every_problem_and_writes_nothing(workspace, capsys) -> No
     _fill(workspace.sheet, workspace.records, edit=break_rows)
     assert tool.merge(_merge_args(workspace)) == 1
     err = capsys.readouterr().err
-    for fragment in ("failure_label is empty", "'PROBABLY_FINE' is not a labelling code", "neither a chunk id",
-                     "should_abstain must be yes or no", "question differs", "RETRIEVAL_MISS needs",
-                     "gold_chunk_ids is empty", "missing from the sheet"):
+    for fragment in (
+        "failure_label is empty",
+        "'PROBABLY_FINE' is not a labelling code",
+        "neither a chunk id",
+        "should_abstain must be yes or no",
+        "question differs",
+        "RETRIEVAL_MISS needs",
+        "gold_chunk_ids is empty",
+        "missing from the sheet",
+    ):
         assert fragment in err, fragment
     assert not (workspace.suite / "cases.jsonl").exists()
 
@@ -198,12 +231,22 @@ def test_live_report_runs_offline_and_renders(workspace) -> None:
     assert sum(c["n"] for c in report["conditions"].values()) == len(workspace.records)
     assert report["runs"]["generation_models"] == ["llama3.2:latest"]
     text = render_live_markdown(report)
-    for heading in ("## Results", "## Per class (strict)", "## By injected condition", "## Confusion matrix",
-                    "## Error analysis", "## Limits"):
+    for heading in (
+        "## Results",
+        "## Per class (strict)",
+        "## By injected condition",
+        "## Confusion matrix",
+        "## Error analysis",
+        "## Limits",
+    ):
         assert heading in text
     assert "95% CI" in text
     assert report["timeouts"] == 0 and report["model_timeout_seconds"] == [600.0]
-    assert "One labeller (author)" in text and "0 run(s) timed out" in text and "`ABS-FN`" not in text.split("## Confusion matrix")[0]
+    assert (
+        "One labeller (author)" in text
+        and "0 run(s) timed out" in text
+        and "`ABS-FN`" not in text.split("## Confusion matrix")[0]
+    )
 
 
 def test_bootstrap_is_seeded_and_brackets_the_point() -> None:
@@ -217,15 +260,39 @@ def test_bootstrap_is_seeded_and_brackets_the_point() -> None:
 @pytest.mark.parametrize(
     ("expected", "predicted", "signals", "label", "cause"),
     [
-        ("OK_GROUNDED", "GROUNDING_PARTIAL", {"context_sufficient": True, "unsupported_claim_count": 1}, {}, "judge error: faithfulness"),
-        ("GENERATION_CONTRADICTION", "OK_GROUNDED", {"context_sufficient": True, "answer_contradicts_context": False}, {}, "judge error: contradiction"),
-        ("OK_CORRECT_ABSTENTION", "ABSTENTION_FALSE_POSITIVE", {"context_sufficient": True}, {"expected_abstention": True}, "judge error: relevance"),
+        (
+            "OK_GROUNDED",
+            "GROUNDING_PARTIAL",
+            {"context_sufficient": True, "unsupported_claim_count": 1},
+            {},
+            "judge error: faithfulness",
+        ),
+        (
+            "GENERATION_CONTRADICTION",
+            "OK_GROUNDED",
+            {"context_sufficient": True, "answer_contradicts_context": False},
+            {},
+            "judge error: contradiction",
+        ),
+        (
+            "OK_CORRECT_ABSTENTION",
+            "ABSTENTION_FALSE_POSITIVE",
+            {"context_sufficient": True},
+            {"expected_abstention": True},
+            "judge error: relevance",
+        ),
         ("OK_GROUNDED", "DIAGNOSIS_UNCERTAIN", {}, {}, "deferred"),
         ("OK_CORRECT_ABSTENTION", "RETRIEVAL_MISS", {"gold_hit": False}, {"expected_abstention": True}, "rule gap"),
     ],
 )
 def test_miss_attribution_first_pass(expected, predicted, signals, label, cause) -> None:
-    result = {"case_id": "L01", "expected_failure_code": expected, "predicted_failure_code": predicted,
-              "predicted_rule_id": "R00", "tags": ["condition:clean"], "explanation": "x"}
+    result = {
+        "case_id": "L01",
+        "expected_failure_code": expected,
+        "predicted_failure_code": predicted,
+        "predicted_rule_id": "R00",
+        "tags": ["condition:clean"],
+        "explanation": "x",
+    }
     out = attribute_miss(result, {"acceptable_primary_codes": [expected], **label}, signals)
     assert out["cause"] == cause and out["condition"] == "clean"

@@ -76,9 +76,7 @@ def diagnose_items(db, items: list[Any], fail_on: set[str]) -> dict[str, Any]:
         try:
             req = TraceRequest.model_validate(raw)
         except ValidationError as exc:
-            errors = "; ".join(
-                f"{'.'.join(str(p) for p in e.get('loc', ()))}: {e.get('msg')}" for e in exc.errors()
-            )
+            errors = "; ".join(f"{'.'.join(str(p) for p in e.get('loc', ()))}: {e.get('msg')}" for e in exc.errors())
             results.append({"index": index, "ok": False, "error": f"invalid trace: {errors}"})
             continue
         # The CLI exists to diagnose, so a trace's own `diagnose: false` is ignored.

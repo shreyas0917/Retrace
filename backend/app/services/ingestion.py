@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
@@ -301,7 +302,7 @@ def ingest_corpus_version(
             chroma_service.delete_collection_if_exists(version_id)
         except Exception:  # noqa: BLE001
             pass
-        if isinstance(exc, (ConflictError, EmbeddingError, NotFoundError)):
+        if isinstance(exc, ConflictError | EmbeddingError | NotFoundError):
             raise
         raise ConflictError(
             "Ingestion failed",

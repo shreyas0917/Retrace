@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 
 def diagnosis_accuracy(results: Iterable[dict[str, Any]]) -> float:
@@ -128,11 +129,7 @@ def per_class_metrics(results: Iterable[dict[str, Any]]) -> dict[str, dict[str, 
                 fn += 1
         precision = tp / (tp + fp) if (tp + fp) else 0.0
         recall = tp / (tp + fn) if (tp + fn) else 0.0
-        f1 = (
-            0.0
-            if precision + recall == 0
-            else 2 * precision * recall / (precision + recall)
-        )
+        f1 = 0.0 if precision + recall == 0 else 2 * precision * recall / (precision + recall)
         out[label] = {
             "support": tp + fn,
             "predicted": tp + fp,
@@ -185,9 +182,7 @@ def selective_metrics(results: Iterable[dict[str, Any]]) -> dict[str, Any]:
     def acc(subset: list[dict[str, Any]]) -> float | None:
         if not subset:
             return None
-        return round(
-            sum(1 for r in subset if r.get("correct_failure_code")) / len(subset), 6
-        )
+        return round(sum(1 for r in subset if r.get("correct_failure_code")) / len(subset), 6)
 
     return {
         "coverage": round(len(answered) / len(rows), 6),
@@ -215,9 +210,7 @@ def summarize_results(case_results: list[dict[str, Any]]) -> dict[str, Any]:
         "strict_accuracy": round(strict_accuracy(case_results), 6),
         "rule_accuracy": None if rule_acc is None else round(rule_acc, 6),
         "evidence_accuracy": None if evid_acc is None else round(evid_acc, 6),
-        "macro_f1": None
-        if (mf := macro_f1(case_results)) is None
-        else round(mf, 6),
+        "macro_f1": None if (mf := macro_f1(case_results)) is None else round(mf, 6),
         "micro_f1": agg["micro_f1"],
         "weighted_f1": agg["weighted_f1"],
         "per_class": per_class,

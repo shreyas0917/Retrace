@@ -19,8 +19,10 @@ from __future__ import annotations
 import json
 import random
 from collections import defaultdict
-from datetime import datetime, timezone
-from typing import Any, Callable
+from collections.abc import Callable, Iterable
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
 
 from sqlalchemy.orm import Session
 
@@ -89,11 +91,13 @@ def attribute_miss(result: dict[str, Any], label: dict[str, Any], signals: dict[
     label_sufficient = not label.get("expected_abstention", False)
     judged_sufficient = signals.get("context_sufficient")
     if judged_sufficient is not None and judged_sufficient != label_sufficient and expected != "RETRIEVAL_MISS":
-        causes.append((
-            "judge error: relevance",
-            f"relevance judge said the context was {'sufficient' if judged_sufficient else 'insufficient'}; "
-            f"the label says the system {'should' if not label_sufficient else 'should not'} abstain",
-        ))
+        causes.append(
+            (
+                "judge error: relevance",
+                f"relevance judge said the context was {'sufficient' if judged_sufficient else 'insufficient'}; "
+                f"the label says the system {'should' if not label_sufficient else 'should not'} abstain",
+            )
+        )
 
     contradicts = signals.get("answer_contradicts_context")
     if expected == "GENERATION_CONTRADICTION" and contradicts is False:
@@ -110,7 +114,9 @@ def attribute_miss(result: dict[str, Any], label: dict[str, Any], signals: dict[
     if expected == "RETRIEVAL_MISS" and signals.get("gold_hit"):
         causes.append(("label check", "labelled a retrieval miss, but a labelled gold chunk was retrieved"))
     if predicted == "RETRIEVAL_MISS" and expected != "RETRIEVAL_MISS":
-        causes.append(("rule gap", "R11 fires whenever no labelled gold chunk is retrieved; the label chose " + expected))
+        causes.append(
+            ("rule gap", "R11 fires whenever no labelled gold chunk is retrieved; the label chose " + expected)
+        )
 
     if not causes:
         causes.append(("rule gap", f"judge signals agree with the label, but the rules map them to {predicted}"))
@@ -169,7 +175,7 @@ def run_live_report(db: Session, *, suite_id: str = "live_v1", suite_version: st
     ]
     applied = load_calibration()
     return {
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "app_version": APP_VERSION,
         "suite_id": suite_id,
         "suite_version": suite_version,
@@ -197,24 +203,25 @@ def run_live_report(db: Session, *, suite_id: str = "live_v1", suite_version: st
         "misses": misses,
         "miss_causes": dict(sorted(_count(m["cause"] for m in misses).items())),
         "timeouts": sum(
-            1 for c in gold_cases
+            1
+            for c in gold_cases
             if c.offline_execution is not None
             and (c.offline_execution.status == "GENERATION_TIMEOUT" or c.offline_execution.judge_timeout_on)
         ),
-        "model_timeout_seconds": sorted({
-            (r.get("settings") or {}).get("model_timeout_seconds") for r in _records(directory)
-        } - {None}),
+        "model_timeout_seconds": sorted(
+            {(r.get("settings") or {}).get("model_timeout_seconds") for r in _records(directory)} - {None}
+        ),
     }
 
 
-def _records(directory) -> list[dict[str, Any]]:
+def _records(directory: Path) -> list[dict[str, Any]]:
     path = directory / "runs.jsonl"
     if not path.is_file():
         return []
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
-def _count(values) -> dict[str, int]:
+def _count(values: Iterable[str]) -> dict[str, int]:
     out: dict[str, int] = {}
     for v in values:
         out[v] = out.get(v, 0) + 1
@@ -268,11 +275,18 @@ def render_live_markdown(report: dict[str, Any]) -> str:
         "| --- | ---: | ---: | ---: | ---: | ---: |",
     ]
     for label, m in s["per_class"].items():
-        lines.append(f"| `{label}` | {m['support']} | {m['predicted']} | {m['precision']:.2f} | {m['recall']:.2f} | {m['f1']:.2f} |")
-    lines += ["", "## By injected condition", "",
-              "The condition is how a run was produced, not its label: a wrong-facts prompt can still give a correct answer.", "",
-              "| Condition | Cases | Lenient | Strict | Deferred | Labels given |",
-              "| --- | ---: | ---: | ---: | ---: | --- |"]
+        lines.append(
+            f"| `{label}` | {m['support']} | {m['predicted']} | {m['precision']:.2f} | {m['recall']:.2f} | {m['f1']:.2f} |"
+        )
+    lines += [
+        "",
+        "## By injected condition",
+        "",
+        "The condition is how a run was produced, not its label: a wrong-facts prompt can still give a correct answer.",
+        "",
+        "| Condition | Cases | Lenient | Strict | Deferred | Labels given |",
+        "| --- | ---: | ---: | ---: | ---: | --- |",
+    ]
     for name, c in report["conditions"].items():
         given = ", ".join(f"{k} {v}" for k, v in c["labels"].items())
         lines.append(f"| {name} | {c['n']} | {_pct(c['lenient'])} | {_pct(c['strict'])} | {c['uncertain']} | {given} |")
@@ -281,42 +295,64 @@ def render_live_markdown(report: dict[str, Any]) -> str:
     labels = cm["labels"]
     short = {lab: f"`{short_code(lab)}`" for lab in labels}
     legend = ", ".join(f"`{short_code(lab)}` {lab}" for lab in labels if short_code(lab) != lab)
-    lines += ["", "## Confusion matrix", "", "Rows are labels, columns are predictions." + (f" Columns: {legend}." if legend else ""), "",
-              "| Label \\ Predicted | " + " | ".join(short[p] for p in labels) + " |",
-              "| --- | " + " | ".join("---:" for _ in labels) + " |"]
+    lines += [
+        "",
+        "## Confusion matrix",
+        "",
+        "Rows are labels, columns are predictions." + (f" Columns: {legend}." if legend else ""),
+        "",
+        "| Label \\ Predicted | " + " | ".join(short[p] for p in labels) + " |",
+        "| --- | " + " | ".join("---:" for _ in labels) + " |",
+    ]
     for a in labels:
         if any(cm["matrix"][a].values()):
             lines.append(f"| `{a}` | " + " | ".join(str(cm["matrix"][a][p] or "") for p in labels) + " |")
 
-    lines += ["", "## Error analysis", "",
-              "One line per miss. The cause is an automatic first pass that compares the recorded judge signals "
-              "with what the label implies; it should be read, and corrected where needed, before the numbers "
-              "are quoted anywhere.", ""]
+    lines += [
+        "",
+        "## Error analysis",
+        "",
+        "One line per miss. The cause is an automatic first pass that compares the recorded judge signals "
+        "with what the label implies; it should be read, and corrected where needed, before the numbers "
+        "are quoted anywhere.",
+        "",
+    ]
     if report["miss_causes"]:
         lines.append("Causes: " + ", ".join(f"{k} {v}" for k, v in report["miss_causes"].items()) + ".")
-        lines += ["", "| Case | Condition | Label | Predicted (rule) | Cause | Why |", "| --- | --- | --- | --- | --- | --- |"]
+        lines += [
+            "",
+            "| Case | Condition | Label | Predicted (rule) | Cause | Why |",
+            "| --- | --- | --- | --- | --- | --- |",
+        ]
         for m in report["misses"]:
             alt = f" (or {', '.join(m['alternatives'])})" if m["alternatives"] else ""
             why = m["why"].replace("|", "/")
             if m["other_causes"]:
                 why += f"; also: {', '.join(m['other_causes'])}"
-            lines.append(f"| {m['case_id']} | {m['condition']} | `{m['expected']}`{alt} | `{m['predicted']}` ({m['rule_id']}) | {m['cause']} | {why} |")
+            lines.append(
+                f"| {m['case_id']} | {m['condition']} | `{m['expected']}`{alt} | `{m['predicted']}` ({m['rule_id']}) | {m['cause']} | {why} |"
+            )
     else:
         lines.append("No misses.")
 
     cal = report.get("applied_calibrator")
-    lines += ["", "## Limits", "",
-              f"- {n} cases. The confidence intervals above are wide; differences of a few cases are not meaningful.",
-              "- One generation and judge model on one small, synthetic policy corpus. Other models and real "
-              "document collections will behave differently.",
-              f"- One labeller ({report.get('annotator')}), with no second annotator, so label noise is not measured.",
-              "- The runs were recorded on a shared, heavily loaded developer machine with the model timeout set to "
-              f"{', '.join(f'{t:g} s' for t in report.get('model_timeout_seconds') or []) or 'its default'} so that "
-              f"contention would not create timeouts; {report.get('timeouts', 0)} run(s) timed out. Latency in these "
-              "runs means nothing.",
-              "- Conditions were injected on purpose (removed documents, near-topic distractors, faulty prompts), so "
-              "the mix of failures is not the mix a production system would see.",
-              "- Confidence is calibrated on the synthetic `calib_v1` suite"
-              + (f" ({cal['fitted_on']})" if cal else "") + "; this report does not recalibrate on live data.",
-              ""]
+    lines += [
+        "",
+        "## Limits",
+        "",
+        f"- {n} cases. The confidence intervals above are wide; differences of a few cases are not meaningful.",
+        "- One generation and judge model on one small, synthetic policy corpus. Other models and real "
+        "document collections will behave differently.",
+        f"- One labeller ({report.get('annotator')}), with no second annotator, so label noise is not measured.",
+        "- The runs were recorded on a shared, heavily loaded developer machine with the model timeout set to "
+        f"{', '.join(f'{t:g} s' for t in report.get('model_timeout_seconds') or []) or 'its default'} so that "
+        f"contention would not create timeouts; {report.get('timeouts', 0)} run(s) timed out. Latency in these "
+        "runs means nothing.",
+        "- Conditions were injected on purpose (removed documents, near-topic distractors, faulty prompts), so "
+        "the mix of failures is not the mix a production system would see.",
+        "- Confidence is calibrated on the synthetic `calib_v1` suite"
+        + (f" ({cal['fitted_on']})" if cal else "")
+        + "; this report does not recalibrate on live data.",
+        "",
+    ]
     return "\n".join(lines)

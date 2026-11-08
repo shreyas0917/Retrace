@@ -22,12 +22,35 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Ruff (syntax errors, unused or undefined names)
+      - name: Ruff lint (E9, F, I, B, UP)
         run: |
           pip install ruff==0.8.4
           ruff check backend scripts --config backend/ruff.toml
+      - name: Ruff format check
+        run: ruff format --check backend scripts --config backend/ruff.toml
       - name: Held-out and calibration suite hashes match manifests
         run: python scripts/build_heldout_suite.py --check
+
+  types:
+    name: Types (mypy, diagnosis and eval)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      # Only the packages whose types the checked modules use; torch, chromadb
+      # and sentence-transformers are untyped and ignored in mypy.ini.
+      - name: Install mypy and typed dependencies
+        run: |
+          pip install mypy==1.13.0 types-PyYAML==6.0.12.20261103 \
+            fastapi==0.115.6 pydantic==2.10.3 pydantic-settings==2.6.1 \
+            sqlalchemy==2.0.36 structlog==24.4.0 pyyaml==6.0.2 httpx==0.28.1
+      - name: mypy
+        run: mypy
 
   backend:
     name: Backend tests (Docker, Postgres, Chroma)

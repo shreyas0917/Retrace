@@ -28,8 +28,9 @@ from __future__ import annotations
 import threading
 import time
 from collections import deque
+from collections.abc import Callable
 from datetime import datetime
-from typing import Any, Callable
+from typing import Any
 
 import structlog
 from sqlalchemy import insert, text
@@ -285,9 +286,7 @@ def durable_snapshot(db: Session, window_minutes: int | None = None) -> dict[str
         counters[name] = int(total_f) if total_f.is_integer() else total_f
 
     latencies: dict[str, Any] = {}
-    for name, n, avg_ms, p50, p95, p99, max_ms in db.execute(
-        _LATENCY_SQL, {"mins": mins}
-    ):
+    for name, n, avg_ms, p50, p95, p99, max_ms in db.execute(_LATENCY_SQL, {"mins": mins}):
         latencies[name] = {
             "count": int(n),
             "avg_ms": _r(avg_ms),
@@ -314,10 +313,7 @@ def durable_snapshot(db: Session, window_minutes: int | None = None) -> dict[str
         "counters": counters,
         "latencies": latencies,
         "derived": derived_rates(counters),
-        "tokens": {
-            key: int(counters.get(counter, 0) or 0)
-            for key, counter in TOKEN_COUNTERS.items()
-        },
+        "tokens": {key: int(counters.get(counter, 0) or 0) for key, counter in TOKEN_COUNTERS.items()},
         "cost": {
             "usd": round(cost_micros / 1_000_000, 6),
             "counter": COST_COUNTER,
@@ -348,9 +344,7 @@ def try_durable_snapshot(
         finally:
             session.close()
     except Exception as exc:  # noqa: BLE001
-        logger.warning(
-            "durable_snapshot_failed", error=str(exc)[:300], operation="telemetry"
-        )
+        logger.warning("durable_snapshot_failed", error=str(exc)[:300], operation="telemetry")
         return {
             "available": False,
             "durable": False,

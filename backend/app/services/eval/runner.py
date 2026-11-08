@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -20,10 +20,10 @@ from app.db.models import (
     Case,
     Corpus,
     CorpusVersion,
+    ExecutionTrace,
     Experiment,
     ExperimentCaseResult,
     ExperimentMetric,
-    ExecutionTrace,
     Run,
     Suite,
 )
@@ -31,9 +31,9 @@ from app.services.diagnosis.engine import diagnose_execution
 from app.services.diagnosis.taxonomy import TAXONOMY_VERSION
 from app.services.eval.fakes import ScriptedJudgeLLM
 from app.services.eval.planted import build_offline_execution
-from app.services.judges.replay import replaying_judges
 from app.services.eval.schemas import GoldCase
 from app.services.eval.suite_loader import load_suite
+from app.services.judges.replay import replaying_judges
 from app.services.llm_client import set_llm_provider
 from app.services.metrics.diagnosis import (
     evidence_refs_valid,
@@ -52,12 +52,16 @@ def _ensure_eval_corpus(db: Session) -> str:
         db.add(Corpus(id=corpus_id, title="Eval Stub (offline fixtures)"))
         db.flush()
 
-    ready = db.execute(
-        select(CorpusVersion).where(
-            CorpusVersion.corpus_id == corpus_id,
-            CorpusVersion.status == "READY",
+    ready = (
+        db.execute(
+            select(CorpusVersion).where(
+                CorpusVersion.corpus_id == corpus_id,
+                CorpusVersion.status == "READY",
+            )
         )
-    ).scalars().first()
+        .scalars()
+        .first()
+    )
     if ready:
         return ready.id
 
@@ -177,11 +181,7 @@ def _score_case(
     predicted_rule = diagnosis["rule_id"]
     acceptable = set(case.acceptable_primary_codes)
     correct_code = predicted_code in acceptable
-    correct_rule = (
-        None
-        if not case.expected_rule_id
-        else predicted_rule == case.expected_rule_id
-    )
+    correct_rule = None if not case.expected_rule_id else predicted_rule == case.expected_rule_id
     expected_chunks = case.expected_evidence_chunk_ids
     if expected_chunks is None and case.relevant_chunk_ids:
         # Only require evidence hit when diagnosis cites chunks and gold chunks exist
@@ -194,11 +194,7 @@ def _score_case(
         execution_id=diagnosis.get("execution_id"),
         gold_ids=list(case.relevant_chunk_ids),
     )
-    evid_hit = (
-        None
-        if expected_chunks is None
-        else expected_evidence_hit(refs, expected_chunks)
-    )
+    evid_hit = None if expected_chunks is None else expected_evidence_hit(refs, expected_chunks)
 
     return {
         "suite_version": case.suite_version,
@@ -237,9 +233,7 @@ def _score_case(
         "evidence_refs_valid": refs_ok,
         "execution_id": diagnosis.get("execution_id"),
         "diagnosis_id": diagnosis.get("diagnosis_id"),
-        "planted_failure": (
-            case.planted_failure.model_dump() if case.planted_failure else None
-        ),
+        "planted_failure": (case.planted_failure.model_dump() if case.planted_failure else None),
     }
 
 
@@ -269,7 +263,7 @@ def run_suite_benchmark(
     )
 
     experiment_id = str(uuid.uuid4())
-    started = datetime.now(timezone.utc)
+    started = datetime.now(UTC)
     pipeline = {
         "mode": "suite_offline",
         "suite_hash": suite_hash,
@@ -320,11 +314,7 @@ def run_suite_benchmark(
                         gold_chunk_ids=list(case.relevant_chunk_ids),
                         settings=settings,
                     )
-                retrieved_ids = [
-                    str(c.get("chunk_id"))
-                    for c in (fixture.retrieved_chunks or [])
-                    if c.get("chunk_id")
-                ]
+                retrieved_ids = [str(c.get("chunk_id")) for c in (fixture.retrieved_chunks or []) if c.get("chunk_id")]
                 scored = _score_case(case, diagnosis, retrieved_ids=retrieved_ids)
                 scored["metrics"] = diagnosis.get("metrics") or {}
                 case_results.append(scored)
@@ -388,7 +378,7 @@ def run_suite_benchmark(
                 set_llm_provider(None)
 
         summary = summarize_results(case_results)
-        finished = datetime.now(timezone.utc)
+        finished = datetime.now(UTC)
         report: dict[str, Any] = {
             "experiment_id": experiment_id,
             "suite_id": suite_id,

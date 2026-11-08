@@ -9,7 +9,7 @@ restarts and is shared across uvicorn workers.
 | Tier | Where | Scope | Reset on | Used for |
 |---|---|---|---|---|
 | In-memory (`MetricsRegistry`) | process heap | one worker process | restart | `/metrics` top-level, live counters in the console, default `/api/v1/signals` |
-| Durable (`metric_events` table) | Postgres | all workers, all restarts | never automatically (see Retention) | `durable_store`, `/api/v1/metrics/durable`, `ops/summary.metrics.durable_window`, `/api/v1/signals?source=durable` |
+| Durable (`metric_events` table) | Postgres | all workers, all restarts | `TELEMETRY_RETENTION_DAYS` (14) via `retrace telemetry prune`, or daily when enabled (see Retention) | `durable_store`, `/api/v1/metrics/durable`, `ops/summary.metrics.durable_window`, `/api/v1/signals?source=durable` |
 
 Every `MetricsRegistry.inc()` / `.observe()` still updates the in-memory view *and*
 appends an event to a thread-safe `TelemetryBuffer` (`app/core/telemetry.py`).
@@ -137,15 +137,45 @@ is the view to trust in that configuration. Rate limits become "per worker".
 
 ## Retention
 
-There is **no automatic pruning**. At roughly 10 events per request a steady
-10 req/s produces about 8.6 M rows/day, so prune or roll up on a schedule you
-control. Options:
+At roughly 10 events per request a steady 10 req/s produces about 8.6 M rows a
+day (an estimate from the event count per request, not a measurement), so old
+rows have to go. `metric_events` keeps `TELEMETRY_RETENTION_DAYS` days
+(default 14).
+
+**On demand or from cron:**
+
+```bash
+python -m app.cli.retrace telemetry prune --dry-run      # count rows older than 14 days
+python -m app.cli.retrace telemetry prune                # delete them
+python -m app.cli.retrace telemetry prune --days 30      # keep 30 days instead
+# in Docker: docker compose exec backend python -m app.cli.retrace telemetry prune
+```
+
+Rows are deleted oldest first in batches of 5,000 (`--batch-size` changes it),
+each batch in its own transaction, so a large prune never holds one long lock
+on the table and can be interrupted safely. The command prints how many rows
+it deleted (or would delete) and the cutoff; it exits 0 on success and 2 on
+an error.
+
+**Daily, inside the API:** set `TELEMETRY_PRUNE_ENABLED=true` (off by
+default). Each API worker then runs the same prune at startup and every
+`TELEMETRY_PRUNE_INTERVAL_SECONDS` (default 86400). Before pruning, a worker
+takes the Postgres advisory lock `pg_try_advisory_lock(4415693627741623120)`
+(a constant in `app/services/telemetry_retention.py`); if another worker
+holds it, this one skips the round and logs `telemetry_prune_skipped`. A
+finished prune logs `telemetry_pruned` with the row count; a failure logs
+`telemetry_prune_failed` and never stops the API. Nothing is scheduled when
+`TELEMETRY_DURABLE=false`.
+
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| `TELEMETRY_RETENTION_DAYS` | 14 | Days of `metric_events` to keep (minimum 1) |
+| `TELEMETRY_PRUNE_ENABLED` | false | Run the prune in the API process on a timer |
+| `TELEMETRY_PRUNE_INTERVAL_SECONDS` | 86400 | Time between scheduled prunes (minimum 60) |
+
+To keep long-term trends, roll the rows up before they are pruned, for example:
 
 ```sql
--- keep 30 days (run from cron / a Postgres pg_cron job / a CI step)
-DELETE FROM metric_events WHERE ts < now() - interval '30 days';
-
--- optional: roll up before deleting
 CREATE TABLE IF NOT EXISTS metric_events_daily AS
 SELECT date_trunc('day', ts) AS day, kind, name,
        count(*) AS n, sum(value) AS total,
@@ -158,15 +188,14 @@ SELECT date_trunc('day', ts), kind, name, count(*), sum(value),
        percentile_cont(0.5) WITHIN GROUP (ORDER BY value),
        percentile_cont(0.95) WITHIN GROUP (ORDER BY value),
        percentile_cont(0.99) WITHIN GROUP (ORDER BY value)
-FROM metric_events WHERE ts < now() - interval '30 days' GROUP BY 1, 2, 3;
-DELETE FROM metric_events WHERE ts < now() - interval '30 days';
+FROM metric_events WHERE ts < now() - interval '14 days' GROUP BY 1, 2, 3;
 ```
 
 CLI-less alternative from the compose stack:
 
 ```sh
 docker compose exec postgres psql -U retrace -d retrace \
-  -c "DELETE FROM metric_events WHERE ts < now() - interval '30 days';"
+  -c "DELETE FROM metric_events WHERE ts < now() - interval '14 days';"
 ```
 
 For very high volume, convert `metric_events` to a partitioned table by `ts`
@@ -180,6 +209,11 @@ For very high volume, convert `metric_events` to a partitioned table by `ts`
   `percentile_cont` on 1..100; cost math and prefix matching; token/cost counters
   and `ExecutionTrace.cost_usd` after a FakeLLM generation; endpoint contracts;
   disabled and DB-error paths.
+- `backend/tests/test_telemetry_retention.py`: dry run counts without deleting,
+  only rows past the cutoff go, batch boundaries (exact multiple, remainder,
+  fewer than one batch, none), a second worker skips while the advisory lock is
+  held, the lock is released after success and failure, the daily loop survives
+  an error and stops on cancel, and the CLI output.
 - `backend/tests/test_resilience.py`: retry on 503 then success, give-up after
   `MODEL_MAX_RETRIES`, no retry on 4xx, 429 + `Retry-After`, timeout ->
   `GenerationTimeoutError` and a persisted `GENERATION_TIMEOUT` trace via the API,

@@ -17,7 +17,6 @@ from app.services.eval.runner import run_suite_benchmark
 from app.services.eval.suite_loader import load_suite
 from app.services.eval.thresholds_config import load_thresholds
 
-
 APP_VERSION = "1.0.0"
 
 # Exit codes (PRD §16)
@@ -93,9 +92,7 @@ def run_evaluation(
     settings = settings or get_settings()
     thresholds = load_thresholds(thresholds_path, suite_id=suite_id)
 
-    suite_hash, _ = verify_suite_integrity(
-        suite_id, suite_version, expect_hash=expect_hash
-    )
+    suite_hash, _ = verify_suite_integrity(suite_id, suite_version, expect_hash=expect_hash)
 
     git_commit = detect_git_commit()
     report = run_suite_benchmark(
@@ -116,11 +113,7 @@ def run_evaluation(
                     "app_version": APP_VERSION,
                     "git_commit": git_commit,
                     "acceptance_thresholds_version": thresholds.get("version"),
-                    "acceptance_thresholds": {
-                        k: v
-                        for k, v in thresholds.items()
-                        if not str(k).startswith("_")
-                    },
+                    "acceptance_thresholds": {k: v for k, v in thresholds.items() if not str(k).startswith("_")},
                     "cost_per_query": None,  # unavailable — never invent
                     "prompt_versions": {
                         "generator": "generator.v1",
@@ -137,9 +130,7 @@ def run_evaluation(
             report["git_commit"] = git_commit
 
     summary = report["summary"]
-    baseline_row = get_active_baseline(
-        db, suite_id=suite_id, suite_version=suite_version
-    )
+    baseline_row = get_active_baseline(db, suite_id=suite_id, suite_version=suite_version)
     baseline_metrics = baseline_row.metrics if baseline_row else None
     comparison = compare_metrics(
         current=summary,
@@ -165,9 +156,7 @@ def run_evaluation(
         "app_version": APP_VERSION,
         "git_commit": git_commit,
         "suite_hash": suite_hash,
-        "thresholds": {
-            k: v for k, v in thresholds.items() if not str(k).startswith("_")
-        },
+        "thresholds": {k: v for k, v in thresholds.items() if not str(k).startswith("_")},
         "baseline": (
             {
                 "baseline_id": baseline_row.id,
@@ -208,9 +197,7 @@ def format_eval_report(result: dict[str, Any]) -> str:
     for row in comparison.get("rows") or []:
         cur = row["current"]
         cur_s = "n/a" if cur is None else f"{cur:.3f}"
-        lines.append(
-            f"  {row['metric']:<26} {cur_s:>6}   {row['status']}"
-        )
+        lines.append(f"  {row['metric']:<26} {cur_s:>6}   {row['status']}")
 
     lines.append("")
     if result.get("no_baseline"):
@@ -218,36 +205,30 @@ def format_eval_report(result: dict[str, Any]) -> str:
         lines.append("  No accepted baseline found.")
         lines.append("  Experiment completed.")
         lines.append("  Baseline promotion requires an explicit command:")
-        lines.append(
-            f"    retrace baseline promote {result['experiment_id']}"
-        )
+        lines.append(f"    retrace baseline promote {result['experiment_id']}")
     else:
         base = result["baseline"]
         lines.append("Baseline")
         lines.append(f"  baseline: {base['baseline_id']}")
         lines.append(f"  status:   {result['gate_status']}")
         lines.append("")
-        lines.append(
-            f"{'Metric':<26} {'Baseline':>10} {'Current':>10} {'Delta':>10} {'Status':>10}"
-        )
+        lines.append(f"{'Metric':<26} {'Baseline':>10} {'Current':>10} {'Delta':>10} {'Status':>10}")
         lines.append("─" * 70)
         for row in comparison.get("rows") or []:
             b = "—" if row["baseline"] is None else f"{row['baseline']:.3f}"
             c = "—" if row["current"] is None else f"{row['current']:.3f}"
             d = "—" if row["delta"] is None else f"{row['delta']:+.3f}"
-            lines.append(
-                f"{row['metric']:<26} {b:>10} {c:>10} {d:>10} {row['status']:>10}"
-            )
+            lines.append(f"{row['metric']:<26} {b:>10} {c:>10} {d:>10} {row['status']:>10}")
 
     failing = [c for c in result.get("cases") or [] if not c.get("correct")]
     if failing:
         lines.append("")
         lines.append("Failing cases")
-        for c in failing:
+        for case in failing:
             lines.append(
-                f"  {c['case_id']}: expected={c['expected']['failure_code']} "
-                f"predicted={c['predicted']['failure_code']} "
-                f"rule={c['predicted']['rule_id']}"
+                f"  {case['case_id']}: expected={case['expected']['failure_code']} "
+                f"predicted={case['predicted']['failure_code']} "
+                f"rule={case['predicted']['rule_id']}"
             )
 
     if comparison.get("violations"):

@@ -30,13 +30,17 @@ def get_active_baseline(
     suite_id: str,
     suite_version: str,
 ) -> BaselineArtifact | None:
-    return db.execute(
-        select(BaselineArtifact).where(
-            BaselineArtifact.suite_id == suite_id,
-            BaselineArtifact.suite_version == suite_version,
-            BaselineArtifact.is_active.is_(True),
+    return (
+        db.execute(
+            select(BaselineArtifact).where(
+                BaselineArtifact.suite_id == suite_id,
+                BaselineArtifact.suite_version == suite_version,
+                BaselineArtifact.is_active.is_(True),
+            )
         )
-    ).scalars().first()
+        .scalars()
+        .first()
+    )
 
 
 def promote_baseline(

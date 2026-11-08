@@ -8,14 +8,14 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
 from app.db import session as db_session
 from app.db.models import ExecutionTrace, JudgeResult
-from app.services.diagnosis.rules import apply_rules, needs_judges
 from app.services.diagnosis.models import SignalBag
+from app.services.diagnosis.rules import apply_rules, needs_judges
 from app.services.llm_client import LLMResult, set_llm_provider
 from app.services.prompts import ABSTENTION_ANSWER
-from sqlalchemy import select
 
 
 def _auth(api_key: str) -> dict[str, str]:
@@ -45,9 +45,7 @@ class ScriptedJudgeLLM:
         self.calls: dict[str, int] = {}
         self.captured: list[dict[str, Any]] = []
 
-    def complete(
-        self, messages: list[dict[str, str]], *, model: str, timeout: float
-    ) -> LLMResult:
+    def complete(self, messages: list[dict[str, str]], *, model: str, timeout: float) -> LLMResult:
         judge = _detect_judge(messages)
         idx = self.calls.get(judge, 0)
         self.calls[judge] = idx + 1
@@ -278,9 +276,7 @@ def test_case_c_ok_grounded(client: TestClient, api_key: str) -> None:
     assert body["rule_id"] == "R40"
     assert fake.calls.get("relevance", 0) >= 1
     assert fake.calls.get("faithfulness", 0) >= 1
-    assert "chunk:pto:c000" in body["evidence_refs"] or any(
-        "pto:c000" in (x or "") for x in body["evidence_refs"]
-    )
+    assert "chunk:pto:c000" in body["evidence_refs"] or any("pto:c000" in (x or "") for x in body["evidence_refs"])
 
 
 def test_case_d_contradiction(client: TestClient, api_key: str) -> None:
@@ -296,9 +292,7 @@ def test_case_d_contradiction(client: TestClient, api_key: str) -> None:
         ScriptedJudgeLLM(
             {
                 "relevance": [_relevance_json(["pto:c000"], sufficient=True)],
-                "faithfulness": [
-                    _faithfulness_json(score=0.2, supported=0, unsupported=1)
-                ],
+                "faithfulness": [_faithfulness_json(score=0.2, supported=0, unsupported=1)],
                 "contradiction": [_contradiction_json(True)],
             }
         )
@@ -331,11 +325,7 @@ def test_case_e_abstention_false_negative(client: TestClient, api_key: str) -> N
     set_llm_provider(
         ScriptedJudgeLLM(
             {
-                "relevance": [
-                    _relevance_json(
-                        ["noise:c000"], sufficient=False, relevant=False, score=0.1
-                    )
-                ],
+                "relevance": [_relevance_json(["noise:c000"], sufficient=False, relevant=False, score=0.1)],
             }
         )
     )
@@ -397,9 +387,7 @@ def test_case_g_malformed_then_valid(client: TestClient, api_key: str) -> None:
                     "NOT_JSON",
                     _relevance_json(["pto:c000"], sufficient=True),
                 ],
-                "faithfulness": [
-                    _faithfulness_json(score=1.0, supported=1, unsupported=0)
-                ],
+                "faithfulness": [_faithfulness_json(score=1.0, supported=1, unsupported=0)],
                 "contradiction": [_contradiction_json(False)],
             }
         )
@@ -420,9 +408,7 @@ def test_case_g_malformed_then_valid(client: TestClient, api_key: str) -> None:
     assert body["rule_id"] == "R40"
     db = _open_db()
     try:
-        rows = db.execute(
-            select(JudgeResult).where(JudgeResult.execution_id == eid)
-        ).scalars().all()
+        rows = db.execute(select(JudgeResult).where(JudgeResult.execution_id == eid)).scalars().all()
         rel = [x for x in rows if x.judge_type == "relevance"][0]
         assert rel.attempts == 2
         assert rel.schema_ok is True
@@ -431,9 +417,7 @@ def test_case_g_malformed_then_valid(client: TestClient, api_key: str) -> None:
 
 
 def test_case_h_judge_malformed_twice(client: TestClient, api_key: str) -> None:
-    chunks = [
-        {"chunk_id": "pto:c000", "text": "PTO text", "rank": 1}
-    ]
+    chunks = [{"chunk_id": "pto:c000", "text": "PTO text", "rank": 1}]
     set_llm_provider(
         ScriptedJudgeLLM(
             {

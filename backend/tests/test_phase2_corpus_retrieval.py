@@ -7,26 +7,21 @@ import uuid
 import pytest
 from fastapi.testclient import TestClient
 
+from app.services import chroma as chroma_service
 from app.services.chunking import chunk_text, make_chunk_id, normalize_chunking_config
 from app.services.hashing import compute_corpus_hash
-from app.services import chroma as chroma_service
-
 
 DEMO_DOCS = [
     {
         "id": "employee_handbook",
         "text": (
-            "Full-time employees accrue 1.25 days of PTO per month. "
-            "Unused PTO may be carried over up to 5 days."
+            "Full-time employees accrue 1.25 days of PTO per month. " "Unused PTO may be carried over up to 5 days."
         ),
         "source_name": "employee_handbook.md",
     },
     {
         "id": "refund_policy",
-        "text": (
-            "Customers may request a full refund within 30 days of purchase "
-            "if the product is unused."
-        ),
+        "text": ("Customers may request a full refund within 30 days of purchase " "if the product is unused."),
         "source_name": "refund_policy.md",
     },
 ]
@@ -136,20 +131,12 @@ def test_corpus_isolation(client: TestClient, api_key: str) -> None:
     va = client.post(
         f"/api/v1/corpora/{a}/versions",
         headers=headers,
-        json={
-            "documents": [
-                {"id": "only_a", "text": "Alpha unique zebra token for corpus A."}
-            ]
-        },
+        json={"documents": [{"id": "only_a", "text": "Alpha unique zebra token for corpus A."}]},
     ).json()
     vb = client.post(
         f"/api/v1/corpora/{b}/versions",
         headers=headers,
-        json={
-            "documents": [
-                {"id": "only_b", "text": "Beta unique penguin token for corpus B."}
-            ]
-        },
+        json={"documents": [{"id": "only_b", "text": "Beta unique penguin token for corpus B."}]},
     ).json()
 
     ra = client.post(
@@ -161,10 +148,7 @@ def test_corpus_isolation(client: TestClient, api_key: str) -> None:
             "top_k": 3,
         },
     ).json()
-    assert all(
-        (item.get("document_id") == "only_a") or ("Alpha" in (item.get("text") or ""))
-        for item in ra["results"]
-    )
+    assert all((item.get("document_id") == "only_a") or ("Alpha" in (item.get("text") or "")) for item in ra["results"])
     # Ensure B's collection is separate
     assert chroma_service.collection_name_for_corpus_version(va["id"]) != (
         chroma_service.collection_name_for_corpus_version(vb["id"])
@@ -174,8 +158,8 @@ def test_corpus_isolation(client: TestClient, api_key: str) -> None:
 def test_non_ready_cannot_retrieve(client: TestClient, api_key: str, monkeypatch) -> None:
     """Simulate FAILED status by inserting a version row without vectors."""
     headers = _auth(api_key)
-    from app.db.session import SessionLocal, init_db
     from app.db.models import CorpusVersion
+    from app.db.session import SessionLocal, init_db
     from app.services.ingestion import create_corpus
 
     init_db()
@@ -190,7 +174,12 @@ def test_non_ready_cannot_retrieve(client: TestClient, api_key: str, monkeypatch
                 id=vid,
                 corpus_id=cid,
                 corpus_hash="sha256:dead",
-                chunking_config={"strategy": "recursive_character", "chunk_size": 512, "chunk_overlap": 64, "tokenizer": "char"},
+                chunking_config={
+                    "strategy": "recursive_character",
+                    "chunk_size": 512,
+                    "chunk_overlap": 64,
+                    "tokenizer": "char",
+                },
                 chunking_config_hash="sha256:dead",
                 embedding_model="sentence-transformers/all-MiniLM-L6-v2",
                 embedding_revision="x",

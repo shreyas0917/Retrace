@@ -27,9 +27,7 @@ def _relevant_count(signals: SignalBag) -> int | None:
     count = 0
     for item in items:
         score = item.get("score")
-        if item.get("relevant") is True or (
-            isinstance(score, (int, float)) and float(score) >= TAU_REL
-        ):
+        if item.get("relevant") is True or (isinstance(score, int | float) and float(score) >= TAU_REL):
             count += 1
     return count
 
@@ -52,16 +50,12 @@ def build_explanation(decision: DiagnosisDecision, signals: SignalBag) -> str:
         if signals.gold_ids:
             if signals.gold_hit:
                 retrieval += (
-                    f"; gold-relevant chunk(s) present "
-                    f"(recall@k {signals.gold_recall_at_k:.2f})"
+                    f"; gold-relevant chunk(s) present " f"(recall@k {signals.gold_recall_at_k:.2f})"
                     if signals.gold_recall_at_k is not None
                     else "; gold-relevant chunk(s) present"
                 )
             else:
-                retrieval += (
-                    f"; none of the {len(signals.gold_ids)} gold-relevant chunk(s) "
-                    "appeared in the top-k"
-                )
+                retrieval += f"; none of the {len(signals.gold_ids)} gold-relevant chunk(s) " "appeared in the top-k"
         parts.append(retrieval)
 
     # Relevance judge.
@@ -75,29 +69,18 @@ def build_explanation(decision: DiagnosisDecision, signals: SignalBag) -> str:
             if signals.irrelevant_frac >= TAU_DISTRACTOR_FRAC:
                 rel += f", at or above the {TAU_DISTRACTOR_FRAC:.0%} distractor threshold"
             rel += ")"
-        rel += " and judged the context " + (
-            "sufficient" if signals.context_sufficient else "insufficient"
-        )
+        rel += " and judged the context " + ("sufficient" if signals.context_sufficient else "insufficient")
         parts.append(rel)
 
     # Answer behaviour.
-    parts.append(
-        "The system abstained" if signals.answer_is_abstention else "The system answered"
-    )
+    parts.append("The system abstained" if signals.answer_is_abstention else "The system answered")
 
     # Grounding judges.
     faith = signals.faithfulness_score
-    if (
-        signals.context_sufficient is True
-        and not signals.answer_is_abstention
-        and faith is not None
-    ):
+    if signals.context_sufficient is True and not signals.answer_is_abstention and faith is not None:
         supported = signals.supported_claim_count or 0
         unsupported = signals.unsupported_claim_count or 0
-        grounding = (
-            f"faithfulness {faith:.2f} with {supported} supported / "
-            f"{unsupported} unsupported claim(s)"
-        )
+        grounding = f"faithfulness {faith:.2f} with {supported} supported / " f"{unsupported} unsupported claim(s)"
         if abs(faith - TAU_FAITHFUL) <= FAITHFUL_BOUNDARY_BAND:
             grounding += f" (within {FAITHFUL_BOUNDARY_BAND:.2f} of the {TAU_FAITHFUL:.2f} threshold)"
         parts.append(grounding)

@@ -5,7 +5,8 @@ PRD / ADR-005: one Chroma collection per corpus_version_id → cv_{id}.
 
 from __future__ import annotations
 
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import chromadb
 from chromadb.api import ClientAPI

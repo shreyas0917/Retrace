@@ -302,7 +302,7 @@ scripts/dev_test.sh tests/test_security.py -k csrf
 cd frontend && npm install && npm test && npm run build
 ```
 
-Every push and pull request runs [CI](.github/workflows/ci.yml): ruff, suite-hash integrity, the backend suite inside the Docker image against real Postgres and Chroma, and frontend type-check, tests and build. At v1.0.0: 217 backend tests (about 100 seconds against the Compose stack) and 11 frontend tests. Backend coverage by area: infrastructure, corpus and retrieval, generation, diagnosis, evaluation suites, experiments and baselines, observability, investigation, security (51 tests), durable telemetry (17), resilience and fault injection (18), retrieval metrics, judge validation, and the held-out benchmark, which runs all 160 cases and fails below the documented floors.
+Every push and pull request runs [CI](.github/workflows/ci.yml): ruff lint and format, mypy, suite-hash integrity, the backend suite inside the Docker image against real Postgres and Chroma, and frontend type-check, tests and build. At v1.0.0: 217 backend tests (about 100 seconds against the Compose stack) and 11 frontend tests. Backend coverage by area: infrastructure, corpus and retrieval, generation, diagnosis, evaluation suites, experiments and baselines, observability, investigation, security (51 tests), durable telemetry (17), resilience and fault injection (18), retrieval metrics, judge validation, and the held-out benchmark, which runs all 160 cases and fails below the documented floors.
 
 ## Repository structure
 

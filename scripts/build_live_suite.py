@@ -35,7 +35,7 @@ import os
 import sys
 import time
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -141,10 +141,14 @@ def ensure_variant(db, config: dict[str, Any], name: str) -> dict[str, Any]:
 def write_chunk_inventory(db, path: Path, info: dict[str, Any]) -> None:
     """The main corpus's chunks, for choosing gold chunk ids while labelling."""
     rows = db.execute(
-        select(Chunk).where(Chunk.corpus_version_id == info["corpus_version_id"]).order_by(Chunk.document_id, Chunk.ordinal)
+        select(Chunk)
+        .where(Chunk.corpus_version_id == info["corpus_version_id"])
+        .order_by(Chunk.document_id, Chunk.ordinal)
     ).scalars()
     lines = [
-        json.dumps({"chunk_id": c.id, "document_id": c.document_id, "ordinal": c.ordinal, "text": c.text}, ensure_ascii=False)
+        json.dumps(
+            {"chunk_id": c.id, "document_id": c.document_id, "ordinal": c.ordinal, "text": c.text}, ensure_ascii=False
+        )
         for c in rows
     ]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
@@ -189,13 +193,19 @@ def run_one(db, query: dict[str, Any], corpus: dict[str, Any], settings, git_com
     finally:
         set_llm_provider(None)
 
-    nli_row = db.execute(
-        select(JudgeResult).where(
-            JudgeResult.execution_id == execution_id,
-            JudgeResult.judge_type == "faithfulness",
+    nli_row = (
+        db.execute(
+            select(JudgeResult).where(
+                JudgeResult.execution_id == execution_id,
+                JudgeResult.judge_type == "faithfulness",
+            )
         )
-    ).scalars().first()
-    nli_output = nli_row.output if nli_row is not None and str(nli_row.prompt_version).startswith("faithfulness.nli") else None
+        .scalars()
+        .first()
+    )
+    nli_output = (
+        nli_row.output if nli_row is not None and str(nli_row.prompt_version).startswith("faithfulness.nli") else None
+    )
 
     return {
         "record_version": RUN_RECORD_VERSION,
@@ -206,7 +216,9 @@ def run_one(db, query: dict[str, Any], corpus: dict[str, Any], settings, git_com
         "corpus_variant": query["corpus_variant"],
         "eval_fault": query.get("eval_fault"),
         "query": query["query"],
-        "corpus": {k: corpus[k] for k in ("variant", "corpus_id", "corpus_version_id", "corpus_hash", "chunk_count", "removed")},
+        "corpus": {
+            k: corpus[k] for k in ("variant", "corpus_id", "corpus_version_id", "corpus_hash", "chunk_count", "removed")
+        },
         "execution": {
             "execution_id": execution_id,
             "top_k": TOP_K,
@@ -254,7 +266,7 @@ def run_one(db, query: dict[str, Any], corpus: dict[str, Any], settings, git_com
             "model_timeout_seconds": settings.model_timeout_seconds,
         },
         "git_commit": git_commit,
-        "recorded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "recorded_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "run_latency_ms": round((time.perf_counter() - started) * 1000, 1),
     }
 
@@ -272,8 +284,11 @@ def build(args: argparse.Namespace) -> int:
     done = {r["query_id"] for r in existing}
     models = {r["generation"]["model"] for r in existing if r.get("generation")}
     if existing and not args.allow_mixed and models and models != {settings.model_name}:
-        print(f"build_live_suite: runs.jsonl was recorded with {sorted(models)}, the current model is "
-              f"{settings.model_name}; pass --allow-mixed to continue anyway", file=sys.stderr)
+        print(
+            f"build_live_suite: runs.jsonl was recorded with {sorted(models)}, the current model is "
+            f"{settings.model_name}; pass --allow-mixed to continue anyway",
+            file=sys.stderr,
+        )
         return 2
     todo = [q for q in queries if q["query_id"] not in done]
     if args.only:
@@ -289,7 +304,10 @@ def build(args: argparse.Namespace) -> int:
         corpora: dict[str, dict[str, Any]] = {}
         for name in sorted({q["corpus_variant"] for q in queries} | {"main"}):
             corpora[name] = ensure_variant(db, config, name)
-            print(f"  corpus {name}: version {corpora[name]['corpus_version_id']} chunks={corpora[name]['chunk_count']}", flush=True)
+            print(
+                f"  corpus {name}: version {corpora[name]['corpus_version_id']} chunks={corpora[name]['chunk_count']}",
+                flush=True,
+            )
         write_chunk_inventory(db, directory / "corpus_chunks.jsonl", corpora["main"])
 
         failures = 0
@@ -299,15 +317,24 @@ def build(args: argparse.Namespace) -> int:
             except Exception as exc:  # noqa: BLE001 - not recorded; a restart retries it
                 db.rollback()
                 failures += 1
-                print(f"  [{i}/{len(todo)}] {query['query_id']} FAILED, not recorded: {type(exc).__name__}: {str(exc)[:200]}", flush=True)
+                print(
+                    f"  [{i}/{len(todo)}] {query['query_id']} FAILED, not recorded: {type(exc).__name__}: {str(exc)[:200]}",
+                    flush=True,
+                )
                 continue
             append_record(runs_path, record)
-            print(f"  [{i}/{len(todo)}] {query['query_id']} {record['execution']['status']} "
-                  f"({record['run_latency_ms'] / 1000:.0f}s)", flush=True)
+            print(
+                f"  [{i}/{len(todo)}] {query['query_id']} {record['execution']['status']} "
+                f"({record['run_latency_ms'] / 1000:.0f}s)",
+                flush=True,
+            )
     finally:
         db.close()
     total = len(read_jsonl(runs_path))
-    print(f"live_v1: {total}/{len(queries)} recorded" + (f", {failures} failed this pass (rerun to retry)" if failures else ""))
+    print(
+        f"live_v1: {total}/{len(queries)} recorded"
+        + (f", {failures} failed this pass (rerun to retry)" if failures else "")
+    )
     return 0 if not failures else 1
 
 
@@ -327,7 +354,9 @@ def verify_replay(args: argparse.Namespace) -> int:
     finally:
         db.close()
     for qid, live, replayed in mismatches:
-        print(f"  {qid}: live {live['failure_code']}/{live['rule_id']} replay {replayed['failure_code']}/{replayed['rule_id']}")
+        print(
+            f"  {qid}: live {live['failure_code']}/{live['rule_id']} replay {replayed['failure_code']}/{replayed['rule_id']}"
+        )
     print(f"replay check: {len(records) - len(mismatches)}/{len(records)} records reproduce the live diagnosis offline")
     return 0 if not mismatches else 1
 
@@ -339,7 +368,10 @@ def freeze(args: argparse.Namespace) -> int:
     records = [json.loads(line) for line in lines if line.strip()]
     missing = sorted({q["query_id"] for q in queries} - {r["query_id"] for r in records})
     if missing and not args.allow_partial:
-        print(f"freeze: {len(missing)} queries have no record yet ({', '.join(missing[:10])}); run the build again", file=sys.stderr)
+        print(
+            f"freeze: {len(missing)} queries have no record yet ({', '.join(missing[:10])}); run the build again",
+            file=sys.stderr,
+        )
         return 2
     manifest = {
         "suite_id": SUITE_ID,

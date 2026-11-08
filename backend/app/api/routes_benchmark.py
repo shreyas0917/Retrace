@@ -101,12 +101,16 @@ def get_benchmark_experiment(experiment_id: str, db: Session = Depends(get_db)) 
 
 @router.get("/benchmark/experiments")
 def list_benchmark_experiments(db: Session = Depends(get_db), limit: int = 20) -> dict:
-    rows = db.execute(
-        select(Experiment)
-        .where(Experiment.suite_id.is_not(None))
-        .order_by(Experiment.created_at.desc())
-        .limit(limit)
-    ).scalars().all()
+    rows = (
+        db.execute(
+            select(Experiment)
+            .where(Experiment.suite_id.is_not(None))
+            .order_by(Experiment.created_at.desc())
+            .limit(limit)
+        )
+        .scalars()
+        .all()
+    )
     return {
         "experiments": [
             {

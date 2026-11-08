@@ -27,11 +27,13 @@ def main() -> int:
     db_session.init_db()
     db = db_session.SessionLocal()
     try:
-        version = db.execute(
-            select(CorpusVersion)
-            .where(CorpusVersion.status == "READY")
-            .order_by(CorpusVersion.created_at.desc())
-        ).scalars().first()
+        version = (
+            db.execute(
+                select(CorpusVersion).where(CorpusVersion.status == "READY").order_by(CorpusVersion.created_at.desc())
+            )
+            .scalars()
+            .first()
+        )
         if not version:
             print("No READY corpus version — run seed_demo_corpus.py first")
             return 1

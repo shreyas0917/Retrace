@@ -70,15 +70,12 @@ def _ingest_corpus(client: TestClient, api_key: str) -> str:
         {
             "id": "pto_doc",
             "text": (
-                "Full-time employees accrue 1.25 days of PTO per month. "
-                "Unused PTO may be carried over up to 5 days."
+                "Full-time employees accrue 1.25 days of PTO per month. " "Unused PTO may be carried over up to 5 days."
             ),
             "source_name": "pto.md",
         }
     ]
-    r = client.post(
-        f"/api/v1/corpora/{corpus_id}/versions", headers=headers, json={"documents": docs}
-    )
+    r = client.post(f"/api/v1/corpora/{corpus_id}/versions", headers=headers, json={"documents": docs})
     assert r.status_code == 200, r.text
     return r.json()["id"]
 
@@ -103,9 +100,7 @@ def test_registry_events_are_flushed_to_postgres() -> None:
 
     db = _open_db()
     try:
-        rows = db.execute(
-            select(MetricEvent).where(MetricEvent.name.in_([counter, latency]))
-        ).scalars().all()
+        rows = db.execute(select(MetricEvent).where(MetricEvent.name.in_([counter, latency]))).scalars().all()
     finally:
         db.close()
     kinds = {(r.name, r.kind, r.value) for r in rows}
@@ -241,9 +236,7 @@ def test_missing_pricing_file_falls_back_to_zero(tmp_path) -> None:
     assert pricing.estimate_cost_usd("gpt-4.1", 10, 10, path=missing) == 0.0
 
 
-def test_generate_persists_cost_and_records_token_counters(
-    client: TestClient, api_key: str, monkeypatch
-) -> None:
+def test_generate_persists_cost_and_records_token_counters(client: TestClient, api_key: str, monkeypatch) -> None:
     from app.core.config import get_settings
 
     model_name = get_settings().model_name

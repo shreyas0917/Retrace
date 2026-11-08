@@ -60,9 +60,7 @@ def cmd_retrieval_eval(args: argparse.Namespace) -> int:
     print(f"{'config':>9} {'retriever':<42} {'chunks':>6} {'R@1':>6} {'R@5':>6} {'MRR':>6} {'nDCG@10':>8} {'ms':>7}")
     for row in report["results"]:
         m = row["metrics"]
-        label = row["retriever"] + (
-            f" ({row['embedding_model'].split('/')[-1]})" if row.get("embedding_model") else ""
-        )
+        label = row["retriever"] + (f" ({row['embedding_model'].split('/')[-1]})" if row.get("embedding_model") else "")
         print(
             f"{row['config']:>9} {label:<42} {row['chunk_count']:>6} "
             f"{(m.get('recall@1') or 0):>6.3f} {(m.get('recall@5') or 0):>6.3f} "

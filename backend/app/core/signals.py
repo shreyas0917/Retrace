@@ -9,7 +9,6 @@ import yaml
 
 from app.core.metrics import get_metrics
 
-
 DEFAULT_SIGNALS: dict[str, Any] = {
     "version": "observability_signals.v1",
     "signals": {
@@ -75,8 +74,7 @@ def evaluate_signals(
                 snapshot = get_metrics().snapshot()
                 snapshot = dict(snapshot)
                 snapshot["note"] = (
-                    f"{snapshot.get('note') or ''} Durable store unavailable: "
-                    f"{durable.get('reason')}"
+                    f"{snapshot.get('note') or ''} Durable store unavailable: " f"{durable.get('reason')}"
                 ).strip()
         else:
             snapshot = get_metrics().snapshot()

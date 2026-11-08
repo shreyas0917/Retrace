@@ -348,7 +348,7 @@ def _sha_suite(raw_lines: list[str]) -> str:
 def relevance_json(ids: list[str], *, sufficient: bool, scores: list[float]) -> str:
     items = [
         {"chunk_id": cid, "relevant": s >= 0.5, "score": round(s, 3), "rationale": "fixture"}
-        for cid, s in zip(ids, scores)
+        for cid, s in zip(ids, scores, strict=False)
     ]
     return json.dumps({"items": items, "context_sufficient": sufficient})
 
@@ -358,16 +358,13 @@ def faithfulness_json(*, score: float, supported: int, unsupported: int, support
         {"claim": f"supported claim {i}", "supported": True, "supporting_chunk_ids": support_ids}
         for i in range(supported)
     ] + [
-        {"claim": f"unsupported claim {i}", "supported": False, "supporting_chunk_ids": []}
-        for i in range(unsupported)
+        {"claim": f"unsupported claim {i}", "supported": False, "supporting_chunk_ids": []} for i in range(unsupported)
     ]
     return json.dumps({"faithfulness_score": round(score, 3), "claims": claims})
 
 
 def contradiction_json(contradicts: bool, ids: list[str]) -> str:
-    return json.dumps(
-        {"contradicts": contradicts, "explanation": "fixture", "chunk_ids": ids if contradicts else []}
-    )
+    return json.dumps({"contradicts": contradicts, "explanation": "fixture", "chunk_ids": ids if contradicts else []})
 
 
 class Builder:
@@ -395,8 +392,9 @@ class Builder:
         self.rng.shuffle(pool)
         return pool[:n]
 
-    def assemble(self, fact: dict[str, str], *, gold_text: str | None, n_distractors: int,
-                 gold_score: float) -> tuple[list[dict[str, Any]], str | None]:
+    def assemble(
+        self, fact: dict[str, str], *, gold_text: str | None, n_distractors: int, gold_score: float
+    ) -> tuple[list[dict[str, Any]], str | None]:
         """Return chunk list (unique ids, gold at random rank) and the gold chunk id."""
         items: list[tuple[str, str, float]] = []
         if gold_text is not None:
@@ -419,8 +417,9 @@ class Builder:
                 gold_id = c["chunk_id"]
         return chunks, gold_id
 
-    def rel_scores(self, chunks: list[dict[str, Any]], relevant_ids: set[str], *, boundary: bool,
-                   weak: bool = False) -> list[float]:
+    def rel_scores(
+        self, chunks: list[dict[str, Any]], relevant_ids: set[str], *, boundary: bool, weak: bool = False
+    ) -> list[float]:
         scores = []
         for c in chunks:
             if c["chunk_id"] in relevant_ids:
@@ -440,11 +439,25 @@ class Builder:
         return f"{prefix}{self.counter:03d}"
 
     # -- case shell ---------------------------------------------------------
-    def case(self, fact: dict[str, str], *, label: str, acceptable: list[str], rule: str,
-             expected_abstention: bool, relevant_ids: list[str], chunks: list[dict[str, Any]],
-             answer: str | None, abstained: bool, status: str, judge_scripts: dict[str, list[str]],
-             error_code: str | None = None, evidence: list[str] | None = None,
-             tags: list[str] | None = None, notes: str = "") -> dict[str, Any]:
+    def case(
+        self,
+        fact: dict[str, str],
+        *,
+        label: str,
+        acceptable: list[str],
+        rule: str,
+        expected_abstention: bool,
+        relevant_ids: list[str],
+        chunks: list[dict[str, Any]],
+        answer: str | None,
+        abstained: bool,
+        status: str,
+        judge_scripts: dict[str, list[str]],
+        error_code: str | None = None,
+        evidence: list[str] | None = None,
+        tags: list[str] | None = None,
+        notes: str = "",
+    ) -> dict[str, Any]:
         if label not in acceptable:
             acceptable = [label] + acceptable
         return {
@@ -481,10 +494,20 @@ class Builder:
     def retrieval_empty(self, f: dict[str, str], boundary: bool) -> dict[str, Any]:
         gold_id = f"{f['doc']}:c{self.rng.randint(0, 9):03d}"
         return self.case(
-            f, label="RETRIEVAL_EMPTY", acceptable=["RETRIEVAL_EMPTY"], rule="R10",
-            expected_abstention=True, relevant_ids=[gold_id], chunks=[],
-            answer=ABSTENTION_ANSWER, abstained=True, status="ABSTAINED", judge_scripts={},
-            evidence=None, tags=["retrieval"], notes="Index returned nothing for the query.",
+            f,
+            label="RETRIEVAL_EMPTY",
+            acceptable=["RETRIEVAL_EMPTY"],
+            rule="R10",
+            expected_abstention=True,
+            relevant_ids=[gold_id],
+            chunks=[],
+            answer=ABSTENTION_ANSWER,
+            abstained=True,
+            status="ABSTAINED",
+            judge_scripts={},
+            evidence=None,
+            tags=["retrieval"],
+            notes="Index returned nothing for the query.",
         )
 
     def retrieval_miss(self, f: dict[str, str], boundary: bool) -> dict[str, Any]:
@@ -495,11 +518,19 @@ class Builder:
             gold_id = f"{f['doc']}:c{self.rng.randint(0, 9):03d}"
         abstain = self.rng.random() < 0.6
         return self.case(
-            f, label="RETRIEVAL_MISS", acceptable=["RETRIEVAL_MISS"], rule="R11",
-            expected_abstention=True, relevant_ids=[gold_id], chunks=chunks,
-            answer=ABSTENTION_ANSWER if abstain else f["wrong"], abstained=abstain,
-            status="ABSTAINED" if abstain else "COMPLETED", judge_scripts={},
-            evidence=[gold_id], tags=["retrieval", "abstained" if abstain else "answered"],
+            f,
+            label="RETRIEVAL_MISS",
+            acceptable=["RETRIEVAL_MISS"],
+            rule="R11",
+            expected_abstention=True,
+            relevant_ids=[gold_id],
+            chunks=chunks,
+            answer=ABSTENTION_ANSWER if abstain else f["wrong"],
+            abstained=abstain,
+            status="ABSTAINED" if abstain else "COMPLETED",
+            judge_scripts={},
+            evidence=[gold_id],
+            tags=["retrieval", "abstained" if abstain else "answered"],
             notes="Gold chunk exists in the corpus but was not retrieved in top-k.",
         )
 
@@ -515,7 +546,9 @@ class Builder:
             n = self.rng.choice([4, 5])
             with_weak = self.rng.random() < 0.4
             chunks, weak_id = self.assemble(
-                f, gold_text=f["related"] if with_weak else None, n_distractors=n - (1 if with_weak else 0),
+                f,
+                gold_text=f["related"] if with_weak else None,
+                n_distractors=n - (1 if with_weak else 0),
                 gold_score=0.5,
             )
             ids = [c["chunk_id"] for c in chunks]
@@ -523,11 +556,19 @@ class Builder:
             acceptable = ["RETRIEVAL_DISTRACTOR_DOMINANT"]
             tags = ["retrieval"]
         return self.case(
-            f, label="RETRIEVAL_DISTRACTOR_DOMINANT", acceptable=acceptable, rule="R12",
-            expected_abstention=True, relevant_ids=[], chunks=chunks,
-            answer=ABSTENTION_ANSWER, abstained=True, status="ABSTAINED",
+            f,
+            label="RETRIEVAL_DISTRACTOR_DOMINANT",
+            acceptable=acceptable,
+            rule="R12",
+            expected_abstention=True,
+            relevant_ids=[],
+            chunks=chunks,
+            answer=ABSTENTION_ANSWER,
+            abstained=True,
+            status="ABSTAINED",
             judge_scripts={"relevance": [relevance_json(ids, sufficient=False, scores=scores)]},
-            evidence=None, tags=tags,
+            evidence=None,
+            tags=tags,
             notes="Top-k dominated by off-topic chunks; system abstained; no gold labels available.",
         )
 
@@ -538,48 +579,75 @@ class Builder:
         scores = self.rel_scores(chunks, {weak_id}, boundary=False, weak=True)
         acceptable = ["OK_CORRECT_ABSTENTION"] + (["RETRIEVAL_DISTRACTOR_DOMINANT"] if boundary else [])
         return self.case(
-            f, label="OK_CORRECT_ABSTENTION", acceptable=acceptable, rule="R14",
-            expected_abstention=True, relevant_ids=[weak_id], chunks=chunks,
-            answer=ABSTENTION_ANSWER, abstained=True, status="ABSTAINED",
+            f,
+            label="OK_CORRECT_ABSTENTION",
+            acceptable=acceptable,
+            rule="R14",
+            expected_abstention=True,
+            relevant_ids=[weak_id],
+            chunks=chunks,
+            answer=ABSTENTION_ANSWER,
+            abstained=True,
+            status="ABSTAINED",
             judge_scripts={"relevance": [relevance_json(ids, sufficient=False, scores=scores)]},
-            evidence=None, tags=["abstention"] + (["boundary"] if boundary else []),
+            evidence=None,
+            tags=["abstention"] + (["boundary"] if boundary else []),
             notes="Only a related-but-insufficient chunk retrieved; abstaining was correct.",
         )
 
     def abstention_false_negative(self, f: dict[str, str], boundary: bool) -> dict[str, Any]:
         with_weak = self.rng.random() < 0.5
         n_d = self.rng.randint(1, 4) if not with_weak else self.rng.randint(1, 3)
-        chunks, weak_id = self.assemble(f, gold_text=f["related"] if with_weak else None,
-                                        n_distractors=n_d, gold_score=0.55)
+        chunks, weak_id = self.assemble(
+            f, gold_text=f["related"] if with_weak else None, n_distractors=n_d, gold_score=0.55
+        )
         ids = [c["chunk_id"] for c in chunks]
         scores = self.rel_scores(chunks, {weak_id} if weak_id else set(), boundary=boundary, weak=True)
         answer = self.rng.choice([f["invented"], f["wrong"]])
         return self.case(
-            f, label="ABSTENTION_FALSE_NEGATIVE", acceptable=["ABSTENTION_FALSE_NEGATIVE"], rule="R20",
-            expected_abstention=True, relevant_ids=[weak_id] if weak_id else [], chunks=chunks,
-            answer=answer, abstained=False, status="COMPLETED",
+            f,
+            label="ABSTENTION_FALSE_NEGATIVE",
+            acceptable=["ABSTENTION_FALSE_NEGATIVE"],
+            rule="R20",
+            expected_abstention=True,
+            relevant_ids=[weak_id] if weak_id else [],
+            chunks=chunks,
+            answer=answer,
+            abstained=False,
+            status="COMPLETED",
             judge_scripts={"relevance": [relevance_json(ids, sufficient=False, scores=scores)]},
-            evidence=None, tags=["abstention"] + (["boundary"] if boundary else []),
+            evidence=None,
+            tags=["abstention"] + (["boundary"] if boundary else []),
             notes="Context insufficient but the generator answered anyway.",
         )
 
     def abstention_false_positive(self, f: dict[str, str], boundary: bool) -> dict[str, Any]:
-        chunks, gold_id = self.assemble(f, gold_text=f["gold"], n_distractors=self.rng.randint(0, 3),
-                                        gold_score=self.rng.uniform(0.75, 0.95))
+        chunks, gold_id = self.assemble(
+            f, gold_text=f["gold"], n_distractors=self.rng.randint(0, 3), gold_score=self.rng.uniform(0.75, 0.95)
+        )
         ids = [c["chunk_id"] for c in chunks]
         scores = self.rel_scores(chunks, {gold_id}, boundary=boundary)
         return self.case(
-            f, label="ABSTENTION_FALSE_POSITIVE", acceptable=["ABSTENTION_FALSE_POSITIVE"], rule="R21",
-            expected_abstention=False, relevant_ids=[gold_id], chunks=chunks,
-            answer=ABSTENTION_ANSWER, abstained=True, status="ABSTAINED",
+            f,
+            label="ABSTENTION_FALSE_POSITIVE",
+            acceptable=["ABSTENTION_FALSE_POSITIVE"],
+            rule="R21",
+            expected_abstention=False,
+            relevant_ids=[gold_id],
+            chunks=chunks,
+            answer=ABSTENTION_ANSWER,
+            abstained=True,
+            status="ABSTAINED",
             judge_scripts={"relevance": [relevance_json(ids, sufficient=True, scores=scores)]},
-            evidence=[gold_id], tags=["abstention"] + (["boundary"] if boundary else []),
+            evidence=[gold_id],
+            tags=["abstention"] + (["boundary"] if boundary else []),
             notes="Gold chunk retrieved and sufficient, yet the system abstained.",
         )
 
     def _grounding_base(self, f: dict[str, str], boundary: bool):
-        chunks, gold_id = self.assemble(f, gold_text=f["gold"], n_distractors=self.rng.randint(0, 3),
-                                        gold_score=self.rng.uniform(0.75, 0.97))
+        chunks, gold_id = self.assemble(
+            f, gold_text=f["gold"], n_distractors=self.rng.randint(0, 3), gold_score=self.rng.uniform(0.75, 0.97)
+        )
         ids = [c["chunk_id"] for c in chunks]
         scores = self.rel_scores(chunks, {gold_id}, boundary=boundary)
         return chunks, gold_id, ids, scores
@@ -590,16 +658,25 @@ class Builder:
         unsupported = self.rng.randint(1, 2)
         faith = self.rng.uniform(0.0, 0.5) if not supported else self.rng.uniform(0.3, 0.6)
         return self.case(
-            f, label="GENERATION_CONTRADICTION", acceptable=["GENERATION_CONTRADICTION"], rule="R30",
-            expected_abstention=False, relevant_ids=[gold_id], chunks=chunks,
-            answer=f["wrong"], abstained=False, status="COMPLETED",
+            f,
+            label="GENERATION_CONTRADICTION",
+            acceptable=["GENERATION_CONTRADICTION"],
+            rule="R30",
+            expected_abstention=False,
+            relevant_ids=[gold_id],
+            chunks=chunks,
+            answer=f["wrong"],
+            abstained=False,
+            status="COMPLETED",
             judge_scripts={
                 "relevance": [relevance_json(ids, sufficient=True, scores=scores)],
-                "faithfulness": [faithfulness_json(score=faith, supported=supported, unsupported=unsupported,
-                                                   support_ids=[gold_id])],
+                "faithfulness": [
+                    faithfulness_json(score=faith, supported=supported, unsupported=unsupported, support_ids=[gold_id])
+                ],
                 "contradiction": [contradiction_json(True, [gold_id])],
             },
-            evidence=[gold_id], tags=["generation"] + (["boundary"] if boundary else []),
+            evidence=[gold_id],
+            tags=["generation"] + (["boundary"] if boundary else []),
             notes="Answer states a value that conflicts with the retrieved gold chunk.",
         )
 
@@ -608,17 +685,25 @@ class Builder:
         unsupported = self.rng.randint(1, 3)
         faith = self.rng.uniform(0.45, 0.6) if boundary else self.rng.uniform(0.0, 0.4)
         return self.case(
-            f, label="GENERATION_HALLUCINATION",
-            acceptable=["GENERATION_HALLUCINATION", "GROUNDING_UNSUPPORTED"], rule="R31",
-            expected_abstention=False, relevant_ids=[gold_id], chunks=chunks,
-            answer=f["invented"], abstained=False, status="COMPLETED",
+            f,
+            label="GENERATION_HALLUCINATION",
+            acceptable=["GENERATION_HALLUCINATION", "GROUNDING_UNSUPPORTED"],
+            rule="R31",
+            expected_abstention=False,
+            relevant_ids=[gold_id],
+            chunks=chunks,
+            answer=f["invented"],
+            abstained=False,
+            status="COMPLETED",
             judge_scripts={
                 "relevance": [relevance_json(ids, sufficient=True, scores=scores)],
-                "faithfulness": [faithfulness_json(score=faith, supported=0, unsupported=unsupported,
-                                                   support_ids=[gold_id])],
+                "faithfulness": [
+                    faithfulness_json(score=faith, supported=0, unsupported=unsupported, support_ids=[gold_id])
+                ],
                 "contradiction": [contradiction_json(False, [])],
             },
-            evidence=[gold_id], tags=["generation"] + (["boundary"] if boundary else []),
+            evidence=[gold_id],
+            tags=["generation"] + (["boundary"] if boundary else []),
             notes="Context sufficient; answer invents content absent from the context.",
         )
 
@@ -632,16 +717,25 @@ class Builder:
             base = supported / (supported + unsupported)
             faith = min(0.79, max(0.3, base + self.rng.uniform(-0.05, 0.05)))
         return self.case(
-            f, label="GROUNDING_PARTIAL", acceptable=["GROUNDING_PARTIAL"], rule="R33",
-            expected_abstention=False, relevant_ids=[gold_id], chunks=chunks,
-            answer=f["answer"] + " " + f["extra"], abstained=False, status="COMPLETED",
+            f,
+            label="GROUNDING_PARTIAL",
+            acceptable=["GROUNDING_PARTIAL"],
+            rule="R33",
+            expected_abstention=False,
+            relevant_ids=[gold_id],
+            chunks=chunks,
+            answer=f["answer"] + " " + f["extra"],
+            abstained=False,
+            status="COMPLETED",
             judge_scripts={
                 "relevance": [relevance_json(ids, sufficient=True, scores=scores)],
-                "faithfulness": [faithfulness_json(score=faith, supported=supported, unsupported=unsupported,
-                                                   support_ids=[gold_id])],
+                "faithfulness": [
+                    faithfulness_json(score=faith, supported=supported, unsupported=unsupported, support_ids=[gold_id])
+                ],
                 "contradiction": [contradiction_json(False, [])],
             },
-            evidence=[gold_id], tags=["grounding"] + (["boundary"] if boundary else []),
+            evidence=[gold_id],
+            tags=["grounding"] + (["boundary"] if boundary else []),
             notes="Answer mixes a supported claim with an unsupported extra claim.",
         )
 
@@ -657,45 +751,73 @@ class Builder:
             tags = ["none"]
             notes = "Answer fully grounded in the retrieved gold chunk."
         return self.case(
-            f, label="OK_GROUNDED", acceptable=["OK_GROUNDED"], rule="R40",
-            expected_abstention=False, relevant_ids=[gold_id], chunks=chunks,
-            answer=f["answer"], abstained=False, status="COMPLETED",
+            f,
+            label="OK_GROUNDED",
+            acceptable=["OK_GROUNDED"],
+            rule="R40",
+            expected_abstention=False,
+            relevant_ids=[gold_id],
+            chunks=chunks,
+            answer=f["answer"],
+            abstained=False,
+            status="COMPLETED",
             judge_scripts={
                 "relevance": [relevance_json(ids, sufficient=True, scores=scores)],
-                "faithfulness": [faithfulness_json(score=faith, supported=supported, unsupported=0,
-                                                   support_ids=[gold_id])],
+                "faithfulness": [
+                    faithfulness_json(score=faith, supported=supported, unsupported=0, support_ids=[gold_id])
+                ],
                 "contradiction": [contradiction_json(False, [])],
             },
-            evidence=[gold_id], tags=tags, notes=notes,
+            evidence=[gold_id],
+            tags=tags,
+            notes=notes,
         )
 
     def timeout(self, f: dict[str, str], boundary: bool) -> dict[str, Any]:
-        chunks, gold_id = self.assemble(f, gold_text=f["gold"], n_distractors=self.rng.randint(0, 2),
-                                        gold_score=0.9)
+        chunks, gold_id = self.assemble(f, gold_text=f["gold"], n_distractors=self.rng.randint(0, 2), gold_score=0.9)
         return self.case(
-            f, label="EVAL_MODEL_TIMEOUT", acceptable=["EVAL_MODEL_TIMEOUT"], rule="R00",
-            expected_abstention=False, relevant_ids=[gold_id], chunks=chunks,
-            answer=None, abstained=False, status="GENERATION_TIMEOUT", error_code="GENERATION_TIMEOUT",
-            judge_scripts={}, evidence=None, tags=["infra"],
+            f,
+            label="EVAL_MODEL_TIMEOUT",
+            acceptable=["EVAL_MODEL_TIMEOUT"],
+            rule="R00",
+            expected_abstention=False,
+            relevant_ids=[gold_id],
+            chunks=chunks,
+            answer=None,
+            abstained=False,
+            status="GENERATION_TIMEOUT",
+            error_code="GENERATION_TIMEOUT",
+            judge_scripts={},
+            evidence=None,
+            tags=["infra"],
             notes="Generator timed out before answering.",
         )
 
     def judge_malformed(self, f: dict[str, str], boundary: bool) -> dict[str, Any]:
         chunks, gold_id, ids, scores = self._grounding_base(f, boundary=False)
         if self.rng.random() < 0.5:
-            scripts = {"relevance": ["NOT_JSON", "{\"items\": \"still bad\"}"]}
+            scripts = {"relevance": ["NOT_JSON", '{"items": "still bad"}']}
             which = "relevance"
         else:
             scripts = {
                 "relevance": [relevance_json(ids, sufficient=True, scores=scores)],
-                "faithfulness": ["<html>error</html>", "{\"faithfulness_score\": 7}"],
+                "faithfulness": ["<html>error</html>", '{"faithfulness_score": 7}'],
             }
             which = "faithfulness"
         return self.case(
-            f, label="EVAL_JUDGE_MALFORMED", acceptable=["EVAL_JUDGE_MALFORMED"], rule="R01",
-            expected_abstention=False, relevant_ids=[gold_id], chunks=chunks,
-            answer=f["answer"], abstained=False, status="COMPLETED", judge_scripts=scripts,
-            evidence=None, tags=["infra", f"malformed:{which}"],
+            f,
+            label="EVAL_JUDGE_MALFORMED",
+            acceptable=["EVAL_JUDGE_MALFORMED"],
+            rule="R01",
+            expected_abstention=False,
+            relevant_ids=[gold_id],
+            chunks=chunks,
+            answer=f["answer"],
+            abstained=False,
+            status="COMPLETED",
+            judge_scripts=scripts,
+            evidence=None,
+            tags=["infra", f"malformed:{which}"],
             notes=f"The {which} judge returned invalid output twice.",
         )
 
@@ -728,7 +850,10 @@ def build(suite_id: str, seed: int, distribution: dict[str, int], boundary_rate:
     for i, name in enumerate(plan):
         f = facts[i % len(facts)] if i < len(facts) else b.rng.choice(facts)
         boundary = b.rng.random() < boundary_rate and name not in {
-            "retrieval_empty", "retrieval_miss", "timeout", "judge_malformed"
+            "retrieval_empty",
+            "retrieval_miss",
+            "timeout",
+            "judge_malformed",
         }
         cases.append(getattr(b, name)(f, boundary))
     # ids are sequential in generation order; keep that order (shuffled plan).
@@ -787,7 +912,9 @@ def check_live() -> bool:
         lines = runs.read_text(encoding="utf-8").splitlines()
         count = len([line for line in lines if line.strip()])
         if not runs_manifest.is_file():
-            print(f"live_v1: runs.jsonl has {count} records but no runs_manifest.json (run build_live_suite.py --freeze)")
+            print(
+                f"live_v1: runs.jsonl has {count} records but no runs_manifest.json (run build_live_suite.py --freeze)"
+            )
             return False
         manifest = json.loads(runs_manifest.read_text(encoding="utf-8"))
         queries = (directory / "queries.jsonl").read_text(encoding="utf-8").splitlines()

@@ -21,7 +21,7 @@ import json
 import time
 from collections import defaultdict
 from collections.abc import Iterable, Sequence
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from itertools import combinations
 from pathlib import Path
 from typing import Any, Literal
@@ -97,7 +97,7 @@ class JudgeExample(BaseModel):
     annotation_date: str = Field(min_length=8)
 
     @model_validator(mode="after")
-    def _check_labels_for_judge(self) -> "JudgeExample":
+    def _check_labels_for_judge(self) -> JudgeExample:
         if self.judge == "relevance":
             if self.context_sufficient is None:
                 raise ValueError("relevance examples need context_sufficient")
@@ -205,7 +205,7 @@ def cohen_kappa(a: Sequence[bool], b: Sequence[bool]) -> float | None:
     n = len(a)
     if n == 0:
         return None
-    po = sum(1 for x, y in zip(a, b) if x == y) / n
+    po = sum(1 for x, y in zip(a, b, strict=False) if x == y) / n
     pa_true = sum(1 for x in a if x) / n
     pb_true = sum(1 for y in b if y) / n
     pe = pa_true * pb_true + (1 - pa_true) * (1 - pb_true)
@@ -218,10 +218,10 @@ def cohen_kappa(a: Sequence[bool], b: Sequence[bool]) -> float | None:
 def binary_metrics(y_true: Sequence[bool], y_pred: Sequence[bool]) -> dict[str, Any]:
     if len(y_true) != len(y_pred):
         raise ValueError("sequences must have equal length")
-    tp = sum(1 for t, p in zip(y_true, y_pred) if t and p)
-    fp = sum(1 for t, p in zip(y_true, y_pred) if not t and p)
-    fn = sum(1 for t, p in zip(y_true, y_pred) if t and not p)
-    tn = sum(1 for t, p in zip(y_true, y_pred) if not t and not p)
+    tp = sum(1 for t, p in zip(y_true, y_pred, strict=False) if t and p)
+    fp = sum(1 for t, p in zip(y_true, y_pred, strict=False) if not t and p)
+    fn = sum(1 for t, p in zip(y_true, y_pred, strict=False) if t and not p)
+    tn = sum(1 for t, p in zip(y_true, y_pred, strict=False) if not t and not p)
     n = len(y_true)
     precision = tp / (tp + fp) if (tp + fp) else None
     recall = tp / (tp + fn) if (tp + fn) else None
@@ -285,9 +285,7 @@ def build_messages(judge_type: str, example: JudgeExample, variant: str) -> list
     return messages
 
 
-def run_judge_on_example(
-    judge_type: str, example: JudgeExample, variant: str, settings: Settings
-) -> dict[str, Any]:
+def run_judge_on_example(judge_type: str, example: JudgeExample, variant: str, settings: Settings) -> dict[str, Any]:
     """Returns a prediction record; never raises for model/schema failures."""
     messages = build_messages(judge_type, example, variant)
     record: dict[str, Any] = {
@@ -328,9 +326,7 @@ def run_judge_on_example(
         items = {item.chunk_id: item for item in parsed.items}
         known = {c.chunk_id for c in example.chunks}
         record["items"] = {
-            cid: {"relevant": items[cid].relevant, "score": items[cid].score}
-            for cid in known
-            if cid in items
+            cid: {"relevant": items[cid].relevant, "score": items[cid].score} for cid in known if cid in items
         }
         record["missing_chunk_ids"] = sorted(known - set(items))
         record["unknown_chunk_ids"] = sorted(set(items) - known)
@@ -343,8 +339,7 @@ def run_judge_on_example(
             for c in parsed.claims
         ]
         record["has_unsupported"] = (
-            any(not c.supported for c in parsed.claims)
-            or parsed.faithfulness_score < FAITHFUL_THRESHOLD
+            any(not c.supported for c in parsed.claims) or parsed.faithfulness_score < FAITHFUL_THRESHOLD
         )
     else:
         assert isinstance(parsed, ContradictionJudgeResult)
@@ -499,7 +494,7 @@ def prompt_sensitivity(
             sa, sb = _score_value(judge_type, ra), _score_value(judge_type, rb)
             for key in sa.keys() & sb.keys():
                 score_diffs.append(abs(sa[key] - sb[key]))
-        flips = sum(1 for x, y in zip(a_vals, b_vals) if x != y)
+        flips = sum(1 for x, y in zip(a_vals, b_vals, strict=False) if x != y)
         out[f"{va}|{vb}"] = {
             "n_units": len(a_vals),
             "flip_rate": (flips / len(a_vals)) if a_vals else None,
@@ -668,12 +663,10 @@ def validate_judges(
                     }
                 )
             if len(variant_list) > 1:
-                sensitivity[judge] = _round(
-                    prompt_sensitivity(judge, judge_examples, preds[judge])
-                )
+                sensitivity[judge] = _round(prompt_sensitivity(judge, judge_examples, preds[judge]))
 
         report = {
-            "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
             "model": {
                 "name": settings.model_name,
                 "temperature": GENERATION_TEMPERATURE,
@@ -740,10 +733,12 @@ def format_markdown(report: dict[str, Any], *, source_label: str, notes: str = "
     ex = report["examples"]
     lines.append("## Labeled example set")
     lines.append("")
+    lines.append(f"- {ex['n']} examples (" + ", ".join(f"{j}: {n}" for j, n in ex["per_judge"].items()) + ").")
     lines.append(
-        f"- {ex['n']} examples (" + ", ".join(f"{j}: {n}" for j, n in ex["per_judge"].items()) + ")."
+        f"- Example-set hash: `{ex['example_set_hash']}`"
+        + (f"; labels file hash: `{report['labels_file_hash']}`" if report.get("labels_file_hash") else "")
+        + "."
     )
-    lines.append(f"- Example-set hash: `{ex['example_set_hash']}`" + (f"; labels file hash: `{report['labels_file_hash']}`" if report.get("labels_file_hash") else "") + ".")
     lines.append("")
     lines.append("## Prompt versions")
     lines.append("")
@@ -755,15 +750,16 @@ def format_markdown(report: dict[str, Any], *, source_label: str, notes: str = "
     lines.append("")
     lines.append("## Accuracy vs labels (per judge, per prompt variant)")
     lines.append("")
-    lines.append(
-        "| judge | variant | n | metric | acc | prec | rec | F1 | kappa | score MAE | schema fail | mean ms |"
-    )
+    lines.append("| judge | variant | n | metric | acc | prec | rec | F1 | kappa | score MAE | schema fail | mean ms |")
     lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
     for judge, variants in report["per_judge"].items():
         for variant, r in variants.items():
             rel = r["reliability"]
             if judge == "relevance":
-                blocks = [("chunk relevant", r["chunk_relevant"], r["score_mae"]), ("context_sufficient", r["context_sufficient"], None)]
+                blocks = [
+                    ("chunk relevant", r["chunk_relevant"], r["score_mae"]),
+                    ("context_sufficient", r["context_sufficient"], None),
+                ]
             elif judge == "faithfulness":
                 blocks = [("has unsupported claim", r["has_unsupported_claim"], r["score_mae"])]
             else:

@@ -5,6 +5,11 @@ from __future__ import annotations
 import argparse
 import sys
 
+from app.cli.benchmark_cmd import register as add_benchmark_subparser
+from app.cli.diagnose_cmd import register as add_diagnose_subparser
+from app.cli.judges_cmd import add_judges_subparser
+from app.cli.retrieval_cmd import add_retrieval_eval_subparser
+from app.cli.telemetry_cmd import register as add_telemetry_subparser
 from app.core.errors import NotFoundError
 from app.db import session as db_session
 from app.services.eval.baseline import BaselineError, baseline_to_dict, promote_baseline
@@ -17,10 +22,6 @@ from app.services.eval.evaluate import (
 )
 from app.services.eval.suite_loader import SuiteValidationError
 from app.services.eval.thresholds_config import ThresholdConfigError, load_thresholds
-from app.cli.retrieval_cmd import add_retrieval_eval_subparser
-from app.cli.judges_cmd import add_judges_subparser
-from app.cli.benchmark_cmd import register as add_benchmark_subparser
-from app.cli.diagnose_cmd import register as add_diagnose_subparser
 
 
 def _flush_telemetry() -> None:
@@ -142,6 +143,8 @@ def build_parser() -> argparse.ArgumentParser:
     add_benchmark_subparser(sub)
     # Bring-your-own-trace: diagnose traces from any RAG app (app/cli/diagnose_cmd.py)
     add_diagnose_subparser(sub)
+    # Retention: `retrace telemetry prune` (app/cli/telemetry_cmd.py)
+    add_telemetry_subparser(sub)
 
     return parser
 

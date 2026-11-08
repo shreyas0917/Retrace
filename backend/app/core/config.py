@@ -1,7 +1,7 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Literal
 
 from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -50,9 +50,7 @@ class Settings(BaseSettings):
     # --- Abuse controls (v1.0) ---
     rate_limit_enabled: bool = Field(default=True, alias="RATE_LIMIT_ENABLED")
     rate_limit_per_minute: int = Field(default=120, alias="RATE_LIMIT_PER_MINUTE")
-    auth_rate_limit_per_minute: int = Field(
-        default=10, alias="AUTH_RATE_LIMIT_PER_MINUTE"
-    )
+    auth_rate_limit_per_minute: int = Field(default=10, alias="AUTH_RATE_LIMIT_PER_MINUTE")
     max_query_chars: int = Field(default=4000, alias="MAX_QUERY_CHARS")
     max_request_bytes: int = Field(default=1_048_576, alias="MAX_REQUEST_BYTES")
 
@@ -72,16 +70,17 @@ class Settings(BaseSettings):
 
     # --- LLM resilience (v1.0) ---
     model_max_retries: int = Field(default=2, alias="MODEL_MAX_RETRIES")
-    model_retry_backoff_seconds: float = Field(
-        default=0.5, alias="MODEL_RETRY_BACKOFF_SECONDS"
-    )
-    model_connect_timeout_seconds: float = Field(
-        default=10.0, alias="MODEL_CONNECT_TIMEOUT_SECONDS"
-    )
+    model_retry_backoff_seconds: float = Field(default=0.5, alias="MODEL_RETRY_BACKOFF_SECONDS")
+    model_connect_timeout_seconds: float = Field(default=10.0, alias="MODEL_CONNECT_TIMEOUT_SECONDS")
 
     # --- Durable telemetry + cost accounting (v1.0) ---
     telemetry_durable: bool = Field(default=True, alias="TELEMETRY_DURABLE")
     pricing_path: str | None = Field(default=None, alias="PRICING_PATH")
+    # Retention: `retrace telemetry prune` deletes metric_events older than this.
+    telemetry_retention_days: int = Field(default=14, ge=1, alias="TELEMETRY_RETENTION_DAYS")
+    # Opt-in daily prune in the API process (one worker per round, advisory lock).
+    telemetry_prune_enabled: bool = Field(default=False, alias="TELEMETRY_PRUNE_ENABLED")
+    telemetry_prune_interval_seconds: int = Field(default=86400, ge=60, alias="TELEMETRY_PRUNE_INTERVAL_SECONDS")
 
     @field_validator("api_key")
     @classmethod
@@ -95,9 +94,7 @@ class Settings(BaseSettings):
     def embedding_model_must_match_prd(cls, value: str) -> str:
         expected = "sentence-transformers/all-MiniLM-L6-v2"
         if value != expected:
-            raise ValueError(
-                f"EMBEDDING_MODEL must be '{expected}' (PRD-locked); got '{value}'"
-            )
+            raise ValueError(f"EMBEDDING_MODEL must be '{expected}' (PRD-locked); got '{value}'")
         return value
 
     @property
@@ -119,7 +116,7 @@ class Settings(BaseSettings):
             return self.session_secret.strip()
         import hashlib
 
-        return hashlib.sha256(f"retrace-session:{self.api_key}".encode("utf-8")).hexdigest()
+        return hashlib.sha256(f"retrace-session:{self.api_key}".encode()).hexdigest()
 
 
 def get_settings() -> Settings:

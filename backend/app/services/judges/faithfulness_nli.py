@@ -18,8 +18,9 @@ from __future__ import annotations
 import re
 import threading
 import time
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Callable, Sequence
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -50,9 +51,7 @@ REQUIRED_LABELS = ("contradiction", "entailment", "neutral")
 
 class NLIUnavailableError(AppError):
     def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
-        super().__init__(
-            code="NLI_MODEL_UNAVAILABLE", message=message, status_code=503, details=details
-        )
+        super().__init__(code="NLI_MODEL_UNAVAILABLE", message=message, status_code=503, details=details)
 
 
 # --------------------------------------------------------------------------
@@ -61,10 +60,46 @@ class NLIUnavailableError(AppError):
 # Lowercased abbreviations whose trailing period does not end a sentence.
 ABBREVIATIONS = frozenset(
     {
-        "e.g", "i.e", "etc", "vs", "approx", "dept", "fig", "no", "nos", "mr",
-        "mrs", "ms", "dr", "prof", "inc", "ltd", "co", "corp", "st", "jr", "sr",
-        "u.s", "u.k", "a.m", "p.m", "jan", "feb", "mar", "apr", "jun", "jul",
-        "aug", "sep", "sept", "oct", "nov", "dec", "min", "max", "avg",
+        "e.g",
+        "i.e",
+        "etc",
+        "vs",
+        "approx",
+        "dept",
+        "fig",
+        "no",
+        "nos",
+        "mr",
+        "mrs",
+        "ms",
+        "dr",
+        "prof",
+        "inc",
+        "ltd",
+        "co",
+        "corp",
+        "st",
+        "jr",
+        "sr",
+        "u.s",
+        "u.k",
+        "a.m",
+        "p.m",
+        "jan",
+        "feb",
+        "mar",
+        "apr",
+        "jun",
+        "jul",
+        "aug",
+        "sep",
+        "sept",
+        "oct",
+        "nov",
+        "dec",
+        "min",
+        "max",
+        "avg",
     }
 )
 _BULLET = re.compile(r"^\s*(?:[-*•]|\d+[.)])\s+")
@@ -165,7 +200,7 @@ def premise_units(text: str) -> list[str]:
         stripped = (text or "").strip()
         return [stripped] if stripped else []
     units = list(sentences)
-    units.extend(f"{a} {b}" for a, b in zip(sentences, sentences[1:]))
+    units.extend(f"{a} {b}" for a, b in zip(sentences, sentences[1:], strict=False))
     seen: set[str] = set()
     return [u for u in units if not (u in seen or seen.add(u))]
 
@@ -353,10 +388,7 @@ def score_claims(
     the least similar chunks are the ones left out; the result reports it.
     """
     empty = {"pair_count": 0, "window_count": 0, "truncated": False, "chunks_total": 0, "chunks_skipped": 0}
-    usable = [
-        (str(c.get("chunk_id") or ""), str(c.get("text") or ""), _similarity(c), i)
-        for i, c in enumerate(chunks)
-    ]
+    usable = [(str(c.get("chunk_id") or ""), str(c.get("text") or ""), _similarity(c), i) for i, c in enumerate(chunks)]
     usable = [u for u in usable if u[1].strip()]
     if not claims:
         return [], {**empty, "chunks_total": len(usable)}
@@ -440,7 +472,7 @@ def score_claims(
 def _similarity(chunk: dict[str, Any]) -> float | None:
     for key in ("retrieval_score", "score"):
         value = chunk.get(key)
-        if isinstance(value, (int, float)) and not isinstance(value, bool):
+        if isinstance(value, int | float) and not isinstance(value, bool):
             return float(value)
     return None
 

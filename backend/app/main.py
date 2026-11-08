@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from contextlib import asynccontextmanager
+import asyncio
+from contextlib import asynccontextmanager, suppress
 
 from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
@@ -51,7 +52,21 @@ async def lifespan(_app: FastAPI):
         embedding_model=settings.embedding_model,
         generation_model=settings.model_name,
     )
+    prune_task: asyncio.Task[None] | None = None
+    if settings.telemetry_prune_enabled and settings.telemetry_durable:
+        from app.services.telemetry_retention import run_daily_prune
+
+        prune_task = asyncio.create_task(run_daily_prune(settings.telemetry_prune_interval_seconds))
+        logger.info(
+            "telemetry_prune_scheduled",
+            retention_days=settings.telemetry_retention_days,
+            interval_seconds=settings.telemetry_prune_interval_seconds,
+        )
     yield
+    if prune_task is not None:
+        prune_task.cancel()
+        with suppress(asyncio.CancelledError):
+            await prune_task
     # Flush any buffered durable telemetry before the process exits.
     try:
         from app.core.telemetry import flush_telemetry
@@ -79,9 +94,7 @@ def create_app() -> FastAPI:
         enabled=settings.rate_limit_enabled,
     )
     application.add_middleware(RateLimitMiddleware)
-    application.add_middleware(
-        RequestHardeningMiddleware, max_request_bytes=settings.max_request_bytes
-    )
+    application.add_middleware(RequestHardeningMiddleware, max_request_bytes=settings.max_request_bytes)
     application.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
@@ -106,9 +119,7 @@ def create_app() -> FastAPI:
     @application.exception_handler(AppError)
     async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
         request_id = getattr(request.state, "request_id", None)
-        headers: dict[str, str] | None = (
-            {"X-Request-ID": request_id} if request_id else None
-        )
+        headers: dict[str, str] | None = {"X-Request-ID": request_id} if request_id else None
         return JSONResponse(
             status_code=exc.status_code,
             content={
@@ -123,9 +134,7 @@ def create_app() -> FastAPI:
         )
 
     @application.exception_handler(RequestValidationError)
-    async def validation_handler(
-        request: Request, exc: RequestValidationError
-    ) -> JSONResponse:
+    async def validation_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
         request_id = getattr(request.state, "request_id", None)
         headers = {"X-Request-ID": request_id} if request_id else None
         return JSONResponse(

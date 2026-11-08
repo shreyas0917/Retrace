@@ -18,8 +18,9 @@ they never change the rule.
 from __future__ import annotations
 
 import time
-from datetime import datetime, timezone
-from typing import Any, Sequence
+from collections.abc import Sequence
+from datetime import UTC, datetime
+from typing import Any
 
 from app.services.judges.faithfulness_nli import (
     DECISION_RULE,
@@ -50,7 +51,7 @@ def _claim_level(examples: Sequence[JudgeExample], scorer: NLIScorer) -> tuple[d
         if not labelled:
             continue
         results, _ = score_claims([c.claim for c in labelled], ex.chunk_dicts(), scorer)
-        for claim, res in zip(labelled, results):
+        for claim, res in zip(labelled, results, strict=False):
             units.append(
                 {
                     "example_id": ex.example_id,
@@ -119,7 +120,9 @@ def _contradiction(
         records.append({"example_id": ex.example_id, "nli_contradiction": flag})
     out: dict[str, Any] = {"vs_labels": binary_metrics(y_true, y_pred), "vs_llm_judge": None}
     if llm_verdicts:
-        paired = [(r["nli_contradiction"], llm_verdicts[r["example_id"]]) for r in records if r["example_id"] in llm_verdicts]
+        paired = [
+            (r["nli_contradiction"], llm_verdicts[r["example_id"]]) for r in records if r["example_id"] in llm_verdicts
+        ]
         if paired:
             nli, llm = [p[0] for p in paired], [p[1] for p in paired]
             out["vs_llm_judge"] = {
@@ -156,7 +159,9 @@ def threshold_sensitivity(units: Sequence[dict[str, Any]], *, k_folds: int = 5) 
             if not train or not test:
                 continue
             scored = [_metrics_at(train, t) for t in SWEEP_THRESHOLDS]
-            best = max(scored, key=lambda m: ((m["kappa"] if m["kappa"] is not None else -2.0), -abs(m["threshold"] - 0.5)))
+            best = max(
+                scored, key=lambda m: ((m["kappa"] if m["kappa"] is not None else -2.0), -abs(m["threshold"] - 0.5))
+            )
             held = _metrics_at(test, best["threshold"])
             folds.append(
                 {
@@ -208,9 +213,7 @@ def validate_nli_faithfulness(
 
     claim_metrics, claim_units = _claim_level(faith, scorer)
     answer_metrics, answer_records = _answer_level(faith, scorer)
-    contra_metrics, contra_records = _contradiction(
-        contra, scorer, llm_contradiction_verdicts(llm_report, llm_variant)
-    )
+    contra_metrics, contra_records = _contradiction(contra, scorer, llm_contradiction_verdicts(llm_report, llm_variant))
     return {
         "backend": "nli",
         "version": NLI_FAITHFULNESS_VERSION,
@@ -219,7 +222,7 @@ def validate_nli_faithfulness(
         "decision_rule": DECISION_RULE,
         "label_order": scorer.label_order,
         "example_set_hash": compute_examples_hash(examples),
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "counts": {
             "faithfulness_examples": len(faith),
             "labelled_claims": len(claim_units),

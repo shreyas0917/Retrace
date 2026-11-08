@@ -6,7 +6,9 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
+from app.cli.retrace import main as cli_main
 from app.db import session as db_session
 from app.db.models import Experiment, ExperimentCaseResult
 from app.services.eval.baseline import BaselineError, get_active_baseline, promote_baseline
@@ -20,8 +22,6 @@ from app.services.eval.evaluate import (
 )
 from app.services.eval.regression import compare_metrics
 from app.services.eval.thresholds_config import load_thresholds
-from app.cli.retrace import main as cli_main
-from sqlalchemy import select
 
 
 def _auth(api_key: str) -> dict[str, str]:
@@ -123,16 +123,12 @@ def test_suite_integrity_mismatch() -> None:
 def test_eval_gold_persists_case_results() -> None:
     db = _open_db()
     try:
-        result = run_evaluation(
-            db, suite_id="gold_v1", suite_version="1.0.0", persist=True
-        )
+        result = run_evaluation(db, suite_id="gold_v1", suite_version="1.0.0", persist=True)
         assert result["exit_code"] == EXIT_PASS
         exp_id = result["experiment_id"]
-        rows = db.execute(
-            select(ExperimentCaseResult).where(
-                ExperimentCaseResult.experiment_id == exp_id
-            )
-        ).scalars().all()
+        rows = (
+            db.execute(select(ExperimentCaseResult).where(ExperimentCaseResult.experiment_id == exp_id)).scalars().all()
+        )
         assert len(rows) == 2
         exp = db.get(Experiment, exp_id)
         assert exp is not None
@@ -148,9 +144,7 @@ def test_eval_gold_persists_case_results() -> None:
 def test_baseline_promote_and_immutable_metrics() -> None:
     db = _open_db()
     try:
-        result = run_evaluation(
-            db, suite_id="gold_v1", suite_version="1.0.0", persist=True
-        )
+        result = run_evaluation(db, suite_id="gold_v1", suite_version="1.0.0", persist=True)
         exp_id = result["experiment_id"]
         row = promote_baseline(db, experiment_id=exp_id)
         assert row.is_active is True
@@ -159,17 +153,13 @@ def test_baseline_promote_and_immutable_metrics() -> None:
         original_metrics = dict(row.metrics)
 
         # Second promote deactivates first; metrics of first remain unchanged
-        result2 = run_evaluation(
-            db, suite_id="gold_v1", suite_version="1.0.0", persist=True
-        )
+        result2 = run_evaluation(db, suite_id="gold_v1", suite_version="1.0.0", persist=True)
         row2 = promote_baseline(db, experiment_id=result2["experiment_id"])
         db.refresh(row)
         assert row.is_active is False
         assert row.metrics == original_metrics
         assert row2.is_active is True
-        active = get_active_baseline(
-            db, suite_id="gold_v1", suite_version="1.0.0"
-        )
+        active = get_active_baseline(db, suite_id="gold_v1", suite_version="1.0.0")
         assert active is not None
         assert active.id == row2.id
     finally:
@@ -180,9 +170,7 @@ def test_cannot_promote_failed_or_running() -> None:
     db = _open_db()
     try:
         # Create a FAILED experiment stub via eval then force status
-        result = run_evaluation(
-            db, suite_id="gold_v1", suite_version="1.0.0", persist=True
-        )
+        result = run_evaluation(db, suite_id="gold_v1", suite_version="1.0.0", persist=True)
         exp = db.get(Experiment, result["experiment_id"])
         assert exp is not None
         exp.status = "FAILED"
@@ -206,11 +194,7 @@ def test_cli_exit_0_pass() -> None:
 def test_cli_exit_1_regression() -> None:
     impossible = Path("/app/configs/thresholds.impossible.yaml")
     if not impossible.is_file():
-        impossible = (
-            Path(__file__).resolve().parents[1]
-            / "configs"
-            / "thresholds.impossible.yaml"
-        )
+        impossible = Path(__file__).resolve().parents[1] / "configs" / "thresholds.impossible.yaml"
     code = cli_main(
         [
             "eval",
@@ -242,9 +226,7 @@ def test_cli_baseline_promote() -> None:
     # Run eval to get experiment
     db = _open_db()
     try:
-        result = run_evaluation(
-            db, suite_id="gold_v1", suite_version="1.0.0", persist=True
-        )
+        result = run_evaluation(db, suite_id="gold_v1", suite_version="1.0.0", persist=True)
         exp_id = result["experiment_id"]
     finally:
         db.close()
@@ -267,9 +249,7 @@ def test_experiments_api(client: TestClient, api_key: str) -> None:
     assert r.status_code == 200
     assert r.json()["metrics"] is not None
 
-    r = client.get(
-        f"/api/v1/experiments/{exp_id}/results", headers=_auth(api_key)
-    )
+    r = client.get(f"/api/v1/experiments/{exp_id}/results", headers=_auth(api_key))
     assert r.status_code == 200
     assert len(r.json()["results"]) == 2
 

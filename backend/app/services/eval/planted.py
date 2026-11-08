@@ -15,10 +15,7 @@ from app.services.eval.fakes import (
 from app.services.eval.schemas import GoldCase, OfflineExecution
 from app.services.prompts import ABSTENTION_ANSWER
 
-PTO_TEXT = (
-    "Full-time employees accrue 1.25 days of PTO per month, for a total of "
-    "15 days per year."
-)
+PTO_TEXT = "Full-time employees accrue 1.25 days of PTO per month, for a total of " "15 days per year."
 PTO_CHUNK_ID = "employee_handbook:c000"
 NOISE_TEXT = "All employees must enable multi-factor authentication on company accounts."
 NOISE_CHUNK_ID = "security_policy:c000"
@@ -81,9 +78,7 @@ def build_offline_execution(case: GoldCase) -> OfflineExecution:
             abstained=True,
             status="ABSTAINED",
             judge_scripts={
-                "relevance": [
-                    relevance_json(ids, sufficient=False, scores=[0.1, 0.1])
-                ],
+                "relevance": [relevance_json(ids, sufficient=False, scores=[0.1, 0.1])],
             },
         )
 
@@ -100,9 +95,7 @@ def build_offline_execution(case: GoldCase) -> OfflineExecution:
             abstained=True,
             status="ABSTAINED",
             judge_scripts={
-                "relevance": [
-                    relevance_json(ids, sufficient=False, scores=[0.55, 0.1])
-                ],
+                "relevance": [relevance_json(ids, sufficient=False, scores=[0.55, 0.1])],
             },
         )
 
@@ -116,9 +109,7 @@ def build_offline_execution(case: GoldCase) -> OfflineExecution:
             judge_scripts={
                 "relevance": [relevance_json([PTO_CHUNK_ID], sufficient=True)],
                 "faithfulness": [
-                    faithfulness_json(
-                        score=0.2, supported=0, unsupported=1, support_chunk_ids=[PTO_CHUNK_ID]
-                    )
+                    faithfulness_json(score=0.2, supported=0, unsupported=1, support_chunk_ids=[PTO_CHUNK_ID])
                 ],
                 "contradiction": [contradiction_json(False)],
             },
@@ -138,9 +129,7 @@ def build_offline_execution(case: GoldCase) -> OfflineExecution:
             judge_scripts={
                 "relevance": [relevance_json([PTO_CHUNK_ID], sufficient=True)],
                 "faithfulness": [
-                    faithfulness_json(
-                        score=0.2, supported=0, unsupported=1, support_chunk_ids=[PTO_CHUNK_ID]
-                    )
+                    faithfulness_json(score=0.2, supported=0, unsupported=1, support_chunk_ids=[PTO_CHUNK_ID])
                 ],
                 "contradiction": [contradiction_json(True, [PTO_CHUNK_ID])],
             },
@@ -191,9 +180,7 @@ def build_offline_execution(case: GoldCase) -> OfflineExecution:
             judge_scripts={
                 "relevance": [relevance_json([PTO_CHUNK_ID], sufficient=True)],
                 "faithfulness": [
-                    faithfulness_json(
-                        score=1.0, supported=1, unsupported=0, support_chunk_ids=[PTO_CHUNK_ID]
-                    )
+                    faithfulness_json(score=1.0, supported=1, unsupported=0, support_chunk_ids=[PTO_CHUNK_ID])
                 ],
                 "contradiction": [contradiction_json(False)],
             },
@@ -211,9 +198,7 @@ def build_offline_execution(case: GoldCase) -> OfflineExecution:
             abstained=True,
             status="ABSTAINED",
             judge_scripts={
-                "relevance": [
-                    relevance_json(ids, sufficient=False, scores=[0.55, 0.2])
-                ],
+                "relevance": [relevance_json(ids, sufficient=False, scores=[0.55, 0.2])],
             },
         )
 

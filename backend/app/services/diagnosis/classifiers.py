@@ -12,8 +12,9 @@ import json
 import re
 import time
 from collections import Counter
+from collections.abc import Iterable
 from dataclasses import dataclass, fields
-from typing import Any, Iterable, Protocol
+from typing import Any, Protocol
 
 from app.core.config import Settings, get_settings
 from app.core.errors import AppError
@@ -81,7 +82,7 @@ class MajorityClassifier:
         if labels is not None:
             self.fit(labels)
 
-    def fit(self, labels: Iterable[str]) -> "MajorityClassifier":
+    def fit(self, labels: Iterable[str]) -> MajorityClassifier:
         counts = Counter(str(x) for x in labels)
         self.distribution = dict(counts)
         if counts:
@@ -112,9 +113,7 @@ class HeuristicClassifier:
         return Prediction("OK_GROUNDED", 0.6)
 
 
-_CODE_LIST = "\n".join(
-    f"- {code}: {meta.description}" for code, meta in FAILURE_CODES.items() if not meta.reserved
-)
+_CODE_LIST = "\n".join(f"- {code}: {meta.description}" for code, meta in FAILURE_CODES.items() if not meta.reserved)
 
 LLM_CLASSIFIER_SYSTEM = f"""You classify why a retrieval-augmented generation (RAG) answer failed.
 You receive a short list of FACTS observed by the system about one RAG execution. Pick exactly ONE
@@ -170,16 +169,18 @@ def _signal_summary(signals: SignalBag) -> str:
         lines.append("- Relevance judge verdict: not available.")
     else:
         rel = signals.chunk_relevance or []
-        relevant = sum(1 for i in rel if i.get("relevant") is True or (isinstance(i.get("score"), (int, float)) and float(i["score"]) >= 0.5))
+        relevant = sum(
+            1
+            for i in rel
+            if i.get("relevant") is True or (isinstance(i.get("score"), int | float) and float(i["score"]) >= 0.5)
+        )
         frac = signals.irrelevant_frac
         frac_txt = f"{frac:.0%}" if frac is not None else "unknown"
         lines.append(
             f"- Relevance judge: {relevant}/{len(rel) or signals.n_retrieved} chunks relevant, "
             f"{frac_txt} irrelevant; context sufficient: {_yes_no(signals.context_sufficient)}."
         )
-    lines.append(
-        "- The system ABSTAINED (no answer)." if signals.answer_is_abstention else "- The system ANSWERED."
-    )
+    lines.append("- The system ABSTAINED (no answer)." if signals.answer_is_abstention else "- The system ANSWERED.")
     if signals.faithfulness_score is not None and not signals.answer_is_abstention and signals.context_sufficient:
         lines.append(
             f"- Faithfulness judge: score {signals.faithfulness_score:.2f}; "

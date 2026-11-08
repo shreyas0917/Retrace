@@ -32,9 +32,7 @@ class ScriptedJudgeLLM:
         self.calls: dict[str, int] = {}
         self.captured: list[dict[str, Any]] = []
 
-    def complete(
-        self, messages: list[dict[str, str]], *, model: str, timeout: float
-    ) -> LLMResult:
+    def complete(self, messages: list[dict[str, str]], *, model: str, timeout: float) -> LLMResult:
         judge = detect_judge_type(messages)
         if self.timeout_on and judge == self.timeout_on:
             raise GenerationTimeoutError(

@@ -137,10 +137,12 @@ def replay_record(
     """Re-diagnose a run record offline from its recorded judge outputs."""
     fixture = record_to_offline_execution(record)
     scripts = fixture.judge_scripts or {}
-    set_llm_provider(ScriptedJudgeLLM(
-        {k: v for k, v in scripts.items() if isinstance(v, list)},
-        timeout_on=fixture.judge_timeout_on,
-    ))
+    set_llm_provider(
+        ScriptedJudgeLLM(
+            {k: v for k, v in scripts.items() if isinstance(v, list)},
+            timeout_on=fixture.judge_timeout_on,
+        )
+    )
     try:
         eid = insert_offline_execution(
             db,
