@@ -1,9 +1,12 @@
 import { useState, type FormEvent } from "react";
 import { ApiError, login } from "../api";
+import { IconLogo } from "../components/icons";
 
 type Props = {
   onAuthenticated: () => void;
   apiBase: string;
+  /** Execution id from a `?execution=` deep link, opened after sign-in. */
+  pendingExecution?: string | null;
 };
 
 /**
@@ -11,7 +14,7 @@ type Props = {
  * answers with an HttpOnly session cookie; the key itself is never stored
  * in the bundle, localStorage or React state after submission.
  */
-export function LoginView({ onAuthenticated, apiBase }: Props) {
+export function LoginView({ onAuthenticated, apiBase, pendingExecution }: Props) {
   const [apiKey, setApiKey] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,14 +48,25 @@ export function LoginView({ onAuthenticated, apiBase }: Props) {
     <div className="login-shell">
       <form className="login-card panel" onSubmit={submit} aria-label="Sign in">
         <div className="login-brand">
-          <div className="brand">Retrace</div>
-          <div className="brand-tag">AI Reliability</div>
+          <span className="brand-mark" aria-hidden="true">
+            <IconLogo />
+          </span>
+          <span className="brand-text">
+            <span className="brand">Retrace</span>
+            <span className="brand-tag">AI answer reliability</span>
+          </span>
         </div>
         <h1 className="login-title">Sign in to the console</h1>
         <p className="login-desc">
           Enter the operator API key once. The server issues a short-lived
           session cookie; the key is not stored in the browser.
         </p>
+        {pendingExecution ? (
+          <p className="note login-pending">
+            After you sign in, Investigate opens execution{" "}
+            <code>{pendingExecution}</code>.
+          </p>
+        ) : null}
         <label className="login-field">
           API key
           <input

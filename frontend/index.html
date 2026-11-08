@@ -1,9 +1,34 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Retrace — RAG Reliability Console</title>
+    <title>Retrace — AI answer reliability</title>
+    <meta
+      name="description"
+      content="Retrace shows why an AI assistant gave a bad answer and how to prevent it from happening again."
+    />
+    <!-- Resolve the saved theme before first paint so there is no flash of the
+         wrong theme. Mirrors the logic in src/theme.ts. -->
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem("retrace-theme");
+          var prefersDark =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var resolved =
+            saved === "light" || saved === "dark"
+              ? saved
+              : prefersDark
+                ? "dark"
+                : "light";
+          document.documentElement.setAttribute("data-theme", resolved);
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

@@ -1,11 +1,16 @@
 import type { ReactNode } from "react";
 
+export type Tone = "ok" | "alert" | "warn" | "neutral" | "fail" | "pass" | "info";
+
 export function StatusBadge({
   status,
   tone,
+  label,
 }: {
   status: string;
-  tone?: "ok" | "alert" | "warn" | "neutral" | "fail" | "pass" | "info";
+  tone?: Tone;
+  /** Human text to show instead of the raw status (kept in data-status). */
+  label?: string;
 }) {
   const upper = status.toUpperCase();
   const resolved =
@@ -40,7 +45,47 @@ export function StatusBadge({
               : "neutral");
   return (
     <span className={`badge badge-${resolved}`} data-status={status}>
-      {status}
+      {label ?? status}
+    </span>
+  );
+}
+
+/**
+ * Focusable help affordance: the text is the accessible name and shows as a
+ * tooltip on hover and keyboard focus, so it is never mouse-only.
+ */
+export function Tip({ text, label = "?" }: { text: string; label?: string }) {
+  return (
+    <span className="tip" tabIndex={0} role="note" aria-label={text} data-tip={text}>
+      <span aria-hidden="true">{label}</span>
+    </span>
+  );
+}
+
+/** Horizontal 0..1 bar with an accessible text value. */
+export function Bar({
+  value,
+  tone = "accent",
+  label,
+  marker,
+}: {
+  value: number | null | undefined;
+  tone?: "accent" | "ok" | "warn" | "err" | "muted";
+  label: string;
+  /** Optional 0..1 position of a threshold marker. */
+  marker?: number | null;
+}) {
+  const v = value == null || !Number.isFinite(value) ? 0 : Math.max(0, Math.min(1, value));
+  return (
+    <span className="bar" role="img" aria-label={label}>
+      <span className={`bar-fill ${tone}`} style={{ width: `${v * 100}%` }} />
+      {marker != null && Number.isFinite(marker) ? (
+        <span
+          className="bar-marker"
+          style={{ left: `${Math.max(0, Math.min(1, marker)) * 100}%` }}
+          aria-hidden="true"
+        />
+      ) : null}
     </span>
   );
 }
@@ -143,23 +188,30 @@ export function PageHeader({
   title,
   description,
   actions,
-  eyebrow,
 }: {
   title: string;
   description: string;
   actions?: ReactNode;
+  /** Accepted for call-site compatibility; intentionally not rendered. */
   eyebrow?: string;
 }) {
   return (
     <header className="page-header">
       <div>
-        {eyebrow ? <p className="page-eyebrow">{eyebrow}</p> : null}
         <h1 className="page-title">{title}</h1>
         <p className="page-desc">{description}</p>
       </div>
       {actions ? <div className="page-actions">{actions}</div> : null}
     </header>
   );
+}
+
+/**
+ * Small inline "what is this?" affordance. Focusable, with its explanation as
+ * the accessible name and a tooltip on hover and focus.
+ */
+export function InfoDot({ label }: { label: string }) {
+  return <Tip text={label} label="i" />;
 }
 
 export function Panel({
