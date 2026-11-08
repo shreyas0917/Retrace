@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -36,7 +37,14 @@ class EvalIntegrityError(AppError):
 
 
 def detect_git_commit() -> str | None:
-    """Best-effort git SHA; None if unavailable (never invent one)."""
+    """Best-effort git SHA; None if unavailable (never invent one).
+
+    RETRACE_GIT_COMMIT wins when set: scripts/dev_test.sh passes the host's
+    commit, because the container has no .git.
+    """
+    from_env = os.environ.get("RETRACE_GIT_COMMIT", "").strip()
+    if from_env:
+        return from_env
     try:
         result = subprocess.run(
             ["git", "rev-parse", "HEAD"],

@@ -1,7 +1,7 @@
 {
   "suite_id": "live_v1",
   "suite_version": "1.0.0",
-  "status": "recorded, not yet labelled",
+  "status": "recorded and labelled",
   "runs_file": "runs.jsonl",
   "runs_hash": "sha256:3014e6af1922dd49ec6fef5ecc33ee1c44d778fdc5d5091fa84895c362da68f0",
   "queries_hash": "sha256:3305b9f50c60316570c395163afd5649062fc1dd2d053eb0b9c19e6ccbc639f6",

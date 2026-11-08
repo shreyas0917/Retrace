@@ -184,6 +184,8 @@ def run_live_report(db: Session, *, suite_id: str = "live_v1", suite_version: st
         "git_commit": result.get("git_commit"),
         "annotator": manifest.get("annotator"),
         "annotation_date": manifest.get("annotation_date"),
+        "provisional": bool(manifest.get("provisional")),
+        "review": manifest.get("review"),
         "runs": {
             k: runs_manifest.get(k)
             for k in ("runs_hash", "generation_models", "judge_models", "git_commits", "recorded_from", "recorded_to")
@@ -239,23 +241,66 @@ def _ci(ci: dict[str, float | None], pct: bool = True) -> str:
     return f"{fmt(ci['point'])} (95% CI {fmt(ci['low'])} to {fmt(ci['high'])})"
 
 
+PROVISIONAL_BANNER = "PROVISIONAL — AI-drafted labels, not yet reviewed by the author"
+
+
+def label_provenance(report: dict[str, Any]) -> str:
+    """One sentence on who produced the labels, worded from the suite manifest."""
+    annotator = report.get("annotator")
+    n = report.get("summary", {}).get("total_cases")
+    if annotator == "ai_draft_blind":
+        return (
+            "Labels: drafted by an AI agent that saw only the blind sheet, the labelling guide and the corpus "
+            "chunks (never the runs, the injected conditions or Retrace's predictions). "
+            "They have not been reviewed by the author yet."
+        )
+    if annotator == "ai_draft_author_reviewed":
+        review = report.get("review") or {}
+        return (
+            f"Labels: AI-drafted, reviewed and corrected by the author "
+            f"({review.get('changed_cases', '?')} of {review.get('reviewed_cases', n)} changed). "
+            "Both the drafting agent and the author saw only the blind sheet."
+        )
+    return f"Labels: {annotator}, from a sheet that showed only the question, the ranked chunks and the answer."
+
+
+def _labeller_limit(report: dict[str, Any]) -> str:
+    annotator = report.get("annotator")
+    if annotator == "ai_draft_blind":
+        return (
+            "- One labeller, an AI agent, and no human has checked its labels yet. Treat every number as provisional."
+        )
+    if annotator == "ai_draft_author_reviewed":
+        return (
+            "- One AI draft and one human reviewer (the author), with no independent second annotator, so "
+            "label noise is not measured. A reviewer who starts from a draft may anchor on it."
+        )
+    return f"- One labeller ({annotator}), with no second annotator, so label noise is not measured."
+
+
 def render_live_markdown(report: dict[str, Any]) -> str:
     s = report["summary"]
     ci = report["confidence_intervals"]
     runs = report["runs"]
     n = s["total_cases"]
+    provisional = report.get("annotator") == "ai_draft_blind" or report.get("provisional")
     lines = [
         "# live_v1: real pipeline runs, labelled blind",
         "",
+    ]
+    if provisional:
+        lines += [f"> **{PROVISIONAL_BANNER}.** Do not quote these numbers until the review is done.", ""]
+    lines += [
         f"Produced by `retrace benchmark report --suite live_v1` on {report['generated_at'][:10]}. "
-        f"Suite hash `{report['suite_hash']}`, experiment `{report['experiment_id']}`.",
+        f"Suite hash `{report['suite_hash']}`, experiment `{report['experiment_id']}`, "
+        f"report commit {report.get('git_commit') or 'unknown'}.",
         "",
         f"{n} questions on the 13-document demo corpus ran through real retrieval, generation and judges "
         f"({', '.join(runs.get('generation_models') or [])}, temperature 0; NLI faithfulness), recorded "
-        f"{(runs.get('recorded_from') or '')[:10]} on commit {', '.join(runs.get('git_commits') or [])}. "
-        f"Labels: {report.get('annotator')} on {report.get('annotation_date')}, from a sheet that showed only "
-        "the question, the ranked chunks and the answer. This report replays the recorded judge outputs, "
-        "so it is reproducible offline.",
+        f"{(runs.get('recorded_from') or '')[:10]} to {(runs.get('recorded_to') or '')[:10]} on commit "
+        f"{', '.join(runs.get('git_commits') or [])}. Labelled on {report.get('annotation_date')}. "
+        + label_provenance(report)
+        + " This report replays the recorded judge outputs, so it is reproducible offline.",
         "",
         "## Results",
         "",
@@ -312,16 +357,16 @@ def render_live_markdown(report: dict[str, Any]) -> str:
         "",
         "## Error analysis",
         "",
-        "One line per miss. The cause is an automatic first pass that compares the recorded judge signals "
-        "with what the label implies; it should be read, and corrected where needed, before the numbers "
-        "are quoted anywhere.",
+        "One line per miss. Every cause is **suggested**: an automatic first pass that compares the recorded "
+        "judge signals with what the label implies. The author confirms or corrects each one before the "
+        "numbers are quoted anywhere.",
         "",
     ]
     if report["miss_causes"]:
-        lines.append("Causes: " + ", ".join(f"{k} {v}" for k, v in report["miss_causes"].items()) + ".")
+        lines.append("Suggested causes: " + ", ".join(f"{k} {v}" for k, v in report["miss_causes"].items()) + ".")
         lines += [
             "",
-            "| Case | Condition | Label | Predicted (rule) | Cause | Why |",
+            "| Case | Condition | Label | Predicted (rule) | Suggested cause | Why |",
             "| --- | --- | --- | --- | --- | --- |",
         ]
         for m in report["misses"]:
@@ -343,7 +388,7 @@ def render_live_markdown(report: dict[str, Any]) -> str:
         f"- {n} cases. The confidence intervals above are wide; differences of a few cases are not meaningful.",
         "- One generation and judge model on one small, synthetic policy corpus. Other models and real "
         "document collections will behave differently.",
-        f"- One labeller ({report.get('annotator')}), with no second annotator, so label noise is not measured.",
+        _labeller_limit(report),
         "- The runs were recorded on a shared, heavily loaded developer machine with the model timeout set to "
         f"{', '.join(f'{t:g} s' for t in report.get('model_timeout_seconds') or []) or 'its default'} so that "
         f"contention would not create timeouts; {report.get('timeouts', 0)} run(s) timed out. Latency in these "
@@ -353,6 +398,22 @@ def render_live_markdown(report: dict[str, Any]) -> str:
         "- Confidence is calibrated on the synthetic `calib_v1` suite"
         + (f" ({cal['fitted_on']})" if cal else "")
         + "; this report does not recalibrate on live data.",
+        "",
+        "## What this does and doesn't show",
+        "",
+        f"- **Shows:** how often Retrace's first-match diagnosis agrees with a blind label on {n} real runs of "
+        "one pipeline, with intervals that say how much that agreement could move with a different sample.",
+        "- **Shows:** which kinds of failure it gets right and which it confuses (per-class table, confusion "
+        "matrix), and where the misses come from (suggested causes above).",
+        "- **Does not show:** accuracy on other models, other corpora, or failures that occur naturally in "
+        "production. One model, a 13-document synthetic policy corpus, and faults injected on purpose.",
+        "- **Does not show:** agreement between labellers. "
+        + (
+            "The labels are an AI draft that no human has reviewed yet."
+            if provisional
+            else "There is one label per case."
+        ),
+        "- **Does not show:** that the confidence score is calibrated on real runs (see the calibration report).",
         "",
     ]
     return "\n".join(lines)

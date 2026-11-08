@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>live_v1 label review</title>
+<style>
+:root{--bg:#f7f6f2;--fg:#1c1c1a;--muted:#5f5d57;--line:#dcd8cf;--card:#fff;--accent:#2f4fc7;--ok:#1f7a4d;--warn:#a15c00;--chg:#9b2c6f;--soft:#eef0fb}
+@media (prefers-color-scheme:dark){:root{--bg:#151513;--fg:#ebeae5;--muted:#a3a199;--line:#34332e;--card:#1e1e1b;--accent:#93a8ff;--ok:#5fc28f;--warn:#e0a24a;--chg:#e58bc0;--soft:#23263a}}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;margin:0}
+header{position:sticky;top:0;z-index:2;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 16px}
+.bar{max-width:1180px;margin:0 auto;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+h1{font-size:16px;margin:0 8px 0 0}
+.progress{color:var(--muted);font-size:13px}
+button,select,input,textarea{font:inherit;color:inherit}
+button{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:6px 12px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+@media (prefers-color-scheme:dark){button.primary{color:#111}}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main{max-width:1180px;margin:0 auto;padding:16px;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px}
+@media (max-width:860px){main{grid-template-columns:minmax(0,1fr)}header{position:static}}
+section{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;min-width:0}
+.k{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 4px}
+.k:first-child{margin-top:0}
+.q{font-size:17px;font-weight:600}
+.chunk{border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin:8px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.chunk.gold{border-color:var(--ok);box-shadow:inset 0 0 0 1px var(--ok)}
+.cid{font:12px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--accent);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tag{font:11px system-ui,sans-serif;border-radius:999px;padding:1px 8px;border:1px solid var(--line);color:var(--muted)}
+.tag.unofficial{color:var(--warn);border-color:var(--warn)}
+.tag.goldtag{color:var(--ok);border-color:var(--ok)}
+.answer{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--soft);border-radius:6px;padding:10px 12px}
+.code{font:13px ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:600}
+.meaning{color:var(--muted);font-size:13px}
+.conf{font-size:12px;border-radius:999px;padding:2px 9px;border:1px solid}
+.conf.low{color:var(--warn)}.conf.high{color:var(--ok)}
+dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px}
+dt{color:var(--muted);font-size:13px}dd{margin:0;overflow-wrap:anywhere}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 3px}
+select,input[type=text],textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+textarea{min-height:56px;resize:vertical}
+.decision{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.decision select{width:auto;min-width:200px;font-weight:600}
+.st-agree{color:var(--ok)}.st-change{color:var(--chg)}.st-undecided{color:var(--muted)}
+.alts{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:2px 10px;font:12px ui-monospace,Consolas,monospace}
+.alts label{display:flex;gap:6px;align-items:center;margin:2px 0;color:var(--fg)}
+.picker{max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:6px;margin-top:6px}
+.picker div{padding:6px 8px;border-bottom:1px solid var(--line);cursor:pointer;font-size:13px}
+.picker div:hover{background:var(--soft)}
+.grid{display:flex;flex-wrap:wrap;gap:4px;max-width:1180px;margin:8px auto 0}
+.grid button{padding:2px 6px;font:12px ui-monospace,Consolas,monospace;min-width:40px}
+.grid button.agree{border-color:var(--ok);color:var(--ok)}
+.grid button.change{border-color:var(--chg);color:var(--chg)}
+.grid button.cur{outline:2px solid var(--accent)}
+.grid button.low::after{content:"•";color:var(--warn);margin-left:2px}
+details{margin-top:12px}summary{cursor:pointer;color:var(--muted);font-size:13px}
+.codes{font-size:13px}.codes div{margin:6px 0}
+.note{font-size:13px;color:var(--muted)}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <h1>live_v1 label review</h1>
+    <span class="progress" id="progress" aria-live="polite"></span>
+    <span style="flex:1"></span>
+    <button id="prev" aria-label="Previous case">← Prev</button>
+    <button id="next" aria-label="Next case">Next →</button>
+    <button id="export" class="primary">Export CSV</button>
+    <label for="import" class="note" style="margin:0"><button type="button" id="importBtn">Import CSV</button></label>
+    <input id="import" type="file" accept=".csv" class="hidden">
+  </div>
+  <div class="grid" id="grid" aria-label="Jump to case"></div>
+</header>
+<main>
+  <section aria-labelledby="caseTitle">
+    <div class="k" id="caseTitle"></div>
+    <div class="q" id="query"></div>
+    <div class="k">Retrieved chunks, in rank order</div>
+    <div id="chunks"></div>
+    <div class="k">Answer the system gave</div>
+    <div class="answer" id="answer"></div>
+  </section>
+  <section aria-labelledby="draftTitle">
+    <div class="k" id="draftTitle">AI-drafted label</div>
+    <div><span class="code" id="dLabel"></span> <span class="conf" id="dConf"></span></div>
+    <div class="meaning" id="dMeaning"></div>
+    <div class="k">Reason</div>
+    <div id="dReason"></div>
+    <div class="k">Rest of the draft</div>
+    <dl id="dRest"></dl>
+
+    <div class="k">Your decision</div>
+    <div class="decision">
+      <select id="decision" aria-label="Decision for this case">
+        <option value="undecided">— Undecided</option>
+        <option value="agree">Agree (keep the draft)</option>
+        <option value="change">Change</option>
+      </select>
+      <span class="note">Keys: A agree, C change, ← →</span>
+    </div>
+
+    <div id="form" class="hidden">
+      <label for="fLabel">failure_label</label>
+      <select id="fLabel"></select>
+      <div class="meaning" id="fMeaning"></div>
+      <label>acceptable_primary_codes (genuinely defensible alternatives only)</label>
+      <div class="alts" id="fAlts"></div>
+      <label for="fGold">gold_chunk_ids (separate with ;, a document id, or none)</label>
+      <input type="text" id="fGold" autocomplete="off">
+      <input type="text" id="fSearch" placeholder="Search the 13 policies to add a chunk id…" aria-label="Search corpus chunks" style="margin-top:6px">
+      <div class="picker hidden" id="picker"></div>
+      <label for="fAbstain">should_abstain (given only the chunks shown)</label>
+      <select id="fAbstain"><option>no</option><option>yes</option></select>
+      <label for="fExpected">expected_answer (optional)</label>
+      <input type="text" id="fExpected">
+    </div>
+    <label for="fNotes">notes (optional; kept in the suite)</label>
+    <textarea id="fNotes"></textarea>
+
+    <details>
+      <summary>What each code means (from the labelling guide)</summary>
+      <div class="codes" id="codes"></div>
+    </details>
+    <p class="note">This page shows only what the blind sheet shows. It does not know how a run was produced or what Retrace predicted. Progress is saved in this browser; export the CSV to keep it.</p>
+  </section>
+</main>
+<script>
+const DATA = /*__DATA__*/null;
+const STORE = "retrace-live_v1-review-v1";
+const cases = DATA.cases, codes = DATA.codes, corpus = DATA.corpus;
+const meaning = Object.fromEntries(codes.map(c => [c.code, c.meaning]));
+const corpusIds = new Set(corpus.map(c => c.id));
+const docIds = new Set(corpus.map(c => c.doc));
+const $ = id => document.getElementById(id);
+let state = {};
+try { state = JSON.parse(localStorage.getItem(STORE) || "{}") || {}; } catch (e) { state = {}; }
+let idx = 0;
+try { idx = Math.min(cases.length - 1, Math.max(0, parseInt(localStorage.getItem(STORE + ":idx") || "0", 10) || 0)); } catch (e) {}
+
+function save() {
+  try { localStorage.setItem(STORE, JSON.stringify(state)); localStorage.setItem(STORE + ":idx", String(idx)); } catch (e) {}
+}
+function split(v) { return (v || "").replace(/,/g, ";").split(";").map(s => s.trim()).filter(Boolean); }
+function entry(c) {
+  if (!state[c.sheet_id]) state[c.sheet_id] = {decision: "undecided"};
+  return state[c.sheet_id];
+}
+function final(c) {
+  const e = state[c.sheet_id] || {decision: "undecided"};
+  const base = {failure_label: c.failure_label, acceptable_primary_codes: c.acceptable_primary_codes,
+    gold_chunk_ids: c.gold_chunk_ids, should_abstain: c.should_abstain, expected_answer: c.expected_answer};
+  const v = e.decision === "change" && e.values ? Object.assign({}, base, e.values) : base;
+  v.notes = e.notes !== undefined ? e.notes : c.notes;
+  return v;
+}
+function goldSet(c) {
+  const out = new Set();
+  for (const t of split(final(c).gold_chunk_ids)) {
+    if (corpusIds.has(t)) out.add(t);
+    else if (docIds.has(t)) corpus.filter(x => x.doc === t).forEach(x => out.add(x.id));
+  }
+  return out;
+}
+function el(tag, attrs, text) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) n.setAttribute(k, v);
+  if (text !== undefined) n.textContent = text;
+  return n;
+}
+
+function renderGrid() {
+  const g = $("grid"); g.textContent = "";
+  cases.forEach((c, i) => {
+    const d = (state[c.sheet_id] || {}).decision || "undecided";
+    const b = el("button", {class: [d, i === idx ? "cur" : "", c.confidence === "low" ? "low" : ""].join(" "),
+      "aria-label": c.sheet_id + " " + d + (c.confidence === "low" ? " low confidence" : "")}, c.sheet_id);
+    b.onclick = () => { idx = i; render(); };
+    g.appendChild(b);
+  });
+  const done = cases.filter(c => ((state[c.sheet_id] || {}).decision || "undecided") !== "undecided").length;
+  const changed = cases.filter(c => (state[c.sheet_id] || {}).decision === "change").length;
+  const low = cases.filter(c => c.confidence === "low").length;
+  $("progress").textContent = `Case ${idx + 1} of ${cases.length} · ${done} decided · ${changed} changed · low-confidence first (${low}, dotted)`;
+}
+
+function render() {
+  const c = cases[idx], e = entry(c);
+  $("caseTitle").textContent = `${c.sheet_id} · case ${idx + 1} of ${cases.length}`;
+  $("query").textContent = c.query;
+  renderChunks(c);
+  renderDraft(c, e);
+}
+
+function renderChunks(c) {
+  const gold = goldSet(c);
+  const box = $("chunks"); box.textContent = "";
+  if (!c.chunks.length) box.appendChild(el("div", {class: "chunk"}, "(no chunks retrieved)"));
+  for (const ch of c.chunks) {
+    const d = el("div", {class: "chunk" + (gold.has(ch.id) ? " gold" : "")});
+    const h = el("div", {class: "cid"});
+    h.appendChild(el("span", {}, `#${ch.rank} ${ch.id}`));
+    if (ch.id && !corpusIds.has(ch.id)) h.appendChild(el("span", {class: "tag unofficial"}, "not one of the 13 policies"));
+    if (gold.has(ch.id)) h.appendChild(el("span", {class: "tag goldtag"}, "gold"));
+    d.appendChild(h); d.appendChild(document.createTextNode(ch.text));
+    box.appendChild(d);
+  }
+}
+
+function renderDraft(c, e) {
+  $("answer").textContent = c.answer;
+  $("dLabel").textContent = c.failure_label;
+  $("dConf").textContent = c.confidence + " confidence";
+  $("dConf").className = "conf " + c.confidence;
+  $("dMeaning").textContent = meaning[c.failure_label] || "";
+  $("dReason").textContent = c.reason || "(no reason given)";
+  const rest = $("dRest"); rest.textContent = "";
+  for (const [k, v] of [["alternatives", c.acceptable_primary_codes || "none"], ["gold_chunk_ids", c.gold_chunk_ids],
+    ["should_abstain", c.should_abstain], ["expected_answer", c.expected_answer || "—"], ["draft notes", c.notes || "—"]]) {
+    rest.appendChild(el("dt", {}, k)); rest.appendChild(el("dd", {}, v));
+  }
+
+  $("decision").value = e.decision;
+  $("decision").className = "st-" + e.decision;
+  $("form").classList.toggle("hidden", e.decision !== "change");
+  const v = final(c);
+  $("fLabel").value = v.failure_label;
+  $("fMeaning").textContent = meaning[v.failure_label] || "";
+  const alts = new Set(split(v.acceptable_primary_codes));
+  $("fAlts").querySelectorAll("input").forEach(i => { i.checked = alts.has(i.value); i.disabled = i.value === v.failure_label; });
+  $("fGold").value = v.gold_chunk_ids;
+  $("fAbstain").value = (v.should_abstain || "no").toLowerCase().startsWith("y") ? "yes" : "no";
+  $("fExpected").value = v.expected_answer || "";
+  $("fNotes").value = v.notes || "";
+  $("fSearch").value = ""; $("picker").classList.add("hidden");
+  $("prev").disabled = idx === 0; $("next").disabled = idx === cases.length - 1;
+  renderGrid(); save();
+}
+
+function readForm() {
+  const c = cases[idx], e = entry(c);
+  if (e.decision === "change") {
+    const label = $("fLabel").value;
+    const alts = [...$("fAlts").querySelectorAll("input:checked")].map(i => i.value).filter(x => x !== label);
+    e.values = {failure_label: label, acceptable_primary_codes: alts.join(";"), gold_chunk_ids: $("fGold").value.trim(),
+      should_abstain: $("fAbstain").value, expected_answer: $("fExpected").value.trim()};
+  }
+  e.notes = $("fNotes").value;
+  save();
+}
+
+function setup() {
+  for (const c of codes) $("fLabel").appendChild(el("option", {value: c.code}, c.code));
+  for (const c of codes) {
+    const l = el("label"); const i = el("input", {type: "checkbox", value: c.code});
+    i.onchange = () => { readForm(); };
+    l.appendChild(i); l.appendChild(document.createTextNode(c.code)); $("fAlts").appendChild(l);
+    const d = el("div"); d.appendChild(el("span", {class: "code"}, c.code)); d.appendChild(document.createTextNode(" — " + c.meaning));
+    $("codes").appendChild(d);
+  }
+  $("decision").onchange = () => {
+    const c = cases[idx], e = entry(c);
+    e.decision = $("decision").value;
+    if (e.decision === "change" && !e.values) e.values = {};
+    render(); if (e.decision === "change") readForm();
+  };
+  for (const id of ["fLabel", "fGold", "fAbstain", "fExpected", "fNotes"]) $(id).addEventListener("input", () => {
+    readForm();
+    if (id === "fLabel") render();
+    else if (id === "fGold") renderChunks(cases[idx]);
+    else if (id === "fNotes") renderGrid();
+  });
+  $("fSearch").addEventListener("input", () => {
+    const q = $("fSearch").value.trim().toLowerCase(), p = $("picker");
+    p.textContent = "";
+    if (q.length < 2) { p.classList.add("hidden"); return; }
+    corpus.filter(x => (x.id + " " + x.text).toLowerCase().includes(q)).slice(0, 30).forEach(x => {
+      const d = el("div", {tabindex: "0", role: "button"});
+      d.appendChild(el("span", {class: "code"}, x.id + " ")); d.appendChild(document.createTextNode(x.text.slice(0, 220)));
+      const add = () => { const cur = split($("fGold").value).filter(t => t.toLowerCase() !== "none"); if (!cur.includes(x.id)) cur.push(x.id); $("fGold").value = cur.join(";"); readForm(); render(); };
+      d.onclick = add; d.onkeydown = ev => { if (ev.key === "Enter") add(); };
+      p.appendChild(d);
+    });
+    p.classList.toggle("hidden", !p.childElementCount);
+  });
+  $("prev").onclick = () => { if (idx > 0) { idx--; render(); } };
+  $("next").onclick = () => { if (idx < cases.length - 1) { idx++; render(); } };
+  document.addEventListener("keydown", ev => {
+    if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) return;
+    if (ev.key === "ArrowRight") $("next").click();
+    else if (ev.key === "ArrowLeft") $("prev").click();
+    else if (ev.key === "a" || ev.key === "c") { $("decision").value = ev.key === "a" ? "agree" : "change"; $("decision").onchange(); }
+  });
+  $("export").onclick = exportCsv;
+  $("importBtn").onclick = () => $("import").click();
+  $("import").onchange = importCsv;
+  render();
+}
+
+function csvCell(v) { return '"' + String(v === undefined || v === null ? "" : v).replace(/"/g, '""') + '"'; }
+function exportCsv() {
+  readForm();
+  const undecided = cases.filter(c => ((state[c.sheet_id] || {}).decision || "undecided") === "undecided");
+  if (undecided.length && !confirm(`${undecided.length} case(s) are still undecided (${undecided.slice(0, 8).map(c => c.sheet_id).join(", ")}${undecided.length > 8 ? ", …" : ""}). The merge refuses a sheet with undecided rows. Export anyway to keep your progress?`)) return;
+  const cols = DATA.columns.concat(["review_decision"]);
+  const lines = [cols.map(csvCell).join(",")];
+  for (const c of [...cases].sort((a, b) => a.sheet_id.localeCompare(b.sheet_id))) {
+    const v = final(c), d = (state[c.sheet_id] || {}).decision || "undecided";
+    const row = {sheet_id: c.sheet_id, query: c.query, retrieved_chunks: c.retrieved_chunks, answer: c.answer, review_decision: d};
+    Object.assign(row, v);
+    lines.push(cols.map(k => csvCell(row[k])).join(","));
+  }
+  const blob = new Blob(["﻿" + lines.join("\r\n") + "\r\n"], {type: "text/csv;charset=utf-8"});
+  const a = el("a", {href: URL.createObjectURL(blob), download: "live_v1_sheet.reviewed.csv"});
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+function parseCsv(text) {
+  const rows = []; let row = [], cell = "", q = false;
+  text = text.replace(/^﻿/, "");
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) { if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === ",") { row.push(cell); cell = ""; }
+    else if (ch === "\n" || ch === "\r") { if (ch === "\r" && text[i + 1] === "\n") i++; row.push(cell); rows.push(row); row = []; cell = ""; }
+    else cell += ch;
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter(r => r.length > 1);
+}
+function importCsv(ev) {
+  const f = ev.target.files[0]; if (!f) return;
+  f.text().then(text => {
+    const rows = parseCsv(text), head = rows.shift(), byId = Object.fromEntries(cases.map(c => [c.sheet_id, c]));
+    let n = 0;
+    for (const r of rows) {
+      const o = Object.fromEntries(head.map((h, i) => [h, r[i]]));
+      const c = byId[o.sheet_id]; if (!c) continue;
+      const d = o.review_decision || "undecided";
+      state[c.sheet_id] = {decision: d, notes: o.notes};
+      if (d === "change") state[c.sheet_id].values = {failure_label: o.failure_label, acceptable_primary_codes: o.acceptable_primary_codes,
+        gold_chunk_ids: o.gold_chunk_ids, should_abstain: o.should_abstain, expected_answer: o.expected_answer};
+      n++;
+    }
+    save(); render(); alert(`Imported decisions for ${n} case(s).`);
+  });
+  ev.target.value = "";
+}
+setup();
+</script>
+</body>
+</html>

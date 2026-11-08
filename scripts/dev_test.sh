@@ -27,7 +27,13 @@ elif [ "${1#tests/}" != "$1" ] || [ "${1#-}" != "$1" ]; then
 fi
 
 cd "$ROOT"
+# The container has no .git; pass the host commit so reports can name it.
+COMMIT="$(git rev-parse HEAD 2>/dev/null || true)"
+if [ -n "$COMMIT" ] && [ -n "$(git status --porcelain --untracked-files=no 2>/dev/null)" ]; then
+  COMMIT="$COMMIT-dirty"
+fi
 exec docker compose run --rm --no-deps \
+  -e RETRACE_GIT_COMMIT="$COMMIT" \
   -v "$B/app:/app/app" \
   -v "$B/tests:/app/tests" \
   -v "$B/datasets:/app/datasets" \

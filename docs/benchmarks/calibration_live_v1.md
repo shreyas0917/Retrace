@@ -1,0 +1,62 @@
+# Calibration on live_v1, cross-validated
+
+> **PROVISIONAL — AI-drafted labels, not yet reviewed by the author.** Do not quote these numbers until the review is done.
+
+Produced by `retrace benchmark calibration-cv --suite live_v1 --folds 5 --bins 10 --markdown /docs/benchmarks/calibration_live_v1.md`. Suite hash `sha256:3d004c818d9095c70bdd32244d9896e99042592f91a4733f1f2019b6e34d8487`, commit 8eda25ac12c5bd8dbef011bbea7e7492dd483b26. Labels: drafted by an AI agent that saw only the blind sheet, the labelling guide and the corpus chunks (never the runs, the injected conditions or Retrace's predictions). They have not been reviewed by the author yet.
+
+50 cases, 5-fold cross-validation (stratified on correct/incorrect; fold sizes 10, 10, 10, 10, 10; seed 20261109). Diagnosis accuracy (strict) on these cases: 40.0%. The histogram calibrator (10 equal-width bins) is fitted on four folds and applied to the fifth, so no case is scored by a calibrator that saw it.
+
+The raw score takes **2 distinct values** (0.7, 1), so any calibrator can only map those few values to probabilities.
+
+## Pooled results
+
+Lower is better. 95% CIs: percentile bootstrap over cases (2000 resamples, seed 20261109), with the fold assignment fixed.
+
+| Predictor | ECE | Brier | ECE minus raw | Brier minus raw | Distinct values |
+| --- | --- | --- | --- | --- | ---: |
+| Raw `diagnosis_score` | 0.414 (0.310 to 0.510) | 0.308 (0.239 to 0.376) | — | — | 2 |
+| Committed calibrator (fitted on `calib_v1`) | 0.600 (0.460 to 0.720) | 0.600 (0.460 to 0.720) | +0.186 (+0.144 to +0.222) | +0.292 (+0.221 to +0.357) | 1 |
+| Cross-validated live calibrator | 0.001 (0.004 to 0.086) | 0.061 (0.004 to 0.135) | -0.413 (-0.471 to -0.245) | -0.247 (-0.330 to -0.146) | 6 |
+
+ECE is biased upward on resamples (duplicated cases make bins look less calibrated), so for a predictor whose ECE is near zero the bootstrap interval can sit above the point estimate. The paired differences are the numbers the decision uses.
+
+Other fold splits: repeating the cross-validation with 20 seeds gives a live-calibrator ECE from 0.001 to 0.005 (median 0.003) and Brier from 0.060 to 0.064 (median 0.060).
+
+## Reliability tables
+
+Bins with no cases are left out.
+
+**Raw `diagnosis_score`**
+
+| Bin | Cases | Mean predicted | Accuracy |
+| --- | ---: | ---: | ---: |
+| 0.7–0.8 | 31 | 0.700 | 0.065 |
+| 0.9–1.0 | 19 | 1.000 | 0.947 |
+
+**Committed calibrator (fitted on `calib_v1`)**
+
+| Bin | Cases | Mean predicted | Accuracy |
+| --- | ---: | ---: | ---: |
+| 0.9–1.0 | 50 | 1.000 | 0.400 |
+
+**Cross-validated live calibrator**
+
+| Bin | Cases | Mean predicted | Accuracy |
+| --- | ---: | ---: | ---: |
+| 0.0–0.1 | 31 | 0.064 | 0.065 |
+| 0.9–1.0 | 19 | 0.948 | 0.947 |
+
+## What the data supports
+
+Decision rule, fixed before looking at the numbers: the cross-validated calibrator counts as clearly better only if the upper end of the 95% paired-bootstrap CI of both (ECE_cv - ECE_raw) and (Brier_cv - Brier_raw) is below 0.
+
+The cross-validated live calibrator is clearly better calibrated than the raw score: ECE 0.001 (0.004 to 0.086) against 0.414 (0.310 to 0.510), Brier 0.061 (0.004 to 0.135) against 0.308 (0.239 to 0.376).
+
+Read this narrowly. With 2 distinct raw values the calibrator is a lookup table: it replaces each value with the accuracy that value had on the other folds (see the raw reliability table). It learns which kinds of diagnosis tend to be wrong on these runs; it does not make the score finer-grained, and it would need refitting for another model or corpus.
+
+## Limits
+
+- 50 cases from one model and one corpus; a few cases move every number here.
+- ECE with 10 equal-width bins is itself noisy at this size; the bootstrap intervals include that noise, and the fold-split range above shows the variation from a different split.
+- The labels decide what counts as correct, so any label error moves every number here.
+- This report never writes `backend/configs/calibration.json`.

@@ -125,8 +125,9 @@ def _fill(sheet: Path, records: list[dict], edit=None) -> None:
 def _merge_args(ws, **kw):
     return SimpleNamespace(
         suite_dir=str(ws.suite),
-        sheet=str(ws.sheet),
-        annotator="author",
+        sheet=str(kw.get("sheet", ws.sheet)),
+        annotator=kw.get("annotator", "author"),
+        draft=kw.get("draft"),
         date="2026-11-08",
         dry_run=kw.get("dry_run", False),
         force=kw.get("force", False),
@@ -247,6 +248,64 @@ def test_live_report_runs_offline_and_renders(workspace) -> None:
         and "0 run(s) timed out" in text
         and "`ABS-FN`" not in text.split("## Confusion matrix")[0]
     )
+
+
+def _render(workspace) -> str:
+    db_session.init_db()
+    db = db_session.SessionLocal()
+    try:
+        return render_live_markdown(run_live_report(db))
+    finally:
+        db.close()
+
+
+def test_ai_draft_labels_are_marked_provisional_everywhere(workspace) -> None:
+    _fill(workspace.sheet, workspace.records)
+    assert tool.merge(_merge_args(workspace, annotator="ai_draft_blind")) == 0
+    manifest = json.loads((workspace.suite / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["annotator"] == "ai_draft_blind" and manifest["provisional"] is True
+    assert "PROVISIONAL" in manifest["provenance"] and "not yet reviewed" in manifest["provenance"]
+    text = _render(workspace)
+    assert "PROVISIONAL — AI-drafted labels, not yet reviewed by the author" in text
+    assert "## What this does and doesn't show" in text and "Suggested cause" in text
+    assert "One labeller (author)" not in text
+
+
+def test_reviewed_merge_counts_the_cases_the_author_changed(workspace, tmp_path) -> None:
+    draft = tmp_path / "draft.csv"
+    draft.write_bytes(workspace.sheet.read_bytes())
+    _fill(draft, workspace.records)
+
+    def change_two(rows):
+        rows[0]["failure_label"] = "RETRIEVAL_EMPTY" if rows[0]["failure_label"] != "RETRIEVAL_EMPTY" else "OK_GROUNDED"
+        rows[1]["should_abstain"] = "no" if rows[1]["should_abstain"] == "yes" else "yes"
+        rows[2]["notes"] = "a note is not a label change"
+
+    _fill(workspace.sheet, workspace.records, edit=change_two)
+    args = _merge_args(workspace, annotator="ai_draft_author_reviewed")
+    assert tool.merge(args) == 2  # --draft is required
+    reviewed = _merge_args(workspace, annotator="ai_draft_author_reviewed", draft=draft)
+    assert tool.merge(reviewed) == 1  # no review_decision column
+
+    def add_decisions(undecided: int) -> None:
+        with workspace.sheet.open(encoding="utf-8", newline="") as fh:
+            rows = list(csv.DictReader(fh))
+        for i, row in enumerate(rows):
+            row["review_decision"] = "undecided" if i < undecided else ("change" if i < 2 else "agree")
+        with workspace.sheet.open("w", encoding="utf-8", newline="") as fh:
+            writer = csv.DictWriter(fh, fieldnames=[*tool.SHEET_COLUMNS, "review_decision"])
+            writer.writeheader()
+            writer.writerows(rows)
+
+    add_decisions(undecided=1)
+    assert tool.merge(reviewed) == 1  # an undecided row is refused
+    add_decisions(undecided=0)
+    assert tool.merge(reviewed) == 0
+    manifest = json.loads((workspace.suite / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["review"]["changed_cases"] == 2 and manifest["provisional"] is False
+    text = _render(workspace)
+    assert f"AI-drafted, reviewed and corrected by the author (2 of {len(workspace.records)} changed)" in text
+    assert "PROVISIONAL" not in text
 
 
 def test_bootstrap_is_seeded_and_brackets_the_point() -> None:
