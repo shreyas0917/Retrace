@@ -77,8 +77,11 @@ def apply_rules(signals: SignalBag) -> DiagnosisDecision:
     if not signals.judge_schema_ok:
         return _decision("EVAL_JUDGE_MALFORMED", "R01", signals)
 
-    if signals.missing_answer and signals.n_retrieved == 0:
-        # Offline-style missing fields
+    if signals.missing_answer:
+        # No answer to assess (and not a timeout, failure or abstention). Until
+        # ADR-044 this required empty retrieval too; an answer-less trace with
+        # chunks then fell through to the judges and could be misreported as an
+        # answer-quality failure.
         return _decision("EVAL_MISSING_CONTEXT", "R02", signals)
 
     # --- Retrieval ---
@@ -239,6 +242,8 @@ def apply_rules(signals: SignalBag) -> DiagnosisDecision:
 def needs_judges(signals: SignalBag) -> bool:
     """Whether semantic judges are required before final classification."""
     if signals.stage_error == "TIMEOUT":
+        return False
+    if signals.missing_answer:
         return False
     if signals.n_retrieved == 0:
         return False

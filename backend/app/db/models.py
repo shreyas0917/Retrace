@@ -400,9 +400,18 @@ class ExecutionTrace(Base):
 
     id: Mapped[str] = mapped_column(Text, primary_key=True, default=_uuid_str)
     request_id: Mapped[str] = mapped_column(Text, nullable=False, index=True)
-    corpus_version_id: Mapped[str] = mapped_column(
-        Text, ForeignKey("corpus_versions.id"), nullable=False, index=True
+    # Nullable since migration 008: external traces have no Retrace corpus.
+    # A check constraint keeps it required for internal traces.
+    corpus_version_id: Mapped[str | None] = mapped_column(
+        Text, ForeignKey("corpus_versions.id"), nullable=True, index=True
     )
+    # "internal" (Retrace's own pipeline) or "external" (POST /api/v1/traces).
+    source: Mapped[str] = mapped_column(
+        Text, nullable=False, default="internal", server_default="internal", index=True
+    )
+    # External traces: caller metadata, expected_abstention, gold ids, how
+    # abstention was detected. Never used by the diagnosis rules.
+    trace_metadata: Mapped[dict | None] = mapped_column(JSONB)
     query: Mapped[str] = mapped_column(Text, nullable=False)
     retrieval_trace_id: Mapped[str | None] = mapped_column(
         Text, ForeignKey("retrieval_traces.id"), index=True

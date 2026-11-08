@@ -167,6 +167,8 @@ The demo corpus is 13 internal-policy documents used by the retrieval ablation a
 
 ## Using Retrace
 
+**Using it on your own RAG app?** Send Retrace a trace of what your app retrieved and answered; see [docs/integrate.md](docs/integrate.md).
+
 Automation uses `Authorization: Bearer <API_KEY>`. The console uses a session cookie instead (`POST /api/v1/auth/session`) and must send `X-Requested-With: retrace-console` on writes.
 
 ```bash
@@ -201,6 +203,7 @@ Key endpoints:
 | `POST` | `/api/v1/retrieve` | Retrieve top-k chunks with a trace and injection flags |
 | `POST` | `/api/v1/generate` | Full RAG execution with tokens and cost |
 | `POST` | `/api/v1/diagnose` | Run the rule engine on an execution |
+| `POST` | `/api/v1/traces`, `/api/v1/traces/batch` | Diagnose a trace from your own RAG app ([guide](docs/integrate.md)) |
 | `GET` | `/api/v1/investigations/{execution_id}` | Aggregated investigation view |
 | `POST` | `/api/v1/experiments` | Run a suite as an experiment |
 | `GET` | `/api/v1/experiments/{id}/comparison` | Compare an experiment with the active baseline |
@@ -217,6 +220,7 @@ CLI (inside the backend container, `python -m app.cli.retrace ...`):
 | `benchmark report --suite heldout_v1 --calibrate-on calib_v1 [--with-llm]` | Full benchmark: per-class metrics, calibration, classifier comparison, Markdown report |
 | `retrieval-eval --corpus-dir /data/corpus/demo` | Chunking by retriever ablation with Recall@k, MRR, nDCG |
 | `judges validate [--limit N]` | Judge accuracy, kappa, consistency and prompt sensitivity against labelled examples |
+| `diagnose --file trace.json [--batch traces.jsonl] [--fail-on CODES] [--json]` | Diagnose your own RAG traces in CI; exit 0 ok, 1 a --fail-on code matched, 2 error ([guide](docs/integrate.md)) |
 
 ## Evaluation, benchmarks and regression gates
 

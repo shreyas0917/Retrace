@@ -39,6 +39,7 @@ services:
       - ./data/corpus:/data/corpus:ro
       - ./data/reports:/data/reports
       - ./scripts:/scripts:ro
+      - ./examples:/examples:ro
       - ./docs/runbooks:/app/runbooks:ro
     depends_on:
       postgres:

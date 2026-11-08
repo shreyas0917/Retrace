@@ -18,7 +18,9 @@ export type Investigation = {
   execution: {
     execution_id: string;
     request_id: string;
-    corpus_version_id: string;
+    /** null for external traces sent with POST /api/v1/traces. */
+    corpus_version_id: string | null;
+    source?: "internal" | "external";
     retrieval_trace_id: string | null;
     query: string;
     status: string;

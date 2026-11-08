@@ -429,3 +429,15 @@ Decision: `retrace judges validate` scores each judge against an example set (AI
 Reason: Judge reliability bounds diagnosis reliability; it has to be measured per model and re-measured when prompts change.
 
 Status: Accepted
+
+---
+
+## ADR-044 — Bring-your-own-trace, and R02 for any missing answer
+
+Decision: `POST /api/v1/traces`, `POST /api/v1/traces/batch` and `retrace diagnose` accept traces produced by any RAG app. They are stored as `ExecutionTrace` rows with `source = 'external'`; migration 008 makes `corpus_version_id` nullable for them, with a check constraint that keeps it required for internal traces. The caller's chunk texts are stored on the trace and are what the judges read; Retrace's corpus and vector store are not consulted.
+
+Rule R02 (`EVAL_MISSING_CONTEXT`) now fires whenever the answer is missing, and `needs_judges` skips the judges in that case. Before, R02 also required empty retrieval, so an answer-less trace with chunks ran the judges and could be reported as an answer-quality failure, for example `ABSTENTION_FALSE_NEGATIVE` ("answered when it should have declined") for an app that produced no answer at all.
+
+Reason: external apps can legitimately send no answer, and diagnosing a non-existent answer is wrong. The change cannot affect internal executions or existing suites: the missing-answer signal excludes the `ABSTAINED`, `GENERATION_TIMEOUT` and `FAILED` statuses, which are the only ones the internal pipeline stores without an answer, and no suite case has a null answer with another status. The rule was not tuned on any benchmark.
+
+Status: Accepted

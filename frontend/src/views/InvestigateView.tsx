@@ -505,9 +505,18 @@ export function InvestigateView({
                 </div>
                 <div className="meta-item">
                   <span className="meta-k">Corpus version</span>
-                  <span className="meta-v mono" title={inv.execution.corpus_version_id}>
-                    {inv.execution.corpus_version_id}
-                  </span>
+                  {inv.execution.corpus_version_id ? (
+                    <span className="meta-v mono" title={inv.execution.corpus_version_id}>
+                      {inv.execution.corpus_version_id}
+                    </span>
+                  ) : (
+                    <span className="meta-v">External trace</span>
+                  )}
+                  {inv.execution.source === "external" ? (
+                    <span className="meta-sub muted small">
+                      Sent from another RAG app via POST /api/v1/traces
+                    </span>
+                  ) : null}
                   {executionCorpus ? (
                     <span className="meta-sub muted small">
                       {executionCorpus.title}

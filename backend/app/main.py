@@ -20,6 +20,7 @@ from app.api.routes_generate import router as generate_router
 from app.api.routes_health import router as health_router
 from app.api.routes_investigate import router as investigate_router
 from app.api.routes_retrieve import router as retrieve_router
+from app.api.routes_traces import router as traces_router
 from app.core.config import get_settings
 from app.core.errors import AppError
 from app.core.hardening import RequestHardeningMiddleware
@@ -100,6 +101,7 @@ def create_app() -> FastAPI:
     application.include_router(benchmark_router)
     application.include_router(experiments_router)
     application.include_router(investigate_router)
+    application.include_router(traces_router)
 
     @application.exception_handler(AppError)
     async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:

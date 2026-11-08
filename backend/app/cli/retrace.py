@@ -20,6 +20,7 @@ from app.services.eval.thresholds_config import ThresholdConfigError, load_thres
 from app.cli.retrieval_cmd import add_retrieval_eval_subparser
 from app.cli.judges_cmd import add_judges_subparser
 from app.cli.benchmark_cmd import register as add_benchmark_subparser
+from app.cli.diagnose_cmd import register as add_diagnose_subparser
 
 
 def _flush_telemetry() -> None:
@@ -139,6 +140,8 @@ def build_parser() -> argparse.ArgumentParser:
     add_judges_subparser(sub)
     # v1.0 held-out benchmark, calibration, classifier comparison (app/cli/benchmark_cmd.py)
     add_benchmark_subparser(sub)
+    # Bring-your-own-trace: diagnose traces from any RAG app (app/cli/diagnose_cmd.py)
+    add_diagnose_subparser(sub)
 
     return parser
 
