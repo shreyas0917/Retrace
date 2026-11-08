@@ -46,6 +46,26 @@ def _scores_and_correct(cases: list[dict[str, Any]], key: str) -> tuple[list[flo
     return scores, correct
 
 
+def concentration_caveat(cal: dict[str, Any], share: float = 0.8) -> str | None:
+    """A warning when most cases sit in one calibrated bin: ECE then says little."""
+    cal_bins = [b for b in (cal.get("calibrated") or {}).get("bins", []) if b.get("count")]
+    raw_used = sum(1 for b in (cal.get("raw") or {}).get("bins", []) if b.get("count"))
+    total = sum(b["count"] for b in cal_bins)
+    if not total:
+        return None
+    top = max(cal_bins, key=lambda b: b["count"])
+    if top["count"] / total < share:
+        return None
+    ece = (cal.get("calibrated") or {}).get("ece")
+    return (
+        f"**Caveat:** the calibrated confidence puts {top['count']} of {total} cases in one bin "
+        f"({top['lo']:.1f}–{top['hi']:.1f}), and the raw score falls in only {raw_used} of the 10 bins, so the "
+        f"calibrated ECE of {_f(ece)} is not meaningful evidence of calibration. It mostly says that the "
+        "synthetic cases the engine gets right sit at the top of the scale. For calibration on real runs, see "
+        "`docs/benchmarks/calibration_live_v1.md` (cross-validated on `live_v1`)."
+    )
+
+
 def calibration_report(cases: list[dict[str, Any]], n_bins: int = 10) -> dict[str, Any]:
     raw_s, raw_c = _scores_and_correct(cases, "diagnosis_score")
     cal_s, cal_c = _scores_and_correct(cases, "calibrated_confidence")
@@ -295,6 +315,9 @@ def render_markdown(report: dict[str, Any]) -> str:
             continue
         lines.append(f"| {b['lo']:.1f}–{b['hi']:.1f} | {b['count']} | {_f(b['mean_score'])} | {_f(b['accuracy'])} |")
     lines.append("")
+    caveat = concentration_caveat(cal)
+    if caveat:
+        lines += [caveat, ""]
 
     cc = report.get("classifier_comparison") or {}
     clf = cc.get("classifiers") or {}

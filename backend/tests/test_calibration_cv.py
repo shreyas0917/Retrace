@@ -64,6 +64,21 @@ def test_no_claim_when_the_raw_score_is_already_calibrated() -> None:
     assert "| Bin | Cases |" in md and "never writes `backend/configs/calibration.json`" in md
 
 
+def test_heldout_report_warns_when_one_bin_holds_most_cases() -> None:
+    from app.cli.benchmark_cmd import calibration_report, concentration_caveat
+
+    cases = [{"diagnosis_score": 0.95, "calibrated_confidence": 1.0, "correct_failure_code": True}] * 153 + [
+        {"diagnosis_score": 0.75, "calibrated_confidence": 0.667, "correct_failure_code": i < 4} for i in range(7)
+    ]
+    text = concentration_caveat(calibration_report(cases))
+    assert text is not None and "153 of 160 cases in one bin" in text and "only 2 of the 10 bins" in text
+    spread = [
+        {"diagnosis_score": s, "calibrated_confidence": s, "correct_failure_code": True}
+        for s in (0.15, 0.45, 0.75, 0.95)
+    ]
+    assert concentration_caveat(calibration_report(spread)) is None
+
+
 def test_score_distribution_counts_bins() -> None:
     rows = _rows([(0.9, True)] * 9 + [(0.3, False)], calibrated=0.97)
     dist = cv.score_distribution(rows)

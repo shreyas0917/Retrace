@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Calibration, cross-validated on live_v1 (PROVISIONAL — AI-drafted labels, not yet reviewed by the author)
+- `retrace benchmark calibration-cv` runs k-fold calibration on a labelled suite (5 folds, stratified on correct/incorrect): the histogram calibrator is fitted on four folds and scored on the fifth. It reports ECE and Brier with bootstrap CIs for the raw score, the committed `calib_v1` calibrator and the cross-validated live calibrator, paired CIs of each difference from the raw score, reliability tables with the case count per bin, the number of distinct raw score values, and the spread over 20 fold splits. It never writes `backend/configs/calibration.json`.
+- `docs/benchmarks/calibration_live_v1.md` is its provisional report. The claim follows a fixed rule (both paired CIs below zero).
+- `docs/benchmarks/heldout_v1.md` now warns that its calibrated confidence puts 153 of 160 cases in one bin, so its ECE is not meaningful evidence; `benchmark report` writes that warning itself when one bin holds 80% of the cases.
+- The committed calibrator is unchanged. Refitting it on live data needs the author's approval.
+
 ### live_v1 benchmark (PROVISIONAL — AI-drafted labels, not yet reviewed by the author)
 - `live_v1` has labels: an AI agent drafted them blind (it saw only the labelling sheet, the guide and the corpus chunks), with a reason and a high/low confidence per case, in `data/labelling/live_v1_sheet.ai_draft.csv`. The suite manifest records annotator `ai_draft_blind` and `provisional: true`.
 - `docs/benchmarks/live_v1.md` is generated from them by `retrace benchmark report --suite live_v1` and carries a PROVISIONAL banner. Its numbers are not quoted anywhere else until the author has reviewed the labels.
