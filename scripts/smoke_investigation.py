@@ -9,6 +9,7 @@ import uuid
 # faithfulness judge must use the LLM path (see ADR-045 and the replay rule).
 os.environ.setdefault("FAITHFULNESS_BACKEND", "llm")
 
+from _api_key import require_api_key
 from fastapi.testclient import TestClient
 
 from app.main import create_app
@@ -30,7 +31,7 @@ class Fake:
 def main() -> None:
     set_llm_provider(Fake())
     client = TestClient(create_app())
-    key = os.environ["API_KEY"]
+    key = require_api_key()
     h = {"Authorization": f"Bearer {key}"}
 
     corpora_raw = client.get("/api/v1/corpora", headers=h).json()
