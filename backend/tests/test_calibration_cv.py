@@ -47,6 +47,10 @@ def test_report_shape_and_decision_rule() -> None:
         assert sum(b["count"] for b in p[name]["bins"]) == 80
     assert p["cv_live"]["ece"]["point"] < p["raw"]["ece"]["point"]
     assert report["decision"]["cv_clearly_lower_than_raw"] is True
+    spread = report["split_spread"]
+    assert spread["seeds"] == cv.SPLIT_SEEDS and spread["ece"]["min"] <= spread["ece"]["median"] <= spread["ece"]["max"]
+    md = cv.render_cv_markdown(report, command="cmd", suite="live_v1", provenance="p", banner=None)
+    assert "lookup table" in md and "Other fold splits" in md and "PROVISIONAL" not in md
     # The committed calibrator falls back to the raw score when calibrated_confidence is missing.
     assert p["calib_v1"]["ece"]["point"] == p["raw"]["ece"]["point"]
 

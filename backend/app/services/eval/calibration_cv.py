@@ -36,6 +36,7 @@ CV_SEED = 20261109
 BOOTSTRAP_RESAMPLES = 2000
 BOOTSTRAP_SEED = 20261109
 PREDICTORS = ("raw", "calib_v1", "cv_live")
+SPLIT_SEEDS = 20
 
 
 def stratified_folds(correct: Sequence[bool], k: int, *, seed: int = CV_SEED) -> tuple[list[int], bool]:
@@ -144,6 +145,19 @@ def cross_validated_calibration(
             entry["brier_minus_raw"] = _bootstrap(n, diff(name, "brier"), resamples=resamples, seed=seed)
         predictors[name] = entry
 
+    # Sensitivity to the fold split: the same procedure under other seeds.
+    spread_ece, spread_brier = [], []
+    for s in range(CV_SEED, CV_SEED + SPLIT_SEEDS):
+        f_s, _ = stratified_folds(correct, k, seed=s)
+        p_s = out_of_fold_calibrated(raw, correct, f_s, k, n_bins)
+        spread_ece.append(_ece(p_s, correct, n_bins) or 0.0)
+        spread_brier.append(brier_score(p_s, correct) or 0.0)
+    split_spread = {
+        "seeds": SPLIT_SEEDS,
+        "ece": {"min": min(spread_ece), "median": sorted(spread_ece)[SPLIT_SEEDS // 2], "max": max(spread_ece)},
+        "brier": {"min": min(spread_brier), "median": sorted(spread_brier)[SPLIT_SEEDS // 2], "max": max(spread_brier)},
+    }
+
     cv_entry = predictors["cv_live"]
     clearly_better = all(
         cv_entry[key]["high"] is not None and cv_entry[key]["high"] < 0 for key in ("ece_minus_raw", "brier_minus_raw")
@@ -159,6 +173,7 @@ def cross_validated_calibration(
         "distinct_raw_scores": sorted({round(v, 6) for v in raw}),
         "fold_sizes": [folds.count(f) for f in range(k)],
         "predictors": predictors,
+        "split_spread": split_spread,
         "decision": {
             "cv_clearly_lower_than_raw": clearly_better,
             "rule": "the cross-validated calibrator counts as clearly better only if the upper end of the 95% "
@@ -243,6 +258,17 @@ def render_cv_markdown(report: dict[str, Any], *, command: str, suite: str, prov
             f"{_signed(e['ece_minus_raw']) if 'ece_minus_raw' in e else '—'} | "
             f"{_signed(e['brier_minus_raw']) if 'brier_minus_raw' in e else '—'} | {e['distinct_values']} |"
         )
+    sp = r["split_spread"]
+    lines += [
+        "",
+        "ECE is biased upward on resamples (duplicated cases make bins look less calibrated), so for a predictor "
+        "whose ECE is near zero the bootstrap interval can sit above the point estimate. The paired differences "
+        "are the numbers the decision uses.",
+        "",
+        f"Other fold splits: repeating the cross-validation with {sp['seeds']} seeds gives a live-calibrator ECE "
+        f"from {sp['ece']['min']:.3f} to {sp['ece']['max']:.3f} (median {sp['ece']['median']:.3f}) and Brier from "
+        f"{sp['brier']['min']:.3f} to {sp['brier']['max']:.3f} (median {sp['brier']['median']:.3f}).",
+    ]
     lines += ["", "## Reliability tables", "", "Bins with no cases are left out."]
     for name in PREDICTORS:
         lines += [
@@ -270,6 +296,13 @@ def render_cv_markdown(report: dict[str, Any], *, command: str, suite: str, prov
             f"The cross-validated live calibrator is clearly better calibrated than the raw score: ECE "
             f"{_ci(cv['ece'])} against {_ci(p['raw']['ece'])}, Brier {_ci(cv['brier'])} against {_ci(p['raw']['brier'])}."
         )
+        lines += [
+            "",
+            f"Read this narrowly. With {len(r['distinct_raw_scores'])} distinct raw values the calibrator is a lookup "
+            "table: it replaces each value with the accuracy that value had on the other folds (see the raw "
+            "reliability table). It learns which kinds of diagnosis tend to be wrong on these runs; it does not make "
+            "the score finer-grained, and it would need refitting for another model or corpus.",
+        ]
     else:
         lines.append(
             "The cross-validated live calibrator is **not** clearly better than the raw score on these cases. "
@@ -282,8 +315,9 @@ def render_cv_markdown(report: dict[str, Any], *, command: str, suite: str, prov
         "## Limits",
         "",
         f"- {r['n']} cases from one model and one corpus; a few cases move every number here.",
-        "- ECE with 10 equal-width bins is itself noisy at this size; the bootstrap intervals include that noise "
-        "but not the variation from a different fold split.",
+        "- ECE with 10 equal-width bins is itself noisy at this size; the bootstrap intervals include that noise, "
+        "and the fold-split range above shows the variation from a different split.",
+        "- The labels decide what counts as correct, so any label error moves every number here.",
         "- This report never writes `backend/configs/calibration.json`.",
         "",
     ]
