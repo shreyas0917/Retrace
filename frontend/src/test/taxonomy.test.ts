@@ -4,7 +4,7 @@ import {
   isHealthy,
   severityLabel,
   severityOf,
-} from "../taxonomy";
+} from "../labels";
 
 describe("friendly taxonomy", () => {
   it("maps known failure codes to plain English with severity", () => {

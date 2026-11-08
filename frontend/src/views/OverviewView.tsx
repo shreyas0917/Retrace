@@ -9,7 +9,7 @@ import {
 } from "../components/ui";
 import { Stagger, StaggerItem } from "../components/motion";
 import { IconArrowRight } from "../components/icons";
-import { friendlyDiagnosis, type Severity } from "../taxonomy";
+import { friendlyDiagnosis, type Severity } from "../labels";
 import type {
   DurableMetrics,
   ExperimentListItem,
