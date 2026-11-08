@@ -66,6 +66,9 @@ class Settings(BaseSettings):
     # "nli": claim-level NLI cross-encoder (default). "llm": the LLM judge.
     # Suites with recorded judge outputs replay them whatever this says.
     faithfulness_backend: Literal["nli", "llm"] = Field(default="nli", alias="FAITHFULNESS_BACKEND")
+    # Cap on (claim, premise window) pairs the NLI judge scores per answer. At
+    # least MAX_CLAIMS (20) so every claim gets one window.
+    nli_max_pairs: int = Field(default=2000, ge=20, alias="NLI_MAX_PAIRS")
 
     # --- LLM resilience (v1.0) ---
     model_max_retries: int = Field(default=2, alias="MODEL_MAX_RETRIES")

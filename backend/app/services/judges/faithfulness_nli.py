@@ -42,6 +42,8 @@ WINDOW_OVERLAP_TOKENS = 64
 # [CLS] premise [SEP] hypothesis [SEP]
 SPECIAL_TOKENS = 3
 PREDICT_BATCH_SIZE = 32
+# Upper bound on (claim, premise window) pairs per answer; NLI_MAX_PAIRS overrides.
+DEFAULT_MAX_PAIRS = 2000
 
 REQUIRED_LABELS = ("contradiction", "entailment", "neutral")
 
@@ -329,23 +331,49 @@ class NLIFaithfulnessResult(BaseModel):
     label_order: list[str] = Field(default_factory=list)
     pair_count: int = 0
     window_count: int = 0
+    # True when NLI_MAX_PAIRS stopped scoring before every chunk was covered;
+    # the least similar chunks are the ones skipped.
+    truncated: bool = False
+    max_pairs: int = DEFAULT_MAX_PAIRS
+    chunks_total: int = 0
+    chunks_skipped: int = 0
 
 
 def score_claims(
     claims: Sequence[str],
     chunks: Sequence[dict[str, Any]],
     scorer: NLIScorer,
-) -> tuple[list[NLIClaimResult], dict[str, int]]:
-    """Score every claim against every chunk window in one batched call."""
-    usable = [(str(c.get("chunk_id") or ""), str(c.get("text") or "")) for c in chunks]
-    usable = [(cid, text) for cid, text in usable if text.strip()]
-    if not claims:
-        return [], {"pair_count": 0, "window_count": 0}
+    *,
+    max_pairs: int | None = None,
+) -> tuple[list[NLIClaimResult], dict[str, Any]]:
+    """Score every claim against every premise window in one batched call.
 
+    At most `max_pairs` (claim, window) pairs are scored. Chunks are visited
+    in order of retrieval similarity, highest first, so when the cap is hit
+    the least similar chunks are the ones left out; the result reports it.
+    """
+    empty = {"pair_count": 0, "window_count": 0, "truncated": False, "chunks_total": 0, "chunks_skipped": 0}
+    usable = [
+        (str(c.get("chunk_id") or ""), str(c.get("text") or ""), _similarity(c), i)
+        for i, c in enumerate(chunks)
+    ]
+    usable = [u for u in usable if u[1].strip()]
+    if not claims:
+        return [], {**empty, "chunks_total": len(usable)}
+    # Highest similarity first; chunks without a score keep their order, last.
+    usable.sort(key=lambda u: (u[2] is None, -(u[2] or 0.0), u[3]))
+
+    max_windows = max(1, (max_pairs or DEFAULT_MAX_PAIRS) // len(claims))
     longest_claim = max(scorer.count_tokens(c) for c in claims)
     budget = max(32, scorer.max_length - longest_claim - SPECIAL_TOKENS)
     windows: list[tuple[str, str]] = []
-    for cid, text in usable:
+    truncated = False
+    chunks_scored = 0
+    for cid, text, _score, _i in usable:
+        if len(windows) >= max_windows:
+            truncated = True
+            break
+        chunks_scored += 1
         for unit in premise_units(text):
             # A unit over the token budget (a very long sentence) is windowed.
             for window in premise_windows(
@@ -354,6 +382,9 @@ def score_claims(
                 overlap_tokens=WINDOW_OVERLAP_TOKENS,
                 token_spans=scorer.token_spans,
             ):
+                if len(windows) >= max_windows:
+                    truncated = True
+                    break
                 windows.append((cid, window))
 
     pairs = [(window, claim) for claim in claims for _, window in windows]
@@ -397,7 +428,21 @@ def score_claims(
                 supporting_chunk_ids=supporting,
             )
         )
-    return results, {"pair_count": len(pairs), "window_count": n_windows}
+    return results, {
+        "pair_count": len(pairs),
+        "window_count": n_windows,
+        "truncated": truncated,
+        "chunks_total": len(usable),
+        "chunks_skipped": len(usable) - chunks_scored,
+    }
+
+
+def _similarity(chunk: dict[str, Any]) -> float | None:
+    for key in ("retrieval_score", "score"):
+        value = chunk.get(key)
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            return float(value)
+    return None
 
 
 def judge_faithfulness_nli(
@@ -406,13 +451,15 @@ def judge_faithfulness_nli(
     chunks: Sequence[dict[str, Any]],
     *,
     scorer: NLIScorer | None = None,
+    max_pairs: int | None = None,
 ) -> tuple[NLIFaithfulnessResult, dict[str, Any]]:
     """Score `answer` against `chunks`. `query` is not part of NLI scoring."""
     del query  # the claims are checked against the evidence, not the question
     scorer = scorer or get_nli_scorer()
     started = time.perf_counter()
     claims = split_claims(answer)
-    claim_results, counts = score_claims(claims, chunks, scorer)
+    max_pairs = max_pairs or DEFAULT_MAX_PAIRS
+    claim_results, counts = score_claims(claims, chunks, scorer, max_pairs=max_pairs)
     supported = sum(1 for c in claim_results if c.supported)
     result = NLIFaithfulnessResult(
         faithfulness_score=(round(supported / len(claim_results), 6) if claim_results else None),
@@ -423,6 +470,10 @@ def judge_faithfulness_nli(
         label_order=scorer.label_order,
         pair_count=counts["pair_count"],
         window_count=counts["window_count"],
+        truncated=counts["truncated"],
+        max_pairs=max_pairs,
+        chunks_total=counts["chunks_total"],
+        chunks_skipped=counts["chunks_skipped"],
     )
     latency_ms = round((time.perf_counter() - started) * 1000, 2)
     logger.info(
@@ -431,6 +482,7 @@ def judge_faithfulness_nli(
         backend="nli",
         claims=len(claim_results),
         pairs=counts["pair_count"],
+        truncated=counts["truncated"],
         latency_ms=latency_ms,
         operation="judge",
     )
@@ -440,5 +492,6 @@ def judge_faithfulness_nli(
         "attempts": 1,
         "latency_ms": latency_ms,
         "backend": "nli",
+        "truncated": counts["truncated"],
     }
     return result, meta

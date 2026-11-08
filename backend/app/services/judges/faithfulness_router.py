@@ -47,7 +47,7 @@ def judge_faithfulness_routed(
         return result, {**meta, "backend": "llm"}, FAITHFULNESS_PROMPT_VERSION
 
     if settings.faithfulness_backend == "nli":
-        result, meta = judge_faithfulness_nli(query, answer, chunks)
+        result, meta = judge_faithfulness_nli(query, answer, chunks, max_pairs=settings.nli_max_pairs)
         return result, meta, NLI_FAITHFULNESS_VERSION
     result, meta = judge_faithfulness(query, answer, chunks, settings=settings)
     return result, {**meta, "backend": "llm"}, FAITHFULNESS_PROMPT_VERSION

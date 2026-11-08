@@ -45,7 +45,7 @@ The response reports how it decided in `abstention_detected_by` (`explicit`, `se
 
 ### Which outcomes need a judge model
 
-Empty retrieval, a gold-chunk miss and a missing answer are decided deterministically, with no model call. Every other outcome needs the relevance judge, and answered traces with sufficient context also need the faithfulness and contradiction judges. Relevance and contradiction use the LLM configured in `MODEL_*`. Faithfulness uses a local NLI model bundled in the Docker image by default (`FAITHFULNESS_BACKEND=nli`), so it needs no LLM call; set `FAITHFULNESS_BACKEND=llm` to use the LLM judge instead.
+Empty retrieval, a gold-chunk miss and a missing answer are decided deterministically, with no model call. Every other outcome needs the relevance judge, and answered traces with sufficient context also need the faithfulness and contradiction judges. Relevance and contradiction use the LLM configured in `MODEL_*`. Faithfulness uses a local NLI model bundled in the Docker image by default (`FAITHFULNESS_BACKEND=nli`), so it needs no LLM call; set `FAITHFULNESS_BACKEND=llm` to use the LLM judge instead. The NLI judge scores at most `NLI_MAX_PAIRS` (default 2000) claim and sentence pairs per answer, most similar chunks first; if a trace needs more, the faithfulness result says `"truncated": true`.
 
 ## Send one trace
 

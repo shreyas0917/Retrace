@@ -230,6 +230,49 @@ def test_all_pairs_scored_in_one_call_with_windowing() -> None:
     assert results[0].supported and results[0].best_chunk_id == "long:c0"
 
 
+def test_pair_cap_scores_most_similar_chunks_first_and_records_truncation() -> None:
+    fake = _SentenceScorer()
+    claim = "Refunds take 30 days to arrive."
+    chunks = [
+        {"chunk_id": "low:c0", "text": "Unrelated text about parking.", "retrieval_score": 0.10},
+        {"chunk_id": "high:c0", "text": claim, "retrieval_score": 0.90},
+        {"chunk_id": "mid:c0", "text": "Something about hotels.", "retrieval_score": 0.50},
+    ]
+    results, counts = score_claims([claim], chunks, fake.scorer(), max_pairs=1)
+    assert fake.premises == [claim]  # only the most similar chunk was scored
+    assert results[0].supported
+    assert counts["truncated"] is True
+    assert (counts["chunks_total"], counts["chunks_skipped"]) == (3, 2)
+
+    full, counts = score_claims([claim], chunks, _SentenceScorer().scorer(), max_pairs=2000)
+    assert counts["truncated"] is False and counts["chunks_skipped"] == 0 and counts["pair_count"] == 3
+
+
+def test_judge_output_records_truncation() -> None:
+    chunks = [{"chunk_id": f"d{i}:c0", "text": PTO, "retrieval_score": 1 - i / 10} for i in range(5)]
+    result, meta = judge_faithfulness_nli(
+        "q", "Full-time employees accrue 1.25 days of PTO per month.", chunks, scorer=FakeScorer().scorer(), max_pairs=2
+    )
+    assert result.truncated is True and meta["truncated"] is True
+    assert result.max_pairs == 2 and result.pair_count == 2 and result.chunks_skipped == 3
+    assert result.claims[0].best_chunk_id == "d0:c0"
+
+
+def test_nli_max_pairs_setting_reaches_the_judge(monkeypatch) -> None:
+    from app.core.config import get_settings
+    from app.services.judges.faithfulness_router import judge_faithfulness_routed
+
+    monkeypatch.setenv("FAITHFULNESS_BACKEND", "nli")
+    monkeypatch.setenv("NLI_MAX_PAIRS", "20")
+    set_nli_scorer(FakeScorer().scorer())
+    chunks = [{"chunk_id": f"d{i}:c0", "text": PTO, "retrieval_score": 0.5} for i in range(30)]
+    result, _, _ = judge_faithfulness_routed("q", "Full-time employees accrue 1.25 days of PTO per month.", chunks, get_settings())
+    assert result.max_pairs == 20 and result.pair_count == 20 and result.truncated
+    monkeypatch.setenv("NLI_MAX_PAIRS", "5")
+    with pytest.raises(Exception):
+        get_settings()
+
+
 # --- judge output and the rules ----------------------------------------------
 
 
