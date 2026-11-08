@@ -1,45 +1,49 @@
-import { motion, useReducedMotion, type Variants } from "framer-motion";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 /**
- * Restrained, accessible motion primitives.
+ * Restrained, accessible motion primitives, done with CSS transitions only.
  *
- * One authored moment — content settling in from a near-visible state — not an
- * effect on every element. Everything respects prefers-reduced-motion: when the
- * viewer asks for less motion, elements render in their final position with no
- * transform or fade, so data is never delayed for animation.
+ * Content mounts in a near-visible state (class `fade-enter`) and the
+ * `is-in` class is added on the next frame, so the browser transitions
+ * opacity and a small translate. Under prefers-reduced-motion the CSS renders
+ * `.fade-enter` in its final state with no transition, so data is never
+ * delayed for animation. Staggering is a per-child transition-delay in CSS.
  */
+function useEntered(key?: string): boolean {
+  const [entered, setEntered] = useState(false);
+  useEffect(() => {
+    setEntered(false);
+    let raf2 = 0;
+    // Two frames: the first commits the initial state, the second flips it.
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => setEntered(true));
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+  }, [key]);
+  return entered;
+}
 
-const EASE = [0.22, 1, 0.36, 1] as const;
+function cx(...parts: Array<string | false | undefined>): string {
+  return parts.filter(Boolean).join(" ");
+}
 
 export function FadeIn({
   children,
-  delay = 0,
-  y = 10,
   className,
 }: {
   children: ReactNode;
-  delay?: number;
-  y?: number;
   className?: string;
 }) {
-  const reduce = useReducedMotion();
+  const entered = useEntered();
   return (
-    <motion.div
-      className={className}
-      initial={reduce ? false : { opacity: 0, y }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: EASE, delay }}
-    >
+    <div className={cx("fade-enter", entered && "is-in", className)}>
       {children}
-    </motion.div>
+    </div>
   );
 }
-
-const containerVariants: Variants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.05, delayChildren: 0.03 } },
-};
 
 export function Stagger({
   children,
@@ -48,24 +52,8 @@ export function Stagger({
   children: ReactNode;
   className?: string;
 }) {
-  const reduce = useReducedMotion();
-  if (reduce) return <div className={className}>{children}</div>;
-  return (
-    <motion.div
-      className={className}
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className={cx("stagger", className)}>{children}</div>;
 }
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE } },
-};
 
 export function StaggerItem({
   children,
@@ -74,16 +62,10 @@ export function StaggerItem({
   children: ReactNode;
   className?: string;
 }) {
-  const reduce = useReducedMotion();
-  if (reduce) return <div className={className}>{children}</div>;
-  return (
-    <motion.div className={className} variants={itemVariants}>
-      {children}
-    </motion.div>
-  );
+  return <FadeIn className={className}>{children}</FadeIn>;
 }
 
-/** Keyed wrapper for switching main views; cross-fades on navigation. */
+/** Keyed wrapper for switching main views; fades in on navigation. */
 export function ViewFade({
   viewKey,
   children,
@@ -91,16 +73,10 @@ export function ViewFade({
   viewKey: string;
   children: ReactNode;
 }) {
-  const reduce = useReducedMotion();
-  if (reduce) return <div>{children}</div>;
+  const entered = useEntered(viewKey);
   return (
-    <motion.div
-      key={viewKey}
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.28, ease: EASE }}
-    >
+    <div className={cx("fade-enter", "view-fade", entered && "is-in")}>
       {children}
-    </motion.div>
+    </div>
   );
 }

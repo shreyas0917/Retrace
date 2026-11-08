@@ -1024,8 +1024,24 @@ optgroup option { color: var(--ink); font-weight: 400; }
 
 .logout-button { min-height: 28px; padding: 0 10px; font-size: 12px; }
 
-/* ===== Motion primitives (JS respects prefers-reduced-motion) ========= */
-.reveal-ready { opacity: 1; }
+/* ===== Motion primitives (CSS transitions; see components/motion.tsx) == */
+.fade-enter {
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.32s var(--ease-out),
+    transform 0.32s var(--ease-out);
+}
+.fade-enter.is-in { opacity: 1; transform: none; }
+.view-fade.fade-enter { transform: translateY(4px); transition-duration: 0.22s; }
+.stagger > .fade-enter:nth-child(2) { transition-delay: 0.05s; }
+.stagger > .fade-enter:nth-child(3) { transition-delay: 0.1s; }
+.stagger > .fade-enter:nth-child(4) { transition-delay: 0.15s; }
+.stagger > .fade-enter:nth-child(n + 5) { transition-delay: 0.2s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-enter, .fade-enter.is-in { opacity: 1; transform: none; transition: none; }
+}
 
 /* ===== Responsive ===================================================== */
 @media (max-width: 1120px) {
