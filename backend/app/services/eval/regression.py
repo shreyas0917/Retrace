@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 METRIC_KEYS = (
     "failure_code_accuracy",
     "rule_accuracy",

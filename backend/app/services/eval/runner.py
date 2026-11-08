@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -20,10 +20,10 @@ from app.db.models import (
     Case,
     Corpus,
     CorpusVersion,
+    ExecutionTrace,
     Experiment,
     ExperimentCaseResult,
     ExperimentMetric,
-    ExecutionTrace,
     Run,
     Suite,
 )
@@ -31,9 +31,9 @@ from app.services.diagnosis.engine import diagnose_execution
 from app.services.diagnosis.taxonomy import TAXONOMY_VERSION
 from app.services.eval.fakes import ScriptedJudgeLLM
 from app.services.eval.planted import build_offline_execution
-from app.services.judges.replay import replaying_judges
 from app.services.eval.schemas import GoldCase
 from app.services.eval.suite_loader import load_suite
+from app.services.judges.replay import replaying_judges
 from app.services.llm_client import set_llm_provider
 from app.services.metrics.diagnosis import (
     evidence_refs_valid,
@@ -263,7 +263,7 @@ def run_suite_benchmark(
     )
 
     experiment_id = str(uuid.uuid4())
-    started = datetime.now(timezone.utc)
+    started = datetime.now(UTC)
     pipeline = {
         "mode": "suite_offline",
         "suite_hash": suite_hash,
@@ -378,7 +378,7 @@ def run_suite_benchmark(
                 set_llm_provider(None)
 
         summary = summarize_results(case_results)
-        finished = datetime.now(timezone.utc)
+        finished = datetime.now(UTC)
         report: dict[str, Any] = {
             "experiment_id": experiment_id,
             "suite_id": suite_id,

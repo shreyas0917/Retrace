@@ -30,10 +30,11 @@ import math
 import re
 import time
 from collections import Counter, defaultdict
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Callable, Literal, Sequence
+from typing import Any, Literal
 
 import numpy as np
 from pydantic import BaseModel, Field, field_validator
@@ -516,7 +517,7 @@ def run_retrieval_ablation(
                     )[:worst_n]
 
     report = {
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "corpus_dir": str(corpus_dir),
         "document_count": len(docs),
         "document_ids": [doc_id for doc_id, _ in docs],

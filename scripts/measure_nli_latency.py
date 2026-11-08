@@ -23,7 +23,7 @@ import platform
 import statistics
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 if Path("/app/app").is_dir():
@@ -111,7 +111,7 @@ def _machine() -> dict:
 def render(
     rows: list[tuple[str, dict]], load_ms: float, machine: dict, repeats: int, cap_repeats: int, load: tuple[str, str]
 ) -> str:
-    when = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    when = datetime.now(UTC).strftime("%Y-%m-%d")
     lines = [
         "# NLI faithfulness latency (CPU)",
         "",

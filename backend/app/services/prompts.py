@@ -5,7 +5,8 @@ Retrieved text is untrusted data. System instructions always win.
 
 from __future__ import annotations
 
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 PROMPT_VERSION = "generator.v1"
 

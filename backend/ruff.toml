@@ -5,4 +5,12 @@ line-length = 120
 extend-exclude = ["**/alembic/versions/**"]
 
 [lint]
-select = ["E9", "F"]
+# E9 syntax errors, F pyflakes, I import order, B bugbear, UP pyupgrade.
+select = ["E9", "F", "I", "B", "UP"]
+
+[lint.flake8-bugbear]
+# FastAPI resolves Depends() per request; it is not a shared mutable default.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.params.Depends"]
+
+[lint.isort]
+known-first-party = ["app"]

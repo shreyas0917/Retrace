@@ -18,8 +18,9 @@ from __future__ import annotations
 import re
 import threading
 import time
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Callable, Sequence
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -199,7 +200,7 @@ def premise_units(text: str) -> list[str]:
         stripped = (text or "").strip()
         return [stripped] if stripped else []
     units = list(sentences)
-    units.extend(f"{a} {b}" for a, b in zip(sentences, sentences[1:]))
+    units.extend(f"{a} {b}" for a, b in zip(sentences, sentences[1:], strict=False))
     seen: set[str] = set()
     return [u for u in units if not (u in seen or seen.add(u))]
 

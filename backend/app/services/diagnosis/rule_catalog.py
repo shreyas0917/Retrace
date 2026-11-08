@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 RULE_CATALOG: dict[str, dict[str, Any]] = {
     "R00": {
         "rule_id": "R00",

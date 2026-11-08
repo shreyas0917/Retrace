@@ -15,10 +15,11 @@ from __future__ import annotations
 import json
 import os
 import threading
+from collections.abc import Sequence
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 CALIBRATION_VERSION = "calibration.v1"
 
@@ -48,7 +49,7 @@ class CalibrationTable:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "CalibrationTable":
+    def from_dict(cls, data: dict[str, Any]) -> CalibrationTable:
         bins = [CalibrationBin(**b) for b in data.get("bins", [])]
         return cls(
             version=str(data.get("version") or CALIBRATION_VERSION),
@@ -82,7 +83,7 @@ def reliability_bins(scores: Sequence[float], correct: Sequence[bool], n_bins: i
     sums = [0.0] * n_bins
     hits = [0] * n_bins
     counts = [0] * n_bins
-    for s, c in zip(scores, correct):
+    for s, c in zip(scores, correct, strict=False):
         i = _bin_index(float(s), n_bins)
         sums[i] += _clip(float(s))
         hits[i] += 1 if c else 0
@@ -124,7 +125,7 @@ def brier_score(scores: Sequence[float], correct: Sequence[bool]) -> float | Non
     if len(scores) != len(correct):
         raise ValueError("scores and correct must have equal length")
     total = 0.0
-    for s, c in zip(scores, correct):
+    for s, c in zip(scores, correct, strict=False):
         total += (_clip(float(s)) - (1.0 if c else 0.0)) ** 2
     return round(total / len(scores), 6)
 
@@ -144,7 +145,7 @@ def fit_histogram_calibrator(
         bins=bins,
         fitted_on=fitted_on,
         sample_size=len(scores),
-        created_at=datetime.now(timezone.utc).isoformat(),
+        created_at=datetime.now(UTC).isoformat(),
         ece_before=expected_calibration_error(bins),
         brier_before=brier_score(scores, correct),
         notes=dict(notes or {}),

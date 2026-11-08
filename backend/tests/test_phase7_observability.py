@@ -5,9 +5,9 @@ from __future__ import annotations
 from fastapi.testclient import TestClient
 
 from app.core.metrics import get_metrics
+from app.core.ops import record_diagnosis, record_judge, record_retrieval
 from app.core.redaction import redact_event_dict
 from app.core.signals import evaluate_signals, load_observability_config
-from app.core.ops import record_diagnosis, record_judge, record_retrieval
 
 
 def _auth(api_key: str) -> dict[str, str]:

@@ -8,14 +8,14 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
 from app.db import session as db_session
 from app.db.models import ExecutionTrace, JudgeResult
-from app.services.diagnosis.rules import apply_rules, needs_judges
 from app.services.diagnosis.models import SignalBag
+from app.services.diagnosis.rules import apply_rules, needs_judges
 from app.services.llm_client import LLMResult, set_llm_provider
 from app.services.prompts import ABSTENTION_ANSWER
-from sqlalchemy import select
 
 
 def _auth(api_key: str) -> dict[str, str]:

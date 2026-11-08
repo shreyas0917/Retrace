@@ -10,8 +10,9 @@ from __future__ import annotations
 import threading
 import time
 from collections import deque
+from collections.abc import Awaitable, Callable, MutableMapping
 from hashlib import sha256
-from typing import Any, Awaitable, Callable, MutableMapping
+from typing import Any
 
 from starlette.requests import Request
 from starlette.responses import JSONResponse

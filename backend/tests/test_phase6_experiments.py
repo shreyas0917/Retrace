@@ -6,7 +6,9 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
+from app.cli.retrace import main as cli_main
 from app.db import session as db_session
 from app.db.models import Experiment, ExperimentCaseResult
 from app.services.eval.baseline import BaselineError, get_active_baseline, promote_baseline
@@ -20,8 +22,6 @@ from app.services.eval.evaluate import (
 )
 from app.services.eval.regression import compare_metrics
 from app.services.eval.thresholds_config import load_thresholds
-from app.cli.retrace import main as cli_main
-from sqlalchemy import select
 
 
 def _auth(api_key: str) -> dict[str, str]:

@@ -7,10 +7,9 @@ import uuid
 import pytest
 from fastapi.testclient import TestClient
 
+from app.services import chroma as chroma_service
 from app.services.chunking import chunk_text, make_chunk_id, normalize_chunking_config
 from app.services.hashing import compute_corpus_hash
-from app.services import chroma as chroma_service
-
 
 DEMO_DOCS = [
     {
@@ -159,8 +158,8 @@ def test_corpus_isolation(client: TestClient, api_key: str) -> None:
 def test_non_ready_cannot_retrieve(client: TestClient, api_key: str, monkeypatch) -> None:
     """Simulate FAILED status by inserting a version row without vectors."""
     headers = _auth(api_key)
-    from app.db.session import SessionLocal, init_db
     from app.db.models import CorpusVersion
+    from app.db.session import SessionLocal, init_db
     from app.services.ingestion import create_corpus
 
     init_db()

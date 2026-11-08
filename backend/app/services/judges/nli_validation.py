@@ -18,8 +18,9 @@ they never change the rule.
 from __future__ import annotations
 
 import time
-from datetime import datetime, timezone
-from typing import Any, Sequence
+from collections.abc import Sequence
+from datetime import UTC, datetime
+from typing import Any
 
 from app.services.judges.faithfulness_nli import (
     DECISION_RULE,
@@ -50,7 +51,7 @@ def _claim_level(examples: Sequence[JudgeExample], scorer: NLIScorer) -> tuple[d
         if not labelled:
             continue
         results, _ = score_claims([c.claim for c in labelled], ex.chunk_dicts(), scorer)
-        for claim, res in zip(labelled, results):
+        for claim, res in zip(labelled, results, strict=False):
             units.append(
                 {
                     "example_id": ex.example_id,
@@ -221,7 +222,7 @@ def validate_nli_faithfulness(
         "decision_rule": DECISION_RULE,
         "label_order": scorer.label_order,
         "example_set_hash": compute_examples_hash(examples),
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "counts": {
             "faithfulness_examples": len(faith),
             "labelled_claims": len(claim_units),

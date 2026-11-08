@@ -15,9 +15,10 @@ Outside the context, judges run live.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
-from typing import Any, Iterator
+from typing import Any
 
 _REPLAY: ContextVar[dict[str, Any] | None] = ContextVar("judge_replay", default=None)
 

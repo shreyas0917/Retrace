@@ -19,8 +19,9 @@ from __future__ import annotations
 import json
 import random
 from collections import defaultdict
-from datetime import datetime, timezone
-from typing import Any, Callable
+from collections.abc import Callable
+from datetime import UTC, datetime
+from typing import Any
 
 from sqlalchemy.orm import Session
 
@@ -173,7 +174,7 @@ def run_live_report(db: Session, *, suite_id: str = "live_v1", suite_version: st
     ]
     applied = load_calibration()
     return {
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "app_version": APP_VERSION,
         "suite_id": suite_id,
         "suite_version": suite_version,

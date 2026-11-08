@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from app.core.config import Settings, get_settings
 from app.core.errors import EmbeddingError

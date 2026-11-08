@@ -10,6 +10,7 @@ import numpy as np
 import pytest
 
 from app.cli.retrace import build_parser
+from app.services import retrieval_eval as re_mod
 from app.services.metrics.retrieval import (
     aggregate,
     evaluate_ranking,
@@ -19,11 +20,10 @@ from app.services.metrics.retrieval import (
     precision_at_k,
     recall_at_k,
 )
-from app.services import retrieval_eval as re_mod
 from app.services.retrieval_eval import (
+    MAX_MUST_CONTAIN_CHARS,
     BM25Index,
     DenseIndex,
-    MAX_MUST_CONTAIN_CHARS,
     QrelsValidationError,
     RetrievalQuery,
     build_chunks,

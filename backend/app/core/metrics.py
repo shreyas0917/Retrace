@@ -15,7 +15,6 @@ from typing import Any
 
 from app.core import telemetry as _telemetry
 
-
 _MAX_LATENCY_SAMPLES = 500
 
 

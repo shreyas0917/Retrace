@@ -9,9 +9,9 @@ from typing import Any, TypeVar
 from pydantic import BaseModel, ValidationError
 
 from app.core.config import Settings, get_settings
+from app.core.errors import GenerationTimeoutError
 from app.core.logging import get_logger
 from app.core.ops import record_judge
-from app.core.errors import GenerationTimeoutError
 from app.services.llm_client import GENERATION_TEMPERATURE, get_llm_provider
 
 logger = get_logger(__name__)

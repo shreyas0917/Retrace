@@ -35,7 +35,7 @@ import os
 import sys
 import time
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -266,7 +266,7 @@ def run_one(db, query: dict[str, Any], corpus: dict[str, Any], settings, git_com
             "model_timeout_seconds": settings.model_timeout_seconds,
         },
         "git_commit": git_commit,
-        "recorded_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "recorded_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "run_latency_ms": round((time.perf_counter() - started) * 1000, 1),
     }
 

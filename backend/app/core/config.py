@@ -1,7 +1,7 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Literal
 
 from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -111,7 +111,7 @@ class Settings(BaseSettings):
             return self.session_secret.strip()
         import hashlib
 
-        return hashlib.sha256(f"retrace-session:{self.api_key}".encode("utf-8")).hexdigest()
+        return hashlib.sha256(f"retrace-session:{self.api_key}".encode()).hexdigest()
 
 
 def get_settings() -> Settings:

@@ -9,7 +9,6 @@ import yaml
 
 from app.core.metrics import get_metrics
 
-
 DEFAULT_SIGNALS: dict[str, Any] = {
     "version": "observability_signals.v1",
     "signals": {

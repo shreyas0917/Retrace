@@ -17,7 +17,6 @@ from app.services.eval.runner import run_suite_benchmark
 from app.services.eval.suite_loader import load_suite
 from app.services.eval.thresholds_config import load_thresholds
 
-
 APP_VERSION = "1.0.0"
 
 # Exit codes (PRD §16)

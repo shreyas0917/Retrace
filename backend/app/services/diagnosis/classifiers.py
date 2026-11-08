@@ -12,8 +12,9 @@ import json
 import re
 import time
 from collections import Counter
+from collections.abc import Iterable
 from dataclasses import dataclass, fields
-from typing import Any, Iterable, Protocol
+from typing import Any, Protocol
 
 from app.core.config import Settings, get_settings
 from app.core.errors import AppError
@@ -81,7 +82,7 @@ class MajorityClassifier:
         if labels is not None:
             self.fit(labels)
 
-    def fit(self, labels: Iterable[str]) -> "MajorityClassifier":
+    def fit(self, labels: Iterable[str]) -> MajorityClassifier:
         counts = Counter(str(x) for x in labels)
         self.distribution = dict(counts)
         if counts:

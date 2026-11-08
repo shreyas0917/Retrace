@@ -34,7 +34,6 @@ from app.services.investigation import build_investigation
 from app.services.llm_client import LLMResult, set_llm_provider
 from app.services.rag import run_rag
 
-
 API_BASE = os.environ.get("RETRACE_API_BASE", "http://127.0.0.1:8000")
 API_KEY = os.environ.get("API_KEY", "dev-retrace-api-key-change-me")
 CORPUS_DIR_CANDIDATES = [

@@ -348,7 +348,7 @@ def _sha_suite(raw_lines: list[str]) -> str:
 def relevance_json(ids: list[str], *, sufficient: bool, scores: list[float]) -> str:
     items = [
         {"chunk_id": cid, "relevant": s >= 0.5, "score": round(s, 3), "rationale": "fixture"}
-        for cid, s in zip(ids, scores)
+        for cid, s in zip(ids, scores, strict=False)
     ]
     return json.dumps({"items": items, "context_sufficient": sufficient})
 
