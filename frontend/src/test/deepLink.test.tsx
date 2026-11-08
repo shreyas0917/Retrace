@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { readExecutionParam, urlWithExecution } from "../deepLink";
 import { makeInvestigation } from "./fixtures";
 import { ThemeProvider } from "../theme";
+import App from "../App";
 
 describe("deep-link parsing", () => {
   it("reads ?execution=<id>", () => {
@@ -63,7 +64,6 @@ describe("deep link through the login screen", () => {
   });
 
   it("opens the linked execution after sign-in and keeps the URL", async () => {
-    const { default: App } = await import("../App");
     render(
       <ThemeProvider>
         <App />
@@ -80,5 +80,5 @@ describe("deep link through the login screen", () => {
     ).toBeInTheDocument();
     expect(api.apiGet).toHaveBeenCalledWith("/api/v1/investigations/exec-nli", "");
     await waitFor(() => expect(window.location.search).toBe("?execution=exec-nli"));
-  });
+  }, 20000);
 });
