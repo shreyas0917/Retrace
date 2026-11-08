@@ -19,8 +19,9 @@ from __future__ import annotations
 import json
 import random
 from collections import defaultdict
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -213,14 +214,14 @@ def run_live_report(db: Session, *, suite_id: str = "live_v1", suite_version: st
     }
 
 
-def _records(directory) -> list[dict[str, Any]]:
+def _records(directory: Path) -> list[dict[str, Any]]:
     path = directory / "runs.jsonl"
     if not path.is_file():
         return []
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
-def _count(values) -> dict[str, int]:
+def _count(values: Iterable[str]) -> dict[str, int]:
     out: dict[str, int] = {}
     for v in values:
         out[v] = out.get(v, 0) + 1

@@ -224,11 +224,11 @@ def format_eval_report(result: dict[str, Any]) -> str:
     if failing:
         lines.append("")
         lines.append("Failing cases")
-        for c in failing:
+        for case in failing:
             lines.append(
-                f"  {c['case_id']}: expected={c['expected']['failure_code']} "
-                f"predicted={c['predicted']['failure_code']} "
-                f"rule={c['predicted']['rule_id']}"
+                f"  {case['case_id']}: expected={case['expected']['failure_code']} "
+                f"predicted={case['predicted']['failure_code']} "
+                f"rule={case['predicted']['rule_id']}"
             )
 
     if comparison.get("violations"):
