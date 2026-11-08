@@ -17,6 +17,10 @@ set -eu
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
+# Git Bash on Windows rewrites /container/paths into Windows paths; turn that off.
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*) export MSYS_NO_PATHCONV=1 ;;
+esac
 API="${RETRACE_API_BASE:-http://localhost:8000}"
 CONSOLE="${RETRACE_CONSOLE_URL:-http://localhost:3000}"
 READY_TIMEOUT="${DEMO_READY_TIMEOUT:-300}"
