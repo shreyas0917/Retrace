@@ -5,6 +5,8 @@ import { IconLogo } from "../components/icons";
 type Props = {
   onAuthenticated: () => void;
   apiBase: string;
+  /** Execution id from a `?execution=` deep link, opened after sign-in. */
+  pendingExecution?: string | null;
 };
 
 /**
@@ -12,7 +14,7 @@ type Props = {
  * answers with an HttpOnly session cookie; the key itself is never stored
  * in the bundle, localStorage or React state after submission.
  */
-export function LoginView({ onAuthenticated, apiBase }: Props) {
+export function LoginView({ onAuthenticated, apiBase, pendingExecution }: Props) {
   const [apiKey, setApiKey] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,6 +61,12 @@ export function LoginView({ onAuthenticated, apiBase }: Props) {
           Enter the operator API key once. The server issues a short-lived
           session cookie; the key is not stored in the browser.
         </p>
+        {pendingExecution ? (
+          <p className="note login-pending">
+            After you sign in, Investigate opens execution{" "}
+            <code>{pendingExecution}</code>.
+          </p>
+        ) : null}
         <label className="login-field">
           API key
           <input

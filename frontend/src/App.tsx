@@ -18,6 +18,7 @@ import {
   IconOverview,
 } from "./components/icons";
 import type { NavId } from "./types";
+import { readExecutionParam, syncExecutionUrl } from "./deepLink";
 
 // Views receive an empty key: requests authenticate with the HttpOnly
 // session cookie, so no credential is ever baked into the bundle.
@@ -70,12 +71,35 @@ const NAV: Array<{
 ];
 
 export default function App() {
-  const [nav, setNav] = useState<NavId>("overview");
+  // `?execution=<id>` deep link, parsed once at start-up. The URL is left
+  // untouched while signed out, so the link survives the login screen.
+  const [deepLinkId] = useState(() => readExecutionParam(window.location.search));
+  const [nav, setNav] = useState<NavId>(() => (deepLinkId ? "investigate" : "overview"));
   const [auth, setAuth] = useState<AuthStatus>("checking");
   const [health, setHealth] = useState<"checking" | "ok" | "error">("checking");
-  const [executionId, setExecutionId] = useState("");
+  const [executionId, setExecutionId] = useState(deepLinkId || "");
   const [navOpen, setNavOpen] = useState(false);
   const apiKey = SESSION_AUTH_KEY;
+
+  // Keep the URL in sync with the open execution once signed in.
+  useEffect(() => {
+    if (auth !== "authenticated") return;
+    if (nav === "investigate" && executionId) syncExecutionUrl(executionId);
+    else syncExecutionUrl(null, true);
+  }, [auth, nav, executionId]);
+
+  // Back/forward between executions.
+  useEffect(() => {
+    function onPop() {
+      const id = readExecutionParam(window.location.search);
+      if (id) {
+        setExecutionId(id);
+        setNav("investigate");
+      }
+    }
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
 
   const refreshAuth = useCallback(async () => {
     try {
@@ -145,6 +169,7 @@ export default function App() {
         ) : (
           <LoginView
             apiBase={API_BASE}
+            pendingExecution={deepLinkId}
             onAuthenticated={() => setAuth("authenticated")}
           />
         )}
@@ -161,6 +186,9 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#main">
+        Skip to content
+      </a>
       <aside
         className={navOpen ? "app-sidebar open" : "app-sidebar"}
         aria-label="Primary"
@@ -248,7 +276,7 @@ export default function App() {
           </div>
         </header>
 
-        <div className="main-content">
+        <main className="main-content" id="main" tabIndex={-1}>
           <ViewFade viewKey={nav}>
             {nav === "overview" && (
               <OverviewView apiKey={apiKey} onNavigate={goTo} />
@@ -268,7 +296,7 @@ export default function App() {
             )}
             {nav === "operations" && <OperationsView apiKey={apiKey} />}
           </ViewFade>
-        </div>
+        </main>
       </div>
     </div>
   );
