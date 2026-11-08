@@ -30,7 +30,7 @@ Open http://localhost:3000. The console asks for the operator API key once and e
 docker compose exec backend python /scripts/seed_demo_corpus.py
 ```
 
-Prints the READY corpus version and retrieval ranks for the PTO query. The demo corpus now has 12 policy documents.
+Prints the READY corpus version and retrieval ranks for the PTO query. The demo corpus has 13 policy documents.
 
 ### 3. Investigate an execution
 
