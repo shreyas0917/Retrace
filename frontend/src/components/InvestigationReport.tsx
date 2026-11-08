@@ -91,6 +91,21 @@ const THRESHOLD_NAMES: Record<string, string> = {
   TAU_DISTRACTOR_FRAC: "the distractor threshold",
 };
 
+/** Plain text for rule_catalog.py conditions that are not `key op value`. */
+export function conditionText(condition: string): string | null {
+  const c = condition.trim();
+  if (c === "gold_ids present") return "Expected (gold) passage ids were supplied";
+  if (c === "judges ran") return "The judges ran";
+  if (c === "no earlier rule matched") return "No earlier rule matched";
+  if (c.startsWith("missing_answer")) {
+    return "No answer text, and the run did not abstain, time out or fail";
+  }
+  if (c.startsWith("signals inconsistent")) {
+    return "The signals disagree: low faithfulness with no unsupported claims, or a required judge verdict is missing";
+  }
+  return null;
+}
+
 /** "context_sufficient == false" → readable parts; null when not parseable. */
 export function describeCondition(
   condition: string,
@@ -802,6 +817,11 @@ function RuleDecision({
                           {d.label} {d.op} {d.value}
                           {actual != null ? <span className="muted"> (actual: {actual})</span> : null}
                         </span>
+                        <code className="cond-raw">{c}</code>
+                      </>
+                    ) : conditionText(c) ? (
+                      <>
+                        <span>{conditionText(c)}</span>
                         <code className="cond-raw">{c}</code>
                       </>
                     ) : (

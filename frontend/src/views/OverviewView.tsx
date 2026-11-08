@@ -9,7 +9,13 @@ import {
 } from "../components/ui";
 import { Stagger, StaggerItem } from "../components/motion";
 import { IconArrowRight } from "../components/icons";
-import { friendlyDiagnosis, type Severity } from "../labels";
+import {
+  friendlyDiagnosis,
+  opsSignalLabel,
+  statusLabel,
+  suiteLabel,
+  type Severity,
+} from "../labels";
 import type {
   DurableMetrics,
   ExperimentListItem,
@@ -130,7 +136,7 @@ export function OverviewView({ apiKey, onNavigate }: Props) {
       if (alerts.length > 0) {
         return {
           level: "medium",
-          headline: `${alerts.length} operational signal${alerts.length > 1 ? "s" : ""} need attention`,
+          headline: `${alerts.length} operational signal${alerts.length > 1 ? "s need" : " needs"} attention`,
           sub: "The service is running, but one or more monitored rates crossed its threshold. Review the signals below.",
         };
       }
@@ -381,10 +387,9 @@ export function OverviewView({ apiKey, onNavigate }: Props) {
                       >
                         <span style={{ minWidth: 0 }}>
                           <span className="recent-title">
-                            {e.suite_id || "suite"}{" "}
-                            <span className="muted">
-                              @ {e.suite_version || "—"}
-                            </span>
+                            {suiteLabel(e.suite_id)}{" "}
+                            <code className="muted">{e.suite_id || "—"}</code>
+                            <span className="muted"> v{e.suite_version || "—"}</span>
                           </span>
                           <span className="recent-meta" style={{ display: "block" }}>
                             {e.created_at
@@ -392,7 +397,7 @@ export function OverviewView({ apiKey, onNavigate }: Props) {
                               : e.experiment_id.slice(0, 8)}
                           </span>
                         </span>
-                        <StatusBadge status={e.status} />
+                        <StatusBadge status={e.status} label={statusLabel(e.status)} />
                       </button>
                     </li>
                   ))}
@@ -426,14 +431,16 @@ export function OverviewView({ apiKey, onNavigate }: Props) {
                   <li key={s.signal}>
                     <div className="recent-item" style={{ cursor: "default" }}>
                       <span style={{ minWidth: 0 }}>
-                        <span className="recent-title">{s.signal}</span>
+                        <span className="recent-title">
+                          {opsSignalLabel(s.signal).label} <code className="muted">{s.signal}</code>
+                        </span>
                         {s.description ? (
                           <span className="recent-meta" style={{ display: "block" }}>
                             {s.description}
                           </span>
                         ) : null}
                       </span>
-                      <StatusBadge status={s.status} />
+                      <StatusBadge status={s.status} label={statusLabel(s.status)} />
                     </div>
                   </li>
                 ))}

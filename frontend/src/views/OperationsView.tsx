@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
-import { apiGet, apiGetText } from "../api";
+import { apiGet } from "../api";
 import {
   EmptyState,
   ErrorBanner,
   LoadingState,
   PageHeader,
   RawToggle,
-  Section,
   StatusBadge,
+  Tip,
+  Bar,
 } from "../components/ui";
+import { RunbookDisclosure } from "../components/Runbook";
+import { opsSignalLabel, statusLabel } from "../labels";
 import type { DurableWindow, OpsSummaryV1 } from "../types";
 
 type Props = {
@@ -28,13 +31,6 @@ function signalTone(
   if (status === "ALERT") return "fail";
   if (status === "INSUFFICIENT_DATA") return "neutral";
   return "neutral";
-}
-
-function formatActual(actual: number | null | undefined, status: string) {
-  if (actual == null || status === "INSUFFICIENT_DATA") {
-    return "INSUFFICIENT DATA";
-  }
-  return Number(actual).toFixed(3);
 }
 
 /** Show real zeros; only "No data" when the counter key is absent. */
@@ -83,12 +79,12 @@ function DurablePanel({
   const http = window?.http_latency || {};
   const tok = window?.tokens || {};
   return (
-    <div className="panel tight" style={{ marginBottom: 16 }}>
+    <section className="report-card" aria-labelledby="telemetry-title">
       <div
         className="inline"
         style={{ justifyContent: "space-between", alignItems: "baseline" }}
       >
-        <h2 style={{ margin: 0 }}>Telemetry window</h2>
+        <h2 className="report-card-title" id="telemetry-title">Telemetry window</h2>
         <div className="inline" role="group" aria-label="Telemetry window">
           {WINDOWS.map((w) => (
             <button
@@ -175,7 +171,68 @@ function DurablePanel({
           configs/pricing.yaml (illustrative rates), not a bill.
         </p>
       )}
-    </div>
+    </section>
+  );
+}
+
+type Signal = OpsSummaryV1["signals"]["signals"][number];
+
+const SIGNAL_ORDER: Record<string, number> = { ALERT: 0, OK: 1, INSUFFICIENT_DATA: 2 };
+
+/** Alerts first, then OK, then not-enough-data; stable by name. */
+export function sortSignals(signals: Signal[]): Signal[] {
+  return [...signals].sort(
+    (a, b) =>
+      (SIGNAL_ORDER[a.status] ?? 1.5) - (SIGNAL_ORDER[b.status] ?? 1.5) ||
+      a.signal.localeCompare(b.signal),
+  );
+}
+
+function formatSignalNumber(value: number | null | undefined, unit: "rate" | "ms"): string {
+  if (value == null || !Number.isFinite(value)) return "—";
+  if (unit === "ms") return `${Math.round(value)} ms`;
+  return `${(value * 100).toFixed(value < 0.1 ? 2 : 1)}%`;
+}
+
+function SignalRow({ s, runbook }: { s: Signal; runbook?: string }) {
+  const meta = opsSignalLabel(s.signal);
+  const insufficient = s.status === "INSUFFICIENT_DATA" || s.actual == null;
+  const scale = Math.max(s.threshold * 2, s.actual ?? 0) || 1;
+  const alert = s.status === "ALERT";
+  return (
+    <li className={`signal-row ${alert ? "alert" : insufficient ? "nodata" : "ok"}`}>
+      <div className="signal-row-head">
+        <span className="signal-name">
+          <span className="signal-title">
+            {meta.label} <Tip text={s.description || meta.help} />
+          </span>
+          <code className="muted">{s.signal}</code>
+        </span>
+        <span className="signal-status">
+          <StatusBadge status={s.status} label={statusLabel(s.status)} tone={signalTone(s.status)} />
+          {statusLabel(s.status) !== s.status ? <code className="muted small">{s.status}</code> : null}
+        </span>
+      </div>
+      <div className="signal-meter">
+        {insufficient ? (
+          <span className="muted small">Not enough observations yet; this is not the same as zero.</span>
+        ) : (
+          <>
+            <Bar
+              value={(s.actual ?? 0) / scale}
+              marker={s.threshold / scale}
+              tone={alert ? "err" : "ok"}
+              label={`${meta.label}: ${formatSignalNumber(s.actual, meta.unit)} against threshold ${formatSignalNumber(s.threshold, meta.unit)}`}
+            />
+            <span className="signal-values tnum small">
+              <strong>{formatSignalNumber(s.actual, meta.unit)}</strong>
+              <span className="muted"> / threshold {formatSignalNumber(s.threshold, meta.unit)}</span>
+            </span>
+          </>
+        )}
+      </div>
+      {runbook ? <RunbookDisclosure slug={runbook} label="Runbook" /> : null}
+    </li>
   );
 }
 
@@ -183,7 +240,6 @@ export function OperationsView({ apiKey: _apiKey }: Props) {
   const [ops, setOps] = useState<OpsSummaryV1 | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [runbook, setRunbook] = useState("");
   const [runbookMap, setRunbookMap] = useState<Record<string, string>>({});
   const [windowMinutes, setWindowMinutes] = useState(1440);
 
@@ -191,14 +247,14 @@ export function OperationsView({ apiKey: _apiKey }: Props) {
     setLoading(true);
     setError("");
     try {
-      const body = await apiGet<OpsSummaryV1>(
-        `/api/v1/ops/summary?window_minutes=${minutes}`,
-      );
+      const body = await apiGet<OpsSummaryV1>(`/api/v1/ops/summary?window_minutes=${minutes}`);
       setOps(body);
-      const books = await apiGet<{
-        by_signal: Record<string, string>;
-      }>("/api/v1/runbooks");
-      setRunbookMap(books?.by_signal || {});
+      try {
+        const books = await apiGet<{ by_signal: Record<string, string> }>("/api/v1/runbooks");
+        setRunbookMap(books?.by_signal || {});
+      } catch {
+        setRunbookMap({});
+      }
     } catch (err) {
       setOps(null);
       setError(err instanceof Error ? err.message : "Unable to load ops summary");
@@ -212,15 +268,6 @@ export function OperationsView({ apiKey: _apiKey }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [windowMinutes]);
 
-  async function openRunbook(slug: string) {
-    try {
-      const text = await apiGetText(`/api/v1/runbooks/${slug}`);
-      setRunbook(text);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load runbook");
-    }
-  }
-
   const deps = (ops?.dependencies || {}) as Record<string, unknown>;
   const counters = ops?.metrics.counters_sample || {};
   const requests = counterValue(counters, "http.requests_total");
@@ -230,20 +277,39 @@ export function OperationsView({ apiKey: _apiKey }: Props) {
   const judgeMalformed = counterValue(counters, "judge.malformed");
   const p95 = ops?.metrics.http_latency?.p95_ms;
   const inMemorySource = ops?.metrics.source || "in-memory";
+  const signals = sortSignals(ops?.signals.signals || []);
+  const alerts = signals.filter((s) => s.status === "ALERT");
+  const noData = signals.filter((s) => s.status === "INSUFFICIENT_DATA" || s.actual == null);
+  const depOk = (v: unknown) => String(v).toLowerCase() === "ok";
+
+  const health = !ops
+    ? null
+    : !ops.ready
+      ? {
+          tone: "fail",
+          title: "Not ready",
+          detail:
+            "A required dependency is unavailable. New executions may fail until it recovers.",
+        }
+      : alerts.length
+        ? {
+            tone: "warn",
+            title: `${alerts.length} signal${alerts.length > 1 ? "s" : ""} alerting`,
+            detail: "The service is up, but a monitored rate is past its threshold. Alerts are listed first below.",
+          }
+        : {
+            tone: "ok",
+            title: "Healthy",
+            detail: "Dependencies are ready and no signal is past its threshold.",
+          };
 
   return (
     <div>
       <PageHeader
-        eyebrow="Operations"
         title="Operations"
-        description="System health, durable telemetry, signals, and runbooks."
+        description="Service health, durable telemetry, alert signals and their runbooks."
         actions={
-          <button
-            type="button"
-            className="secondary"
-            disabled={loading}
-            onClick={() => void refresh()}
-          >
+          <button type="button" className="secondary" disabled={loading} onClick={() => void refresh()}>
             Refresh
           </button>
         }
@@ -252,53 +318,60 @@ export function OperationsView({ apiKey: _apiKey }: Props) {
       {loading && !ops && <LoadingState label="Loading operations…" />}
       {!loading && !ops && <EmptyState>Unable to load operations.</EmptyState>}
 
-      {ops && (
-        <>
-          <div className="panel tight" style={{ marginBottom: 16 }}>
-            <h2>System health</h2>
-            <div className="inline" style={{ margin: "8px 0 12px" }}>
-              <StatusBadge
-                status={ops.ready ? "READY" : "NOT_READY"}
-                tone={ops.ready ? "ok" : "fail"}
-              />
+      {ops && health && (
+        <div className="eval-stack">
+          <section className={`gate-banner gate-${health.tone}`} aria-label="Service health" role="status">
+            <div className="gate-main">
+              <p className="diagnosis-kicker">Service health</p>
+              <h2 className="gate-title">{health.title}</h2>
+              <p className="gate-detail">
+                {health.detail}
+                {noData.length
+                  ? ` ${noData.length} signal${noData.length > 1 ? "s have" : " has"} too little data to judge.`
+                  : ""}
+              </p>
             </div>
-            <div className="meta-grid">
-              <div className="meta-item">
-                <span className="meta-k">PostgreSQL</span>
-                <span className="meta-v">
-                  <span
-                    className={
-                      String(deps.postgres).toLowerCase() === "ok"
-                        ? "status-dot ok"
-                        : "status-dot error"
-                    }
-                  >
-                    {String(deps.postgres ?? "—")}
-                  </span>
-                </span>
-              </div>
-              <div className="meta-item">
-                <span className="meta-k">Chroma</span>
-                <span className="meta-v">
-                  <span
-                    className={
-                      String(deps.chroma).toLowerCase() === "ok"
-                        ? "status-dot ok"
-                        : "status-dot error"
-                    }
-                  >
-                    {String(deps.chroma ?? "—")}
-                  </span>
-                </span>
-              </div>
-              <div className="meta-item">
-                <span className="meta-k">Embedding model</span>
-                <span className="meta-v">
-                  {String(deps.embedding_model ?? "—")}
-                </span>
+            <ul className="dep-list" aria-label="Dependencies">
+              {[
+                ["PostgreSQL", deps.postgres],
+                ["Chroma", deps.chroma],
+              ].map(([name, v]) => (
+                <li key={String(name)}>
+                  <span className={depOk(v) ? "status-dot ok" : "status-dot error"}>{String(name)}</span>
+                  <span className="muted small">{depOk(v) ? "Ready" : v == null ? "Unknown" : String(v)}</span>
+                </li>
+              ))}
+              {deps.embedding_model ? (
+                <li>
+                  <span>Embedding model</span>
+                  <span className="muted small">{String(deps.embedding_model)}</span>
+                </li>
+              ) : null}
+            </ul>
+          </section>
+
+          <section className="report-card" aria-labelledby="signals-title">
+            <div className="report-card-head">
+              <div>
+                <h2 className="report-card-title" id="signals-title">
+                  Signals
+                </h2>
+                <p className="section-desc">
+                  Actual value against its threshold (the dark marker). Alerts first.
+                </p>
               </div>
             </div>
-          </div>
+            {signals.length === 0 ? (
+              <EmptyState compact>No signals configured.</EmptyState>
+            ) : (
+              <ul className="signal-list">
+                {signals.map((s) => (
+                  <SignalRow key={s.signal} s={s} runbook={runbookMap[s.signal]} />
+                ))}
+              </ul>
+            )}
+            {ops.signals.metrics_note ? <p className="muted small">{ops.signals.metrics_note}</p> : null}
+          </section>
 
           <DurablePanel
             window={ops.metrics.durable_window}
@@ -307,138 +380,34 @@ export function OperationsView({ apiKey: _apiKey }: Props) {
             inMemorySource={inMemorySource}
           />
 
-          <h2 className="muted small" style={{ margin: "0 0 8px" }}>
-            Live process counters (source: {inMemorySource}, since last restart)
-          </h2>
-          <div className="metric-strip">
-            <div className="metric-cell">
-              <div className="metric-label">Requests</div>
-              <div className={requests.missing ? "metric-value muted" : "metric-value"}>
-                {requests.text}
+          <section className="report-card" aria-labelledby="counters-title">
+            <div className="report-card-head">
+              <div>
+                <h2 className="report-card-title" id="counters-title">
+                  Live process counters
+                </h2>
+                <p className="section-desc">Source: {inMemorySource}, since the last restart of this process.</p>
               </div>
             </div>
-            <div className="metric-cell">
-              <div className="metric-label">Errors</div>
-              <div className={errors.missing ? "metric-value muted" : "metric-value"}>
-                {errors.text}
-              </div>
-            </div>
-            <div className="metric-cell">
-              <div className="metric-label">P95</div>
-              <div className={p95 == null ? "metric-value muted" : "metric-value"}>
-                {p95 != null ? `${p95} ms` : "No data"}
-              </div>
-            </div>
-            <div className="metric-cell">
-              <div className="metric-label">Diagnoses</div>
-              <div className={diagnoses.missing ? "metric-value muted" : "metric-value"}>
-                {diagnoses.text}
-              </div>
-            </div>
-            <div className="metric-cell">
-              <div className="metric-label">Retrieval empty</div>
-              <div
-                className={
-                  retrievalEmpty.missing ? "metric-value muted" : "metric-value"
-                }
-              >
-                {retrievalEmpty.text}
-              </div>
-            </div>
-            <div className="metric-cell">
-              <div className="metric-label">Judge malformed</div>
-              <div
-                className={
-                  judgeMalformed.missing ? "metric-value muted" : "metric-value"
-                }
-              >
-                {judgeMalformed.text}
-              </div>
-            </div>
-          </div>
-
-          <div className="panel tight">
-            <Section title="Signals">
-              {ops.signals.signals.length === 0 ? (
-                <EmptyState>No signals configured.</EmptyState>
-              ) : (
-                <div className="table-scroll">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Signal</th>
-                        <th>Actual</th>
-                        <th className="num">Threshold</th>
-                        <th>Status</th>
-                        <th>Runbook</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {ops.signals.signals.map((s) => {
-                        const insufficient =
-                          s.status === "INSUFFICIENT_DATA" || s.actual == null;
-                        return (
-                          <tr key={s.signal}>
-                            <td>
-                              <code>{s.signal}</code>
-                            </td>
-                            <td>
-                              {insufficient ? (
-                                <span className="muted">INSUFFICIENT DATA</span>
-                              ) : (
-                                <span className="mono">
-                                  {formatActual(s.actual, s.status)}
-                                </span>
-                              )}
-                            </td>
-                            <td className="num">{s.threshold}</td>
-                            <td>
-                              <StatusBadge
-                                status={s.status}
-                                tone={signalTone(s.status)}
-                              />
-                            </td>
-                            <td>
-                              {runbookMap[s.signal] ? (
-                                <button
-                                  type="button"
-                                  className="secondary"
-                                  onClick={() =>
-                                    void openRunbook(runbookMap[s.signal])
-                                  }
-                                >
-                                  Runbook
-                                </button>
-                              ) : (
-                                "—"
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+            <div className="metric-strip flush">
+              {[
+                ["Requests", requests.text, requests.missing],
+                ["Server errors", errors.text, errors.missing],
+                ["p95 latency", p95 != null ? `${p95} ms` : "No data", p95 == null],
+                ["Diagnoses", diagnoses.text, diagnoses.missing],
+                ["Empty retrievals", retrievalEmpty.text, retrievalEmpty.missing],
+                ["Malformed judge outputs", judgeMalformed.text, judgeMalformed.missing],
+              ].map(([label, text, missing]) => (
+                <div className="metric-cell" key={String(label)}>
+                  <div className="metric-label">{String(label)}</div>
+                  <div className={missing ? "metric-value muted" : "metric-value"}>{String(text)}</div>
                 </div>
-              )}
-              {ops.signals.signals.some(
-                (s) => s.status === "INSUFFICIENT_DATA",
-              ) && (
-                <p className="muted small" style={{ marginTop: 12 }}>
-                  INSUFFICIENT_DATA means not enough observations yet — not
-                  zero.
-                </p>
-              )}
-            </Section>
+              ))}
+            </div>
+          </section>
 
-            {runbook && (
-              <Section title="Runbook">
-                <pre className="runbook">{runbook}</pre>
-              </Section>
-            )}
-
-            <RawToggle label="View raw ops summary" data={ops} />
-          </div>
-        </>
+          <RawToggle label="View raw ops summary" data={ops} />
+        </div>
       )}
     </div>
   );
