@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### live_v1 benchmark (PROVISIONAL — AI-drafted labels, not yet reviewed by the author)
+- `live_v1` has labels: an AI agent drafted them blind (it saw only the labelling sheet, the guide and the corpus chunks), with a reason and a high/low confidence per case, in `data/labelling/live_v1_sheet.ai_draft.csv`. The suite manifest records annotator `ai_draft_blind` and `provisional: true`.
+- `docs/benchmarks/live_v1.md` is generated from them by `retrace benchmark report --suite live_v1` and carries a PROVISIONAL banner. Its numbers are not quoted anywhere else until the author has reviewed the labels.
+- `live_labelling.py merge --annotator` takes `author`, `ai_draft_blind` or `ai_draft_author_reviewed`. The reviewed mode needs `--draft`, refuses rows without an agree/change decision, and records how many cases the review changed; the report then says "AI-drafted, reviewed and corrected by the author (N of 50 changed)".
+- `scripts/build_review_page.py` builds `data/labelling/REVIEW_ME.html` (not committed): one case per screen, low-confidence cases first, Agree/Change, CSV export. It reads only blind inputs, so it cannot show a prediction or an injected condition.
+- The live report labels every miss cause as "suggested" and has a "What this does and doesn't show" section. Reports run through `scripts/dev_test.sh` now name their commit (`RETRACE_GIT_COMMIT`).
+
 ### Console redesign (Phase 7)
 - Merged the parked `console-refresh` branch (light/dark/system theme, Overview page, plain-English diagnosis) and removed `framer-motion`: view and list fades are CSS transitions, and `prefers-reduced-motion` turns them off. No UI library was added.
 - `frontend/src/labels.ts` replaces `taxonomy.ts` and holds the human labels for every failure code in `taxonomy.py` (including reserved codes), recommendation codes, diagnosis and operations signals, evaluation metrics, suites, judges and statuses. A test parses the backend files and fails if a code has no label. Raw codes are still shown, next to their label.
