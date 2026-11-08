@@ -82,7 +82,13 @@ def test_labels_load_and_match_manifest() -> None:
     per_judge = {j: sum(1 for e in examples if e.judge == j) for j in JUDGE_TYPES}
     assert per_judge == manifest["per_judge"]
     assert all(per_judge[j] >= 15 for j in JUDGE_TYPES)
-    assert all(e.annotator == "author" and e.annotation_date for e in examples)
+    # Provenance: AI-drafted until the author reviews them (then
+    # "ai_draft_author_reviewed"). Never claim a human label that was not given.
+    assert all(
+        e.annotator in {"ai_draft", "ai_draft_author_reviewed"} and e.annotation_date
+        for e in examples
+    )
+    assert manifest["annotator"] in {"ai_draft", "ai_draft_author_reviewed"}
     tags = {t for e in examples for t in e.tags}
     assert {"injection", "missing_info_not_contradiction", "numerically_wrong", "partially_supported"} <= tags
     # hard cases: injection chunks exist for every judge type

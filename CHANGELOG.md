@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Calibration
+- `retrace benchmark report` no longer rewrites `backend/configs/calibration.json` as a side effect. A fresh fit is reported for comparison; `--write-calibration` is required to write it, and the report states which calibrator its numbers used.
+
+### Label provenance
+- Corrected a false claim: the 66 judge labels and 87 retrieval queries were drafted by an AI agent, not written by hand. README and docs now say "AI-drafted, not yet reviewed", both datasets record `annotator: ai_draft`, and the generated reports carry a provenance note because their recorded hashes predate the metadata change.
+- The same correction for the 12 `planted_v1` scenarios and the 2 `gold_v1` cases: they were AI-drafted, not hand-written. Their cases now record `annotator: ai_draft` (was `human_a`), the manifests carry a provenance line, and both suite hashes were recomputed (`planted_v1` sha256:94e67d46…, `gold_v1` sha256:102a431a…). Baselines promoted against the old hashes must be re-promoted.
+- Removed an untrue "reviewed by the project author" line from the heldout suite generator.
+- Added `scripts/judge_labels_review.py` and `data/labelling/judge_labels_v1_review.csv` (173 label rows) so the author can review every judge label before Phase 2 uses them. `apply` records the reviewer, date and number of changed labels.
+
 ## 1.0.0 — 2026-10-26
 
 Addresses the seven gaps identified in the portfolio review: held-out benchmark, rule-engine comparison and calibration, retrieval quality evidence, judge validation, durable telemetry, security hardening, and scale/resilience evidence.

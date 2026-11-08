@@ -4,6 +4,8 @@
 
 Generated 2026-10-26T06:59:03+00:00 by `retrace judges validate` (elapsed 5460.49s). Model `llama3.2:latest` at `http://host.docker.internal:11434/v1`, temperature 0.0, provider class `OpenAICompatibleProvider`.
 
+> **Provenance note (2026-11-08).** The labels used for this run are AI-drafted and not yet reviewed by a human. Their values are unchanged since the run, but the dataset's annotator metadata was later corrected from `author` to `ai_draft`. That edit changed the file hash, so the hash recorded below identifies the file as it was when this report was generated.
+
 ## Labeled example set
 
 - 66 examples (relevance: 24, faithfulness: 24, contradiction: 18).

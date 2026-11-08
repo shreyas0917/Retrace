@@ -10,10 +10,10 @@ calibration and how the rule engine compares with other classifiers.
 
 | Suite | Cases | Purpose | Used for tuning? |
 | --- | ---: | --- | --- |
-| `planted_v1` | 12 | One unambiguous scenario per failure class; CI smoke gate | Rules were written against these semantics |
+| `planted_v1` | 12 | One unambiguous scenario per failure class; CI smoke gate; AI-drafted, not yet reviewed | Rules were written against these semantics |
 | `calib_v1` | 80 | Fit the confidence calibrator | Only for calibration, never for rules |
 | `heldout_v1` | 160 | Per-class precision/recall/F1, calibration check, classifier comparison | Never |
-| `gold_v1` | 2 | Hand-written offline executions | No |
+| `gold_v1` | 2 | Offline executions; AI-drafted, not yet reviewed | No |
 
 `heldout_v1` and `calib_v1` are produced by `scripts/build_heldout_suite.py`
 from a bank of 26 policy facts across 13 documents and 12 scenario templates
@@ -58,6 +58,12 @@ stored in `backend/configs/calibration.json` and applied at diagnosis time;
 `calibrated_confidence` and `calibration_version` are persisted with every
 diagnosis and shown in the console. Bins with no calibration observations
 fall back to the raw score rather than inventing a probability.
+
+Running the benchmark report never changes the committed calibrator on its
+own. With `--calibrate-on` it fits a fresh calibrator and reports it for
+comparison; only `--write-calibration` writes it to
+`backend/configs/calibration.json`. The report always states which
+calibrator its calibrated numbers used.
 
 ## Classifier comparison
 
@@ -109,6 +115,7 @@ docker compose exec backend python -m app.cli.retrace benchmark report \
   --suite heldout_v1 --calibrate-on calib_v1 \
   --markdown /docs/benchmarks/heldout_v1.md --out /data/reports/heldout_report.json
 # add --with-llm to include the LLM classifier (uses MODEL_* from .env)
+# add --write-calibration to refit and replace the committed calibrator
 ```
 
 The held-out run is also a test: `backend/tests/test_v1_diagnosis_benchmark.py`

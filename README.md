@@ -56,7 +56,7 @@ Every number below comes from a committed, reproducible report. Commands to rege
 | Is its confidence calibrated? | Expected calibration error 0.128 → 0.004 and Brier 0.047 → 0.011 after histogram calibration fitted on a disjoint 80-case suite | [heldout_v1.md](docs/benchmarks/heldout_v1.md#confidence-calibration) |
 | How do the rules compare with other classifiers on identical inputs? | Rule engine 98.1% · heuristic baseline 48.1% · majority 12.5% · LLM classifier (local `llama3.2`, 3B) 40.6%, macro-F1 0.42, 9 s per case vs 0.3 ms | [heldout_v1.md](docs/benchmarks/heldout_v1.md#classifier-comparison-on-identical-signal-bags) |
 | Is retrieval actually good? | Production config (512/64 chunks, MiniLM dense): Recall@5 0.947, MRR 0.849, nDCG@10 0.869 on 82 answerable queries over 13 documents; BM25 0.890 / 0.816 / 0.830; best measured: 1024/128 hybrid with `bge-small` at Recall@5 0.953, MRR 0.919, nDCG@10 0.928 | [retrieval_ablation.md](docs/benchmarks/retrieval_ablation.md) |
-| Can the LLM judges be trusted? | Measured, not assumed: against the full 66 labelled examples (282 calls, zero schema failures) with a local `llama3.2` (3B) the contradiction judge reaches kappa 0.78, the relevance judge kappa 0.69 per chunk but only 29% accuracy on "context sufficient", and the faithfulness judge kappa 0.02 (it returns a near-zero score even for fully supported answers); prompt rewording flips 13 to 20% of relevance verdicts | [judge_validation.md](docs/benchmarks/judge_validation.md) |
+| Can the LLM judges be trusted? | Measured, not assumed: against the full 66 labelled examples, AI-drafted and not yet reviewed (282 calls, zero schema failures) with a local `llama3.2` (3B) the contradiction judge reaches kappa 0.78, the relevance judge kappa 0.69 per chunk but only 29% accuracy on "context sufficient", and the faithfulness judge kappa 0.02 (it returns a near-zero score even for fully supported answers); prompt rewording flips 13 to 20% of relevance verdicts | [judge_validation.md](docs/benchmarks/judge_validation.md) |
 | Does it hold up under load and failure? | 0% errors at concurrency 25; retrieval saturates at 6 to 7 req/s on one CPU-bound worker (p95 2.3 s at c=10); fault-injection tests for LLM 5xx/429/timeouts, 20 concurrent generations, Chroma outage and database errors | [load_test.md](docs/benchmarks/load_test.md), `backend/tests/test_resilience.py` |
 | Do metrics survive a restart? | Yes: every counter and latency sample is also written to PostgreSQL; p50/p95/p99, error rates, tokens and cost are queried per time window | [observability.md](docs/observability.md) |
 
@@ -222,10 +222,10 @@ CLI (inside the backend container, `python -m app.cli.retrace ...`):
 
 | Suite | Cases | Role |
 | --- | ---: | --- |
-| `planted_v1` | 12 | One unambiguous scenario per failure class; CI smoke gate (2% error ceiling) |
+| `planted_v1` | 12 | One unambiguous scenario per failure class; CI smoke gate (2% error ceiling); AI-drafted, not yet reviewed |
 | `heldout_v1` | 160 | Generated from scenario semantics with 15% boundary cases; never used for tuning |
 | `calib_v1` | 80 | Fits the confidence calibrator; disjoint from the held-out suite |
-| `gold_v1` | 2 | Hand-written offline executions |
+| `gold_v1` | 2 | Offline executions; AI-drafted, not yet reviewed |
 
 ```bash
 docker compose exec backend python -m app.cli.retrace eval --suite heldout_v1
@@ -251,7 +251,7 @@ Exit codes are designed for CI: `0` pass, `1` regression against the baseline or
 
 ## Retrieval quality
 
-`retrace retrieval-eval` chunks the demo corpus with each configuration, embeds with the project's model, and scores dense cosine, Okapi BM25 and a reciprocal-rank-fusion hybrid against 87 hand-written queries (82 answerable, 5 unanswerable) whose relevance is defined independently of chunking. Headline rows from [docs/benchmarks/retrieval_ablation.md](docs/benchmarks/retrieval_ablation.md):
+`retrace retrieval-eval` chunks the demo corpus with each configuration, embeds with the project's model, and scores dense cosine, Okapi BM25 and a reciprocal-rank-fusion hybrid against 87 queries (AI-drafted, not yet reviewed) (82 answerable, 5 unanswerable) whose relevance is defined independently of chunking. Headline rows from [docs/benchmarks/retrieval_ablation.md](docs/benchmarks/retrieval_ablation.md):
 
 | Config | Retriever | Recall@5 | MRR | nDCG@10 |
 | --- | --- | ---: | ---: | ---: |
@@ -264,7 +264,7 @@ Takeaways: dense beats BM25 on paraphrased queries while BM25 matches it on lite
 
 ## Judge validation
 
-`retrace judges validate` runs each judge against 66 author-labelled examples (24 relevance, 24 faithfulness, 18 contradiction, including partially supported answers, numerically wrong answers, missing-information-is-not-a-contradiction cases and chunks carrying prompt-injection text), reports accuracy, precision/recall/F1, Cohen's kappa and score error, checks inter-judge consistency (for example a contradiction verdict with a perfect faithfulness score), and measures how often labels flip across meaning-preserving prompt variants. Model, temperature, prompt version and prompt hash are recorded with every run.
+`retrace judges validate` runs each judge against 66 examples (AI-drafted, not yet reviewed) (24 relevance, 24 faithfulness, 18 contradiction, including partially supported answers, numerically wrong answers, missing-information-is-not-a-contradiction cases and chunks carrying prompt-injection text), reports accuracy, precision/recall/F1, Cohen's kappa and score error, checks inter-judge consistency (for example a contradiction verdict with a perfect faithfulness score), and measures how often labels flip across meaning-preserving prompt variants. Model, temperature, prompt version and prompt hash are recorded with every run.
 
 Live result with a local `llama3.2` (3B, CPU, temperature 0, full 66-example set, zero schema failures across 282 calls):
 

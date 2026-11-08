@@ -92,6 +92,8 @@ class RetrievalQuery(BaseModel):
     relevant: list[RelevantSpan] = Field(default_factory=list)
     difficulty: Literal["easy", "medium", "hard"]
     tags: list[str] = Field(default_factory=list)
+    # Label provenance: "ai_draft" until a human reviews the qrels.
+    annotator: str | None = None
 
     @property
     def answerable(self) -> bool:

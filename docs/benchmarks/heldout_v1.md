@@ -136,4 +136,5 @@ Example explanations produced by the engine for misclassified cases:
 python scripts/build_heldout_suite.py --check
 docker compose exec backend python -m app.cli.retrace benchmark report --suite heldout_v1 --calibrate-on calib_v1 --markdown /docs/benchmarks/heldout_v1.md
 # add --with-llm to include the LLM classifier (needs MODEL_* configured)
+# add --write-calibration to refit and replace backend/configs/calibration.json
 ```

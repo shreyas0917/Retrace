@@ -2,7 +2,7 @@
   "dataset_id": "demo_qrels",
   "version": "1",
   "file": "demo_qrels_v1.jsonl",
-  "dataset_hash": "sha256:12cd0c1eb09bb60be4d154983af32924a7c6a9dddf287d5e963a315b542c2d8a",
+  "dataset_hash": "sha256:0a2d4dd88af61e159a18a88f50aca0e7ce38bab1598e59576026ed842d16a883",
   "query_count": 87,
   "answerable": 82,
   "unanswerable": 5,
@@ -14,6 +14,7 @@
   "multi_document_queries": 9,
   "corpus": "data/corpus/demo (13 documents)",
   "relevance_definition": "A chunk is relevant iff its document_id matches and the normalized chunk text (lowercase, whitespace collapsed) contains the normalized must_contain substring. must_contain is <= 32 chars so it fits inside the overlap of the smallest chunking config (256/32).",
-  "annotator": "author",
-  "annotation_date": "2026-10-26"
+  "annotator": "ai_draft",
+  "annotation_date": "2026-10-26",
+  "source": "AI-drafted, not yet reviewed. Queries and relevance substrings were written by an AI agent; no human has checked them yet."
 }

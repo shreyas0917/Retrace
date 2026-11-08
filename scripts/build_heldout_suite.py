@@ -3,7 +3,8 @@
 
 Why a generator
 ---------------
-The planted suite has 12 hand-written scenarios, one per failure class. That
+The planted suite has 12 scenarios, one per failure class (AI-drafted, not
+yet reviewed; annotator `ai_draft`). That
 is enough to prove the rule engine is wired correctly, but not enough to
 estimate precision/recall per class or to calibrate confidence. This script
 produces a larger, seeded, reproducible set of offline execution fixtures
@@ -18,7 +19,7 @@ Honesty notes
   match the scenario. They are NOT live-LLM outputs and the suite does not
   prove live-model robustness. See docs/benchmarks/heldout_v1.md.
 * Labels were authored by the generator's scenario templates (annotator
-  `synthetic_generator_v1`), reviewed by the project author.
+  `synthetic_generator_v1`). No human has reviewed them.
 * `heldout_v1` and `calib_v1` use different seeds and are disjoint by
   construction (different case ids, different sampled parameters).
 
