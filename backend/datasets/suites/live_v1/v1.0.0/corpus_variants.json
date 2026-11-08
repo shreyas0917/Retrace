@@ -1,0 +1,31 @@
+{
+  "_comment": "Corpus variants for live_v1. 'main' is the demo corpus as shipped. Variants are ingested as separate corpora and never modify the main one. Document ids are file stems, as in scripts/seed_demo_corpus.py.",
+  "base_dir": "/data/corpus/demo",
+  "chunking_config": {
+    "strategy": "recursive_character",
+    "chunk_size": 512,
+    "chunk_overlap": 64,
+    "tokenizer": "char"
+  },
+  "variants": {
+    "main": {
+      "corpus_id": "demo",
+      "title": "Demo Policies"
+    },
+    "gold_removed": {
+      "corpus_id": "demo_live_variant_a",
+      "title": "Demo Policies, live_v1 variant A (documents removed)",
+      "remove": [
+        "travel_policy",
+        "data_retention",
+        "incident_response",
+        "performance_reviews"
+      ]
+    },
+    "distractors": {
+      "corpus_id": "demo_live_variant_b",
+      "title": "Demo Policies, live_v1 variant B (near-topic documents added)",
+      "add_dir": "/data/corpus/variants/distractors"
+    }
+  }
+}

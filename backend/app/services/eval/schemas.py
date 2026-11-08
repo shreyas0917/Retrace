@@ -22,7 +22,13 @@ class OfflineExecution(BaseModel):
     abstained: bool = False
     status: str = "COMPLETED"
     error_code: str | None = None
-    judge_scripts: dict[str, list[str]] | None = None
+    # Per judge type: a list of raw LLM replies in call order, or, for
+    # `faithfulness_nli`, one recorded NLI result object (live_v1).
+    judge_scripts: dict[str, Any] | None = None
+    # Recorded by live_v1 runs; synthetic fixtures leave them unset.
+    generation_model: str | None = None
+    prompt_version: str | None = None
+    judge_timeout_on: str | None = None
 
 
 class GoldCase(BaseModel):

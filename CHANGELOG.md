@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Live benchmark, recording and blind labelling (Phase 3)
+- `scripts/build_live_suite.py` records about 50 real pipeline runs for `live_v1` (real retrieval, generation and judges) and appends each run record to `runs.jsonl` as soon as it finishes, so an interrupted build resumes where it stopped. `--verify-replay` checks that offline replay reproduces every live diagnosis; `--freeze` writes `runs_manifest.json`, which `build_heldout_suite.py --check` now verifies (ADR-046).
+- Eval-only generator faults (`wrong_facts`, `extra_unsupported_claim`) through `run_rag(eval_fault=...)`; the public `POST /api/v1/generate` cannot set them. Corpus variants without four documents, or with six near-topic documents, are ingested as separate corpora and never change `demo`.
+- Offline fixtures accept a recorded NLI result and record the real generation model and prompt version; the suite runner uses them instead of fixed placeholders when present.
+- `scripts/live_labelling.py export` writes a blind labelling sheet (CSV plus a read-only HTML view and the corpus chunk list) with no condition, judge output or prediction on it. `docs/labelling-guide.md` explains the codes, the decision order and three worked examples. No labels are written by the tooling.
+
 ### Claim-level NLI faithfulness (Phase 2)
 - Faithfulness now defaults to a claim-level NLI judge (`FAITHFULNESS_BACKEND=nli`, ADR-045): a deterministic claim splitter, `cross-encoder/nli-deberta-v3-small` pinned to a commit and pre-downloaded in the image, premises cut into single sentences and adjacent sentence pairs (SummaC-style; whole-paragraph premises made the model call verbatim support neutral), overlapping windows for over-long sentences, and one batched scoring call. The label order is read from the model config. A claim is supported when entailment is its top label for some premise unit, and contradicted only if no unit supports it; nothing was tuned on labels.
 - Results keep the rules' schema (`faithfulness_score`, claims) and add per-claim evidence, the pinned model and revision, and an `nli_contradiction` cross-check signal that no rule reads yet. The LLM judge remains available with `FAITHFULNESS_BACKEND=llm`.

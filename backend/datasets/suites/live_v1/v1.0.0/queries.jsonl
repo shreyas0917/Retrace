@@ -1,0 +1,50 @@
+{"query_id": "L01", "condition": "clean", "corpus_variant": "main", "eval_fault": null, "query": "How many days of PTO do full-time employees accrue per month?"}
+{"query_id": "L02", "condition": "clean", "corpus_variant": "main", "eval_fault": null, "query": "How many unused PTO days can be carried over into the next year?"}
+{"query_id": "L03", "condition": "clean", "corpus_variant": "main", "eval_fault": null, "query": "Within how many days of purchase can a customer request a full refund?"}
+{"query_id": "L04", "condition": "clean", "corpus_variant": "main", "eval_fault": null, "query": "What is the deadline for submitting an expense report?"}
+{"query_id": "L05", "condition": "clean", "corpus_variant": "main", "eval_fault": null, "query": "What is the mileage reimbursement rate for using a personal vehicle?"}
+{"query_id": "L06", "condition": "clean", "corpus_variant": "main", "eval_fault": null, "query": "How long must company passwords be?"}
+{"query_id": "L07", "condition": "clean", "corpus_variant": "main", "eval_fault": null, "query": "How much does the company contribute to the health savings account each year?"}
+{"query_id": "L08", "condition": "clean", "corpus_variant": "main", "eval_fault": null, "query": "What is the 401(k) matching policy?"}
+{"query_id": "L09", "condition": "clean", "corpus_variant": "main", "eval_fault": null, "query": "How many weeks of paid parental leave does the primary caregiver get?"}
+{"query_id": "L10", "condition": "clean", "corpus_variant": "main", "eval_fault": null, "query": "What is the one-time home office stipend for remote workers?"}
+{"query_id": "L11", "condition": "clean", "corpus_variant": "main", "eval_fault": null, "query": "Which form is used to request new software?"}
+{"query_id": "L12", "condition": "clean", "corpus_variant": "main", "eval_fault": null, "query": "How long are database backups retained?"}
+{"query_id": "L13", "condition": "clean", "corpus_variant": "main", "eval_fault": null, "query": "How many written quotes are needed for a purchase between $1,000 and $10,000?"}
+{"query_id": "L14", "condition": "clean", "corpus_variant": "main", "eval_fault": null, "query": "How long is the probation period for new hires?"}
+{"query_id": "L15", "condition": "clean", "corpus_variant": "main", "eval_fault": null, "query": "Within what time must a lost or stolen laptop be reported?"}
+{"query_id": "L16", "condition": "unanswerable", "corpus_variant": "main", "eval_fault": null, "query": "What is the company dress code for client meetings?"}
+{"query_id": "L17", "condition": "unanswerable", "corpus_variant": "main", "eval_fault": null, "query": "How many days of paid jury duty leave do employees get?"}
+{"query_id": "L18", "condition": "unanswerable", "corpus_variant": "main", "eval_fault": null, "query": "What is the employee discount on company products?"}
+{"query_id": "L19", "condition": "unanswerable", "corpus_variant": "main", "eval_fault": null, "query": "Can employees bring their dogs to the office?"}
+{"query_id": "L20", "condition": "unanswerable", "corpus_variant": "main", "eval_fault": null, "query": "What is the company's policy on stock options for new hires?"}
+{"query_id": "L21", "condition": "unanswerable", "corpus_variant": "main", "eval_fault": null, "query": "How much is the annual cell phone allowance?"}
+{"query_id": "L22", "condition": "unanswerable", "corpus_variant": "main", "eval_fault": null, "query": "What is the maximum number of overtime hours per week for hourly staff?"}
+{"query_id": "L23", "condition": "unanswerable", "corpus_variant": "main", "eval_fault": null, "query": "Who is the current CEO of the company?"}
+{"query_id": "L24", "condition": "gold_removed", "corpus_variant": "gold_removed", "eval_fault": null, "query": "What is the nightly hotel rate cap for domestic travel?"}
+{"query_id": "L25", "condition": "gold_removed", "corpus_variant": "gold_removed", "eval_fault": null, "query": "When is business class allowed on flights?"}
+{"query_id": "L26", "condition": "gold_removed", "corpus_variant": "gold_removed", "eval_fault": null, "query": "What does a legal hold do to scheduled data deletion?"}
+{"query_id": "L27", "condition": "gold_removed", "corpus_variant": "gold_removed", "eval_fault": null, "query": "How quickly must a SEV1 incident be acknowledged by the on-call engineer?"}
+{"query_id": "L28", "condition": "gold_removed", "corpus_variant": "gold_removed", "eval_fault": null, "query": "How soon after resolution must a SEV1 postmortem be published?"}
+{"query_id": "L29", "condition": "gold_removed", "corpus_variant": "gold_removed", "eval_fault": null, "query": "When are employee self-assessments due in the annual review?"}
+{"query_id": "L30", "condition": "gold_removed", "corpus_variant": "gold_removed", "eval_fault": null, "query": "What is the minimum length of a Performance Improvement Plan?"}
+{"query_id": "L31", "condition": "distractors", "corpus_variant": "distractors", "eval_fault": null, "query": "Within how many days can customers get a refund on a physical product?"}
+{"query_id": "L32", "condition": "distractors", "corpus_variant": "distractors", "eval_fault": null, "query": "How many PTO days per year do full-time employees get?"}
+{"query_id": "L33", "condition": "distractors", "corpus_variant": "distractors", "eval_fault": null, "query": "What mileage rate is reimbursed for business driving?"}
+{"query_id": "L34", "condition": "distractors", "corpus_variant": "distractors", "eval_fault": null, "query": "How often must passwords be rotated?"}
+{"query_id": "L35", "condition": "distractors", "corpus_variant": "distractors", "eval_fault": null, "query": "How many remote days per week are allowed by default?"}
+{"query_id": "L36", "condition": "distractors", "corpus_variant": "distractors", "eval_fault": null, "query": "How much is the monthly home internet reimbursement for remote workers?"}
+{"query_id": "L37", "condition": "distractors", "corpus_variant": "distractors", "eval_fault": null, "query": "Up to what percentage of salary does the company match 401(k) contributions?"}
+{"query_id": "L38", "condition": "wrong_answer_prompt", "corpus_variant": "main", "eval_fault": "wrong_facts", "query": "What is the daily meal per diem for international travel?"}
+{"query_id": "L39", "condition": "wrong_answer_prompt", "corpus_variant": "main", "eval_fault": "wrong_facts", "query": "Within how many days must a verified personal data deletion request be completed?"}
+{"query_id": "L40", "condition": "wrong_answer_prompt", "corpus_variant": "main", "eval_fault": "wrong_facts", "query": "What is the learning stipend per calendar year?"}
+{"query_id": "L41", "condition": "wrong_answer_prompt", "corpus_variant": "main", "eval_fault": "wrong_facts", "query": "How many free counseling sessions does the Employee Assistance Program offer?"}
+{"query_id": "L42", "condition": "wrong_answer_prompt", "corpus_variant": "main", "eval_fault": "wrong_facts", "query": "What purchases require CFO approval?"}
+{"query_id": "L43", "condition": "wrong_answer_prompt", "corpus_variant": "main", "eval_fault": "wrong_facts", "query": "How many days of paid sick leave do employees receive per year?"}
+{"query_id": "L44", "condition": "wrong_answer_prompt", "corpus_variant": "main", "eval_fault": "wrong_facts", "query": "How far in advance must PTO requests be submitted?"}
+{"query_id": "L45", "condition": "extra_unsupported_claim", "corpus_variant": "main", "eval_fault": "extra_unsupported_claim", "query": "What are the standard office hours?"}
+{"query_id": "L46", "condition": "extra_unsupported_claim", "corpus_variant": "main", "eval_fault": "extra_unsupported_claim", "query": "How long are security audit logs retained?"}
+{"query_id": "L47", "condition": "extra_unsupported_claim", "corpus_variant": "main", "eval_fault": "extra_unsupported_claim", "query": "What is the on-call stipend per week?"}
+{"query_id": "L48", "condition": "extra_unsupported_claim", "corpus_variant": "main", "eval_fault": "extra_unsupported_claim", "query": "How long are digital goods eligible for a refund?"}
+{"query_id": "L49", "condition": "extra_unsupported_claim", "corpus_variant": "main", "eval_fault": "extra_unsupported_claim", "query": "What are the core hours remote employees must be reachable?"}
+{"query_id": "L50", "condition": "extra_unsupported_claim", "corpus_variant": "main", "eval_fault": "extra_unsupported_claim", "query": "What expense amount requires an itemized receipt?"}
