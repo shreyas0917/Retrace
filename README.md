@@ -77,9 +77,12 @@ or gate CI on it with `retrace diagnose --batch traces.jsonl --fail-on GENERATIO
 
 ## Results
 
+> **PROVISIONAL — AI-drafted labels, not yet reviewed by the author.** The live_v1, calibration and judge numbers below come from labels an AI agent drafted blind; the author has not reviewed them yet. They will change.
+
 | Question | Result | Report |
 | --- | --- | --- |
-| How often is the diagnosis right on real pipeline runs? | **live_v1: pending human labels** (50 recorded runs, labelled blind by the author) | to be published |
+| How often is the diagnosis right on real pipeline runs? | **PROVISIONAL: 40.0% lenient accuracy (95% CI 26.0% to 52.0%), macro-F1 0.405 (0.278 to 0.553)** on `live_v1`: 50 real runs with `llama3.2` as generator and judge, labels AI-drafted blind and not yet reviewed. Suggested causes (not yet confirmed): the relevance judge calling sufficient context insufficient (16 of 30 misses), and 8 abstentions the pipeline did not flag. | [live_v1.md](docs/benchmarks/live_v1.md) |
+| Is the confidence score calibrated on real runs? | **PROVISIONAL:** the raw score takes 2 values on `live_v1` and separates right from wrong diagnoses (1.0: 94.7% right; 0.7: 6.5%), but its scale is off; the committed calibrator (fitted on synthetic cases) says 1.0 for every live case. A calibrator cross-validated on `live_v1` is clearly better (ECE 0.414 → 0.001), but with 2 raw values it is a two-entry lookup table. | [calibration_live_v1.md](docs/benchmarks/calibration_live_v1.md) |
 | Do the rules pick the right code when the signals are right? | Engine logic test on synthetic signals with scripted judges (`heldout_v1`, 160 cases): 98.1% lenient accuracy, macro-F1 0.947. This tests the rules, not accuracy on real failures. | [heldout_v1.md](docs/benchmarks/heldout_v1.md) |
 | Is retrieval good on the demo corpus? | Production config, dense MiniLM: Recall@5 0.947, MRR 0.849 on 82 answerable queries (queries AI-drafted, not yet reviewed) | [retrieval_ablation.md](docs/benchmarks/retrieval_ablation.md) |
 | Can the judges be trusted? | Pending label review | [judge_validation.md](docs/benchmarks/judge_validation.md) |
@@ -105,7 +108,8 @@ The relevance and contradiction judges are LLM calls with structured output; fai
 
 ## Known limitations
 
-- The live benchmark is 50 runs with one generation model, a 13-document corpus and one labeller; its results are pending.
+- The live benchmark is 50 runs with one generation model and a 13-document corpus. Its labels are an AI draft that the author has not reviewed yet, so its numbers are provisional.
+- With the default `llama3.2` judge, accuracy on real runs is low (see Results): the relevance judge often calls sufficient context insufficient. A stronger judge model is likely to help, but that has not been measured.
 - The engine logic test uses scripted judge outputs, so it says nothing about judge quality. Judge quality depends on the model you configure and must be measured for it.
 - Single operator identity: no RBAC, key rotation UI or server-side session revocation. Rate limits are per process.
 
