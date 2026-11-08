@@ -92,6 +92,29 @@ def test_apply_without_corrections_marks_reviewed_and_rehashes(workspace):
     assert meta["label_counts"] == before
 
 
+def test_ai_review_is_recorded_as_provisional_and_worded_so(workspace):
+    from app.cli.judges_cmd import PROVISIONAL_BANNER, label_provenance
+
+    dataset, manifest, sheet = workspace
+    assert manifest == dataset.with_name("manifest.json")  # label_provenance reads it from there
+    tool.apply_sheet(dataset, manifest, sheet, review_date="2026-11-09", annotator="ai_draft_blind")
+    meta = json.loads(manifest.read_text(encoding="utf-8"))
+    assert meta["annotator"] == "ai_draft_blind" and meta["provisional"] is True
+    assert meta["review"]["reviewed_by"] == "ai_agent_blind"
+    assert "not yet reviewed by the author" in meta["source"]
+    assert all(r["annotator"] == "ai_draft_blind" for r in tool.load_rows(dataset))
+    text, provisional = label_provenance(dataset)
+    assert provisional and "Not yet reviewed by the author" in text and "0 of 173" in text
+    assert "PROVISIONAL" in PROVISIONAL_BANNER
+
+    tool.apply_sheet(dataset, manifest, sheet, review_date="2026-11-10")
+    text, provisional = label_provenance(dataset)
+    assert not provisional
+    assert text == "Labels: AI-drafted, reviewed and corrected by the author (0 of 173 labels changed)."
+    with pytest.raises(tool.ReviewError):
+        tool.apply_sheet(dataset, manifest, sheet, review_date="2026-11-10", annotator="someone")
+
+
 def test_apply_counts_real_changes_and_warns_on_stale_band(workspace):
     dataset, manifest, sheet = workspace
     _set_correction(sheet, "fai_001#claim-1", "false")
