@@ -7,7 +7,7 @@ cp .env.example .env
 docker compose down -v
 docker compose build
 docker compose up -d
-docker compose exec backend alembic current      # expect 007_telemetry_cost (head)
+docker compose exec backend alembic current      # expect 008_external_traces (head)
 docker compose exec backend pytest -v
 ```
 
@@ -86,7 +86,7 @@ Threat model, auth flows and limits: [security.md](security.md). Security tests:
 ## Migrations
 
 ```text
-001 … → 006_phase6_experiments_baselines → 007_telemetry_cost
+001 … → 006_phase6_experiments_baselines → 007_telemetry_cost → 008_external_traces
 ```
 
 Schema changes go through Alembic only (ADR-002).

@@ -1,4 +1,7 @@
-.PHONY: up down logs test migrate health seed eval
+.PHONY: demo up down logs test migrate health seed eval
+
+demo:
+	sh scripts/demo.sh
 
 up:
 	docker compose up --build -d

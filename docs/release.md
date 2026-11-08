@@ -15,7 +15,7 @@ Wait until the backend is healthy, then:
 
 ```bash
 docker compose exec backend alembic current
-# expect: 007_telemetry_cost (head)
+# expect: 008_external_traces (head)
 ```
 
 ## Automated validation
