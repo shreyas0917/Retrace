@@ -1,4 +1,4 @@
-"""Phase 1 infrastructure tests (T01–T10)."""
+"""Infrastructure tests: settings, health and auth basics (T01–T10)."""
 
 from __future__ import annotations
 

@@ -1,9 +1,9 @@
-"""Phase 9 clean-room validation — no new product features.
+"""Clean-room release validation — no new product features.
 
 Runs inside the backend container (PYTHONPATH=/app):
 
   docker compose exec -T backend sh -c \\
-    'cd /app && PYTHONPATH=/app python /scripts/validate_phase9.py'
+    'cd /app && PYTHONPATH=/app python /scripts/validate_release.py'
 
 Steps: health → seed demo → retrieve → fake RAG → diagnose → investigation →
 planted eval → baseline promote → ops endpoints → report.

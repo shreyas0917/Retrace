@@ -1,4 +1,4 @@
-"""Phase 4 diagnosis tests — rules, judges, taxonomy (FakeLLM judges)."""
+"""Diagnosis rules, judges and taxonomy (FakeLLM judges)."""
 
 from __future__ import annotations
 

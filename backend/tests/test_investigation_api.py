@@ -1,4 +1,4 @@
-"""Phase 8 — investigation API, rules, runbooks."""
+"""Investigation API, rules and runbooks."""
 
 from __future__ import annotations
 

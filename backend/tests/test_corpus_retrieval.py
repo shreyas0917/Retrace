@@ -1,4 +1,4 @@
-"""Phase 2 unit + API tests for corpus, chunking, embedding, retrieval."""
+"""Corpus, chunking, embedding and retrieval: unit and API tests."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Ordered diagnosis rules R00–R40 (PRD §3.3). First match wins."""
+"""Ordered diagnosis rules (see rule_catalog.py). First match wins."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from app.services.diagnosis.thresholds import (
 
 
 def _confidence_for_rule(rule_id: str, signals: SignalBag) -> tuple[str, float]:
-    """Rule-strength heuristic — not calibrated probability (PRD §4)."""
+    """Rule-strength heuristic — not a calibrated probability (ADR-019)."""
     deterministic = {
         "R00",
         "R02",
@@ -68,7 +68,7 @@ def _decision(
 
 
 def apply_rules(signals: SignalBag) -> DiagnosisDecision:
-    """Evaluate PRD rules in order. First match is primary."""
+    """Evaluate the rules in order. First match is primary."""
 
     # --- Infrastructure ---
     if signals.stage_error == "TIMEOUT":

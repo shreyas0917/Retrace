@@ -1,4 +1,4 @@
-"""Phase 5 — gold suite, planted failures, benchmark metrics."""
+"""Gold suite, planted failures and benchmark metrics."""
 
 from __future__ import annotations
 

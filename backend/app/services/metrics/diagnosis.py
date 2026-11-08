@@ -1,4 +1,4 @@
-"""Diagnosis localization metrics (PRD §15)."""
+"""Diagnosis localization metrics."""
 
 from __future__ import annotations
 

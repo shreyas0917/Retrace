@@ -4,7 +4,7 @@
 # rebuild. Requires `docker compose up -d postgres chroma` first.
 #
 #   scripts/dev_test.sh                      # whole suite
-#   scripts/dev_test.sh tests/test_phase4_diagnosis.py -k rule
+#   scripts/dev_test.sh tests/test_diagnosis_rules.py -k rule
 #   scripts/dev_test.sh python -m app.cli.retrace eval --suite planted_v1
 #
 # On Git Bash (Windows) MSYS path conversion is disabled so the -v mounts are
