@@ -1,0 +1,29 @@
+{
+  "suite_id": "live_v1",
+  "suite_version": "1.0.0",
+  "status": "recorded, not yet labelled",
+  "runs_file": "runs.jsonl",
+  "runs_hash": "sha256:3014e6af1922dd49ec6fef5ecc33ee1c44d778fdc5d5091fa84895c362da68f0",
+  "queries_hash": "sha256:3305b9f50c60316570c395163afd5649062fc1dd2d053eb0b9c19e6ccbc639f6",
+  "run_count": 50,
+  "conditions": {
+    "clean": 15,
+    "distractors": 7,
+    "extra_unsupported_claim": 6,
+    "gold_removed": 7,
+    "unanswerable": 8,
+    "wrong_answer_prompt": 7
+  },
+  "generation_models": [
+    "llama3.2:latest"
+  ],
+  "judge_models": [
+    "llama3.2:latest"
+  ],
+  "git_commits": [
+    "edffb7f"
+  ],
+  "recorded_from": "2026-11-08T06:46:09+00:00",
+  "recorded_to": "2026-11-08T08:56:57+00:00",
+  "note": "Injected conditions and live diagnoses are metadata. Labels are added only from the author's labelling sheet."
+}

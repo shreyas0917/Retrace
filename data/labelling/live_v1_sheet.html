@@ -1,0 +1,2391 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>live_v1 labelling</title><style>
+:root{--bg:#fbfaf7;--fg:#1d1d1b;--muted:#5d5b55;--line:#dedad1;--card:#fff;--accent:#3b5bdb}
+@media (prefers-color-scheme:dark){:root{--bg:#161614;--fg:#ecebe6;--muted:#a5a39b;--line:#34332f;--card:#1f1f1c;--accent:#91a7ff}}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 system-ui,sans-serif;margin:0;padding:24px 16px}
+main{max-width:860px;margin:0 auto}h1{font-size:22px}section{background:var(--card);border:1px solid var(--line);
+border-radius:8px;padding:16px 18px;margin:18px 0}h2{font-size:16px;margin:0 0 8px}
+.k{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em;margin-top:12px}
+.chunk{border-left:3px solid var(--line);padding:2px 0 2px 10px;margin:8px 0;white-space:pre-wrap}
+.cid{font:12px ui-monospace,monospace;color:var(--accent)}.answer{white-space:pre-wrap}
+</style></head><body><main>
+<h1>live_v1 labelling sheet</h1>
+<p>Read the cases here; write labels in <code>live_v1_sheet.csv</code>. Rules and code meanings: <code>docs/labelling-guide.md</code>. Gold chunk ids: <code>live_v1_corpus_chunks.csv</code>.</p>
+<section id='S01'><h2>S01</h2>
+<div class='k'>Question</div><div>How long are database backups retained?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 data_retention:c005</span>
+roduction is therefore fully purged from backups within 35 days of deletion. Restoring a backup to satisfy a deletion request is not required, but restored data must be re-deleted within 7 days.
+
+## Review
+
+The retention schedule is reviewed quarterly by the Data Retention Officer and annually by Legal and Security together. Changes are communicated in the #policy-updates channel and recorded in the schedule&#x27;s version history.
+
+## Responsibilities
+
+Data owners are responsible for configuring automated delet</div>
+<div class='chunk'><span class='cid'>#2 data_retention:c004</span>
+gs tied to an active investigation must not be deleted.
+
+## Exceptions
+
+Teams that need to keep data longer than the schedule allows must file Form DR-4 (Retention Exception Request) with the Data Retention Officer. Exceptions are granted for a maximum of 12 months and must be renewed. Exceptions are never granted for data whose owner has requested deletion.
+
+## Backups
+
+Backups are retained for 35 days and then overwritten. Data deleted from production is therefore fully purged from backups within 35 days</div>
+<div class='chunk'><span class='cid'>#3 data_retention:c001</span>
+Customer account records | 7 years after account closure |
+| Financial and tax records | 7 years after the fiscal year ends |
+| Application logs (hot storage) | 90 days |
+| Application logs (cold archive) | 1 year |
+| Security audit logs | 2 years |
+| Employee email | 3 years |
+| Recruiting records for unsuccessful candidates | 12 months after the decision |
+| Database backups | 35 days on a rolling basis |
+| Chat messages in public channels | 18 months |
+
+Where law requires a longer period than this sched</div>
+<div class='chunk'><span class='cid'>#4 data_retention:c000</span>
+# Data Retention Policy
+
+## Purpose
+
+This policy sets how long the company keeps different categories of data and when it must be deleted. Retaining data longer than necessary increases breach impact and storage cost; deleting it too early breaks legal and operational obligations. The Data Retention Officer in the Legal team owns this policy and the retention schedule.
+
+## Retention Schedule
+
+| Data category | Retention period |
+| --- | --- |
+| Customer account records | 7 years after account closure |
+| Fi</div>
+<div class='chunk'><span class='cid'>#5 data_retention:c002</span>
+18 months |
+
+Where law requires a longer period than this schedule, the legal requirement prevails.
+
+## Deletion Requests
+
+Customers may request deletion of their personal data. Verified requests must be completed within 30 days of receipt, with a written confirmation sent to the requester. Requests are logged in the Privacy Request Tracker and handled by the Privacy team. Data that must be retained for legal or financial reasons, such as invoices, is excluded from deletion and the requester is told which</div>
+<div class='k'>Answer</div><div class='answer'>Database backups are retained for 35 days on a rolling basis.</div></section>
+<section id='S02'><h2>S02</h2>
+<div class='k'>Question</div><div>What is the employee discount on company products?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 procurement_policy:c000</span>
+# Procurement Policy
+
+## Purpose
+
+This policy governs how the company buys goods and services. It exists to control spend, manage vendor risk, and ensure that purchases are documented. All amounts refer to the total contract value over the full term, including renewals.
+
+## Approval Thresholds
+
+- Purchases under $1,000 may be made by a manager using a corporate purchasing card without a requisition, subject to the Expense Reimbursement Policy for receipts and reconciliation.
+- Purchases from $1,000 to $10,0</div>
+<div class='chunk'><span class='cid'>#2 benefits_overview:c001</span>
+hin 30 days of the event.
+
+## Health Coverage
+
+The company offers medical, dental, and vision plans. The company pays 85% of the premium for employee coverage and 60% of the premium for dependents. Two medical plans are available: a PPO plan with a $500 deductible and a high-deductible plan with a $1,600 deductible paired with a health savings account. The company contributes $750 per year to the health savings account for employees on the high-deductible plan.
+
+## Retirement
+
+The 401(k) plan matches 100% o</div>
+<div class='chunk'><span class='cid'>#3 remote_work_policy:c005</span>
+es a laptop, headset, and monitor to every employee. Remote workers may claim a one-time home office stipend of $400 for a desk, chair, or lighting, and a recurring home internet reimbursement of $50 per month. Both are submitted through the Expense Portal under the category &quot;Remote Work&quot; and follow the Expense Reimbursement Policy, including the 45-day submission deadline.
+
+Company equipment must be used on a company-managed device profile. Personal printers may not be used for documents classified Confide</div>
+<div class='chunk'><span class='cid'>#4 it_acceptable_use:c000</span>
+# IT Acceptable Use Policy
+
+## Scope
+
+This policy applies to everyone who uses company systems, networks, or data, including employees, contractors, and interns. It complements the Security Policy, which governs production access and secrets handling.
+
+## Accounts and Passwords
+
+Passwords for company accounts must be at least 14 characters long and must not reuse any of the previous 8 passwords. Passwords must be rotated every 180 days, or immediately if compromise is suspected. All passwords must be stored</div>
+<div class='chunk'><span class='cid'>#5 procurement_policy:c005</span>
+y personal or financial relationship with a vendor using the Conflict of Interest form before participating in a purchase decision. Gifts from vendors with a value above $50 must be declined or reported to Procurement.
+
+## Contracts
+
+Only officers of the company and employees with delegated signing authority may sign contracts. Standard contract templates are maintained by Legal. Any deviation from the standard limitation of liability or data protection terms requires Legal approval regardless of contract v</div>
+<div class='k'>Answer</div><div class='answer'>INSUFFICIENT CONTEXT</div></section>
+<section id='S03'><h2>S03</h2>
+<div class='k'>Question</div><div>What expense amount requires an itemized receipt?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 expense_reimbursement:c002</span>
+the business purpose is clearly described. Credit card statements alone are not accepted as receipts. Lost receipts must be declared using Form EXP-7 (Missing Receipt Declaration), which may be used no more than 3 times per calendar year.
+
+## Approval Thresholds
+
+- Expense reports up to $2,500 are approved by the employee&#x27;s direct manager.
+- Reports above $2,500 also require approval from the department VP.
+- Any single item above $10,000 is routed to Finance for review before payment.
+
+Managers may not app</div>
+<div class='chunk'><span class='cid'>#2 expense_reimbursement:c001</span>
+s of the date the expense was incurred. Reports submitted after 45 days require written justification and VP approval, and reports older than 90 days will not be reimbursed. Corporate card transactions must be reconciled in the Expense Portal by the 5th of the following month.
+
+## Receipts and Documentation
+
+An itemized receipt is required for any single expense of $25 or more. For expenses under $25, a receipt is preferred but not required if the business purpose is clearly described. Credit card statement</div>
+<div class='chunk'><span class='cid'>#3 procurement_policy:c000</span>
+# Procurement Policy
+
+## Purpose
+
+This policy governs how the company buys goods and services. It exists to control spend, manage vendor risk, and ensure that purchases are documented. All amounts refer to the total contract value over the full term, including renewals.
+
+## Approval Thresholds
+
+- Purchases under $1,000 may be made by a manager using a corporate purchasing card without a requisition, subject to the Expense Reimbursement Policy for receipts and reconciliation.
+- Purchases from $1,000 to $10,0</div>
+<div class='chunk'><span class='cid'>#4 expense_reimbursement:c006</span>
+business days of final approval. Reimbursements are paid to the bank account on file in the HR portal. Finance may hold payment for reports that are missing receipts or business purpose.
+
+## Audit and Compliance
+
+Finance audits a random sample of 10% of expense reports each quarter. Falsifying expense claims is grounds for immediate termination. Questions about this policy go to expenses@example.com.</div>
+<div class='chunk'><span class='cid'>#5 procurement_policy:c001</span>
+or receipts and reconciliation.
+- Purchases from $1,000 to $10,000 require Form PR-1 (Purchase Requisition) and at least 2 written quotes.
+- Purchases above $10,000 require 3 competitive bids and sign-off from the Finance Director.
+- Purchases above $50,000 additionally require CFO approval and a Legal review of the contract.
+
+Splitting a purchase into smaller orders to stay below a threshold is prohibited.
+
+## Vendor Onboarding
+
+New vendors are onboarded by the Procurement team before a purchase order is i</div>
+<div class='k'>Answer</div><div class='answer'>$25 or more.
+
+The company has a strict policy of requiring itemized receipts for all expenses exceeding $25, ensuring transparency and accountability in financial transactions.</div></section>
+<section id='S04'><h2>S04</h2>
+<div class='k'>Question</div><div>How many days of paid sick leave do employees receive per year?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 benefits_overview:c003</span>
+a total of 15 days per year. In addition, employees receive 10 days of paid sick leave per year, which does not carry over, and 5 days of paid bereavement leave per qualifying event. The company observes 11 public holidays per year.
+
+Parental leave is 16 weeks fully paid for the primary caregiver and 6 weeks fully paid for the secondary caregiver, available after 6 months of employment. Leave may be taken within 12 months of the birth or placement.
+
+Employees with 5 years of continuous service may take a 4</div>
+<div class='chunk'><span class='cid'>#2 benefits_overview:c004</span>
+ment.
+
+Employees with 5 years of continuous service may take a 4-week paid sabbatical, which must be scheduled at least 3 months in advance.
+
+## Insurance
+
+Basic life insurance of 2 times annual salary is provided at no cost, up to a maximum of $500,000. Employees may purchase additional coverage. Short-term disability pays 60% of salary for up to 12 weeks; long-term disability continues at 60% after that.
+
+## Learning and Wellness
+
+Each employee has a learning stipend of $1,200 per calendar year for course</div>
+<div class='chunk'><span class='cid'>#3 benefits_overview:c002</span>
+-deductible plan.
+
+## Retirement
+
+The 401(k) plan matches 100% of employee contributions up to 4% of salary. Employees are automatically enrolled at a 4% contribution rate and may change it at any time. Company matching contributions vest gradually over 3 years: one third after each year of service. Employee contributions are always fully vested.
+
+## Time Away
+
+Paid time off accrues as described in the Employee Handbook, 1.25 days per month for a total of 15 days per year. In addition, employees receive 10</div>
+<div class='chunk'><span class='cid'>#4 benefits_overview:c006</span>
+the number on the benefits card to schedule.
+
+## Commuter and Other Benefits
+
+Employees may set aside pre-tax funds for transit and parking. The company offers a $200 subsidy toward an annual transit pass. Employee referrals that result in a hire earn a $2,000 bonus, paid after the new hire completes 90 days.
+
+## Questions
+
+Benefits questions go to benefits@example.com. Plan documents govern in the event of a conflict with this summary.</div>
+<div class='chunk'><span class='cid'>#5 benefits_overview:c001</span>
+hin 30 days of the event.
+
+## Health Coverage
+
+The company offers medical, dental, and vision plans. The company pays 85% of the premium for employee coverage and 60% of the premium for dependents. Two medical plans are available: a PPO plan with a $500 deductible and a high-deductible plan with a $1,600 deductible paired with a health savings account. The company contributes $750 per year to the health savings account for employees on the high-deductible plan.
+
+## Retirement
+
+The 401(k) plan matches 100% o</div>
+<div class='k'>Answer</div><div class='answer'>10 days of paid sick leave per year.</div></section>
+<section id='S05'><h2>S05</h2>
+<div class='k'>Question</div><div>How long are digital goods eligible for a refund?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 refund_policy:c000</span>
+# Refund Policy
+
+## Eligibility
+
+Customers may request a full refund within 30 days of purchase if the product is unused and in original packaging.
+Digital goods are eligible for refund only within 14 days and only if the download was never completed.
+
+## Process
+
+1. Submit a refund request through the support portal.
+2. Include the order ID and reason for the refund.
+3. Approved refunds are issued to the original payment method within 5–10 business days.
+
+Chargebacks initiated without contacting support fi</div>
+<div class='chunk'><span class='cid'>#2 procurement_policy:c003</span>
+takes 10 business days.
+
+## Software and SaaS
+
+All software purchases, including free tiers and trials that store company data, must be reviewed by IT through an IT-3 ticket as required by the IT Acceptable Use Policy. Procurement maintains a preferred vendor list; purchasing from a preferred vendor does not remove the quote requirements above but may shorten onboarding. Auto-renewing contracts must be entered in the contract register with a reminder 60 days before renewal.
+
+## Purchase Orders and Payment</div>
+<div class='chunk'><span class='cid'>#3 data_retention:c002</span>
+18 months |
+
+Where law requires a longer period than this schedule, the legal requirement prevails.
+
+## Deletion Requests
+
+Customers may request deletion of their personal data. Verified requests must be completed within 30 days of receipt, with a written confirmation sent to the requester. Requests are logged in the Privacy Request Tracker and handled by the Privacy team. Data that must be retained for legal or financial reasons, such as invoices, is excluded from deletion and the requester is told which</div>
+<div class='chunk'><span class='cid'>#4 procurement_policy:c004</span>
+minder 60 days before renewal.
+
+## Purchase Orders and Payment
+
+A purchase order (PO) is required for any purchase of $1,000 or more. Vendors must reference the PO number on invoices; invoices without a PO are returned. Standard payment terms are net 30 days from receipt of a valid invoice. Early payment discounts may be accepted when they exceed 2%. Invoices are submitted to ap@example.com.
+
+## Conflicts of Interest
+
+Employees must disclose any personal or financial relationship with a vendor using the Con</div>
+<div class='chunk'><span class='cid'>#5 procurement_policy:c000</span>
+# Procurement Policy
+
+## Purpose
+
+This policy governs how the company buys goods and services. It exists to control spend, manage vendor risk, and ensure that purchases are documented. All amounts refer to the total contract value over the full term, including renewals.
+
+## Approval Thresholds
+
+- Purchases under $1,000 may be made by a manager using a corporate purchasing card without a requisition, subject to the Expense Reimbursement Policy for receipts and reconciliation.
+- Purchases from $1,000 to $10,0</div>
+<div class='k'>Answer</div><div class='answer'>Digital goods are eligible for refund only within 14 days and only if the download was never completed.
+
+The company&#x27;s procurement policy requires a purchase order for any purchase exceeding $1,000, and vendors must reference the PO number on invoices to ensure accurate tracking of company expenses.</div></section>
+<section id='S06'><h2>S06</h2>
+<div class='k'>Question</div><div>How much is the monthly home internet reimbursement for remote workers?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 remote_work_policy:c005</span>
+es a laptop, headset, and monitor to every employee. Remote workers may claim a one-time home office stipend of $400 for a desk, chair, or lighting, and a recurring home internet reimbursement of $50 per month. Both are submitted through the Expense Portal under the category &quot;Remote Work&quot; and follow the Expense Reimbursement Policy, including the 45-day submission deadline.
+
+Company equipment must be used on a company-managed device profile. Personal printers may not be used for documents classified Confide</div>
+<div class='chunk'><span class='cid'>#2 hybrid_work_guide:c000</span>
+# Hybrid Work Guide
+
+## How many days can I work from home?
+
+Most teams follow a hybrid pattern of 3 remote days and 2 office days each week. Managers can agree a different pattern with their team.
+
+## What equipment support is available?
+
+Home workers can claim an internet allowance of $30 per month and a one-time setup allowance of $250 for furniture. Claims are made through the Expense Portal.</div>
+<div class='chunk'><span class='cid'>#3 benefits_overview:c005</span>
+ee has a learning stipend of $1,200 per calendar year for courses, books, and conferences, approved by the manager and claimed through the Expense Portal. A separate wellness stipend of $300 per year covers gym memberships, fitness equipment, or mental health apps. Unused stipend amounts do not roll over.
+
+The Employee Assistance Program offers 6 free confidential counseling sessions per issue per year for employees and household members. Call the number on the benefits card to schedule.
+
+## Commuter and Ot</div>
+<div class='chunk'><span class='cid'>#4 expense_reimbursement:c000</span>
+# Expense Reimbursement Policy
+
+## Overview
+
+Employees are reimbursed for reasonable business expenses that are necessary to perform their jobs. All claims are submitted through the Expense Portal. This policy covers general expenses; travel-specific rules such as flight class and hotel caps are in the Travel Policy, and remote work stipends are in the Remote Work Policy.
+
+## Submission Deadlines
+
+Expense reports must be submitted within 45 days of the date the expense was incurred. Reports submitted after</div>
+<div class='chunk'><span class='cid'>#5 incident_response:c006</span>
+tations are weekly, from Monday 09:00 to the following Monday 09:00. Engineers on call receive a stipend of $300 per week in addition to salary. Secondary on-call is paged if the primary does not acknowledge within the response target. Swaps must be recorded in the scheduling tool.
+
+## Training and Drills
+
+All engineers complete incident response training during onboarding and take part in a tabletop exercise at least twice per year. The plan is tested with a game-day exercise every quarter.</div>
+<div class='k'>Answer</div><div class='answer'>$50 per month.</div></section>
+<section id='S07'><h2>S07</h2>
+<div class='k'>Question</div><div>Within how many days can customers get a refund on a physical product?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 refund_faq:c000</span>
+# Refund FAQ
+
+## How long do I have to return something?
+
+Customers can return physical products for a full refund within 60 days of delivery. Items must include all accessories. Opened items may be subject to a 15% restocking fee.
+
+## Digital purchases
+
+Digital purchases can be refunded within 30 days if the customer contacts the sales team.
+
+## How is the refund paid?
+
+Refunds are issued as store credit by default. A refund to the original card can be requested and takes up to 21 days.</div>
+<div class='chunk'><span class='cid'>#2 refund_policy:c000</span>
+# Refund Policy
+
+## Eligibility
+
+Customers may request a full refund within 30 days of purchase if the product is unused and in original packaging.
+Digital goods are eligible for refund only within 14 days and only if the download was never completed.
+
+## Process
+
+1. Submit a refund request through the support portal.
+2. Include the order ID and reason for the refund.
+3. Approved refunds are issued to the original payment method within 5–10 business days.
+
+Chargebacks initiated without contacting support fi</div>
+<div class='chunk'><span class='cid'>#3 onboarding_checklist:c006</span>
+IT-1 to remove access on the last day, and equipment is returned within 10 business days using the prepaid return label.
+
+## Contacts
+
+Questions about onboarding go to onboarding@example.com. Equipment issues go to the IT help desk.</div>
+<div class='chunk'><span class='cid'>#4 procurement_policy:c003</span>
+takes 10 business days.
+
+## Software and SaaS
+
+All software purchases, including free tiers and trials that store company data, must be reviewed by IT through an IT-3 ticket as required by the IT Acceptable Use Policy. Procurement maintains a preferred vendor list; purchasing from a preferred vendor does not remove the quote requirements above but may shorten onboarding. Auto-renewing contracts must be entered in the contract register with a reminder 60 days before renewal.
+
+## Purchase Orders and Payment</div>
+<div class='chunk'><span class='cid'>#5 expense_reimbursement:c001</span>
+s of the date the expense was incurred. Reports submitted after 45 days require written justification and VP approval, and reports older than 90 days will not be reimbursed. Corporate card transactions must be reconciled in the Expense Portal by the 5th of the following month.
+
+## Receipts and Documentation
+
+An itemized receipt is required for any single expense of $25 or more. For expenses under $25, a receipt is preferred but not required if the business purpose is clearly described. Credit card statement</div>
+<div class='k'>Answer</div><div class='answer'>Customers can return physical products for a full refund within 60 days of delivery.</div></section>
+<section id='S08'><h2>S08</h2>
+<div class='k'>Question</div><div>What is the company dress code for client meetings?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 procurement_policy:c002</span>
+e onboarded by the Procurement team before a purchase order is issued. The vendor must provide a tax form (W-9 or local equivalent), banking details on company letterhead, and a signed copy of the vendor code of conduct. Vendors whose products process customer data must also complete the vendor security questionnaire and be approved by the Security team before any data is shared, consistent with the Security Policy. Vendor onboarding typically takes 10 business days.
+
+## Software and SaaS
+
+All software purc</div>
+<div class='chunk'><span class='cid'>#2 it_acceptable_use:c000</span>
+# IT Acceptable Use Policy
+
+## Scope
+
+This policy applies to everyone who uses company systems, networks, or data, including employees, contractors, and interns. It complements the Security Policy, which governs production access and secrets handling.
+
+## Accounts and Passwords
+
+Passwords for company accounts must be at least 14 characters long and must not reuse any of the previous 8 passwords. Passwords must be rotated every 180 days, or immediately if compromise is suspected. All passwords must be stored</div>
+<div class='chunk'><span class='cid'>#3 it_acceptable_use:c004</span>
+e from the approved list.
+
+## Network Use
+
+The corporate VPN must be used when accessing internal systems from outside the office. Guests must use the Guest Wi-Fi network, which is isolated from internal resources. Peer-to-peer file sharing, cryptocurrency mining, and running personal servers on company equipment are prohibited.
+
+## Email and Messaging
+
+Company email is for business use; limited personal use is acceptable if it does not interfere with work. Auto-forwarding company email to personal accounts</div>
+<div class='chunk'><span class='cid'>#4 onboarding_checklist:c001</span>
+contains the offer confirmation, the Employee Handbook, the tax forms, and instructions for the HR portal. The manager assigns an onboarding buddy from the same team before day one.
+
+## Day One
+
+- Collect the ID badge from reception or, for remote hires, complete the virtual identity verification call.
+- Sign in to the laptop and enroll in the device management profile.
+- Set up the password manager and multi-factor authentication as described in the IT Acceptable Use Policy.
+- Attend the new hire welcome</div>
+<div class='chunk'><span class='cid'>#5 remote_work_policy:c002</span>
+oval by both the manager and the department head. Fully remote arrangements are approved only by the VP of People and are reviewed every 12 months.
+
+## Requesting Remote Work
+
+Recurring remote schedules must be requested using Form RW-1 (Remote Work Agreement) in the HR portal. Ad hoc remote days do not require a form but must be agreed with the manager the day before, except in emergencies. Managers must respond to Form RW-1 requests within 5 business days.
+
+## Core Hours and Availability
+
+Remote employees</div>
+<div class='k'>Answer</div><div class='answer'>INSUFFICIENT CONTEXT</div></section>
+<section id='S09'><h2>S09</h2>
+<div class='k'>Question</div><div>What does a legal hold do to scheduled data deletion?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 it_acceptable_use:c006</span>
+ording to the Data Retention Policy. Users should have no expectation of privacy in company systems, although personal content is not reviewed without approval from HR and Legal.
+
+## Violations
+
+Violations are reported to the IT help desk or to security@example.com. Consequences range from retraining to termination depending on severity. Deliberately bypassing security controls is treated as a serious violation.</div>
+<div class='chunk'><span class='cid'>#2 procurement_policy:c006</span>
+rotection terms requires Legal approval regardless of contract value.
+
+## Receiving and Disputes
+
+The requester confirms receipt of goods or services in the procurement system before payment is released. Disputes with vendors are raised through Procurement, which coordinates with Legal where necessary.
+
+## Record Keeping
+
+Procurement records, including quotes, bids, and signed contracts, are retained for 7 years after the contract ends, in line with the Data Retention Policy for financial records.</div>
+<div class='chunk'><span class='cid'>#3 it_acceptable_use:c002</span>
+anaged by the IT device management profile and must not be unenrolled. Screens must lock automatically after 10 minutes of inactivity. Personal phones may access company email only after enrolling in the mobile device management (MDM) program, which allows IT to wipe company data if the device is lost.
+
+Removable USB storage devices are blocked on company laptops. Files may be shared only through the approved cloud drive. Lost or stolen devices must be reported to helpdesk@example.com within 4 hours of disc</div>
+<div class='chunk'><span class='cid'>#4 remote_work_policy:c007</span>
+Termination of Arrangements
+
+Managers may suspend a remote arrangement with 2 weeks&#x27; written notice if performance or collaboration concerns arise. Employees may end an arrangement at any time. HR reviews all Form RW-1 agreements annually in October.</div>
+<div class='chunk'><span class='cid'>#5 it_acceptable_use:c003</span>
+must be reported to helpdesk@example.com within 4 hours of discovery so that remote wipe can be triggered.
+
+## Software
+
+Only software from the approved catalog may be installed. Requests for new software are submitted as an IT-3 ticket (Software Request) and are reviewed by IT within 3 business days. Software that processes customer data also requires a security review through the Procurement Policy vendor process. Browser extensions must come from the approved list.
+
+## Network Use
+
+The corporate VPN mus</div>
+<div class='k'>Answer</div><div class='answer'>INSUFFICIENT CONTEXT</div></section>
+<section id='S10'><h2>S10</h2>
+<div class='k'>Question</div><div>How many days of PTO do full-time employees accrue per month?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 employee_handbook:c000</span>
+# Employee Handbook
+
+## Paid Time Off
+
+Full-time employees accrue 1.25 days of PTO per month, for a total of 15 days per year.
+Part-time employees accrue PTO on a pro-rated basis according to scheduled hours.
+
+Unused PTO may be carried over up to a maximum of 5 days into the next calendar year.
+Requests for PTO must be submitted at least 7 days in advance except for emergencies.
+
+## Work Hours
+
+Standard office hours are Monday through Friday, 9:00 to 17:30 local time.
+Remote work is permitted up to 2 days p</div>
+<div class='chunk'><span class='cid'>#2 benefits_overview:c002</span>
+-deductible plan.
+
+## Retirement
+
+The 401(k) plan matches 100% of employee contributions up to 4% of salary. Employees are automatically enrolled at a 4% contribution rate and may change it at any time. Company matching contributions vest gradually over 3 years: one third after each year of service. Employee contributions are always fully vested.
+
+## Time Away
+
+Paid time off accrues as described in the Employee Handbook, 1.25 days per month for a total of 15 days per year. In addition, employees receive 10</div>
+<div class='chunk'><span class='cid'>#3 benefits_overview:c003</span>
+a total of 15 days per year. In addition, employees receive 10 days of paid sick leave per year, which does not carry over, and 5 days of paid bereavement leave per qualifying event. The company observes 11 public holidays per year.
+
+Parental leave is 16 weeks fully paid for the primary caregiver and 6 weeks fully paid for the secondary caregiver, available after 6 months of employment. Leave may be taken within 12 months of the birth or placement.
+
+Employees with 5 years of continuous service may take a 4</div>
+<div class='chunk'><span class='cid'>#4 remote_work_policy:c003</span>
+business days.
+
+## Core Hours and Availability
+
+Remote employees must be reachable during core hours of 10:00 to 15:00 in their team&#x27;s primary time zone. Calendars must be kept current, and a status must be set in the chat tool when stepping away for more than 30 minutes. Remote work is not a substitute for PTO or sick leave; employees who are unwell should record sick leave rather than working remotely.
+
+## Location Requirements
+
+Remote work must normally be performed inside the employee&#x27;s country of emplo</div>
+<div class='chunk'><span class='cid'>#5 remote_work_policy:c002</span>
+oval by both the manager and the department head. Fully remote arrangements are approved only by the VP of People and are reviewed every 12 months.
+
+## Requesting Remote Work
+
+Recurring remote schedules must be requested using Form RW-1 (Remote Work Agreement) in the HR portal. Ad hoc remote days do not require a form but must be agreed with the manager the day before, except in emergencies. Managers must respond to Form RW-1 requests within 5 business days.
+
+## Core Hours and Availability
+
+Remote employees</div>
+<div class='k'>Answer</div><div class='answer'>1.25 days of PTO per month.</div></section>
+<section id='S11'><h2>S11</h2>
+<div class='k'>Question</div><div>What is the mileage reimbursement rate for using a personal vehicle?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 expense_reimbursement:c004</span>
+ndees and the business purpose recorded. Alcohol is not reimbursable except as part of a client dinner, where it is capped at $40 per person.
+
+## Mileage and Ground Transport
+
+Use of a personal vehicle for business is reimbursed at $0.67 per mile, which covers fuel, wear, and insurance. Commuting between home and the regular office is not reimbursable. Parking fees and tolls incurred on business trips are reimbursable with receipts. Ride-share and taxi fares are reimbursable when public transport is impract</div>
+<div class='chunk'><span class='cid'>#2 travel_policy:c004</span>
+oyees must decline the rental company&#x27;s insurance because coverage is provided by the corporate card program; outside the United States, basic insurance should be accepted. Ride-share and taxis are permitted when cheaper than a rental or when driving is impractical. Personal vehicle mileage is reimbursed at the rate in the Expense Reimbursement Policy.
+
+## International Travel
+
+International trips must be registered at least 10 business days before departure using Form TR-5 (International Travel Registratio</div>
+<div class='chunk'><span class='cid'>#3 travel_policy:c000</span>
+# Travel Policy
+
+## Scope
+
+This policy covers business travel booking, class of service, and lodging. Meal per diems, mileage, and receipt requirements are set in the Expense Reimbursement Policy and are not repeated here, except that the daily meal per diem of $65 domestic and $95 international also applies to travel days.
+
+## Booking
+
+All travel must be booked through the corporate travel portal, TripDesk, so that trips are visible to Security and insured through the corporate card program. Flights and ho</div>
+<div class='chunk'><span class='cid'>#4 expense_reimbursement:c005</span>
+and taxi fares are reimbursable when public transport is impractical.
+
+## Non-Reimbursable Items
+
+The following are never reimbursed: traffic fines, personal entertainment, minibar charges, spa or gym fees, upgrades not permitted by the Travel Policy, and purchases for family members. Gift cards may only be purchased through the Procurement team.
+
+## Payment Timing
+
+Approved expenses are reimbursed in the next payroll cycle, normally within 10 business days of final approval. Reimbursements are paid to the</div>
+<div class='chunk'><span class='cid'>#5 procurement_policy:c000</span>
+# Procurement Policy
+
+## Purpose
+
+This policy governs how the company buys goods and services. It exists to control spend, manage vendor risk, and ensure that purchases are documented. All amounts refer to the total contract value over the full term, including renewals.
+
+## Approval Thresholds
+
+- Purchases under $1,000 may be made by a manager using a corporate purchasing card without a requisition, subject to the Expense Reimbursement Policy for receipts and reconciliation.
+- Purchases from $1,000 to $10,0</div>
+<div class='k'>Answer</div><div class='answer'>$0.67 per mile.</div></section>
+<section id='S12'><h2>S12</h2>
+<div class='k'>Question</div><div>What is the on-call stipend per week?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 incident_response:c006</span>
+tations are weekly, from Monday 09:00 to the following Monday 09:00. Engineers on call receive a stipend of $300 per week in addition to salary. Secondary on-call is paged if the primary does not acknowledge within the response target. Swaps must be recorded in the scheduling tool.
+
+## Training and Drills
+
+All engineers complete incident response training during onboarding and take part in a tabletop exercise at least twice per year. The plan is tested with a game-day exercise every quarter.</div>
+<div class='chunk'><span class='cid'>#2 benefits_overview:c005</span>
+ee has a learning stipend of $1,200 per calendar year for courses, books, and conferences, approved by the manager and claimed through the Expense Portal. A separate wellness stipend of $300 per year covers gym memberships, fitness equipment, or mental health apps. Unused stipend amounts do not roll over.
+
+The Employee Assistance Program offers 6 free confidential counseling sessions per issue per year for employees and household members. Call the number on the benefits card to schedule.
+
+## Commuter and Ot</div>
+<div class='chunk'><span class='cid'>#3 benefits_overview:c006</span>
+the number on the benefits card to schedule.
+
+## Commuter and Other Benefits
+
+Employees may set aside pre-tax funds for transit and parking. The company offers a $200 subsidy toward an annual transit pass. Employee referrals that result in a hire earn a $2,000 bonus, paid after the new hire completes 90 days.
+
+## Questions
+
+Benefits questions go to benefits@example.com. Plan documents govern in the event of a conflict with this summary.</div>
+<div class='chunk'><span class='cid'>#4 remote_work_policy:c005</span>
+es a laptop, headset, and monitor to every employee. Remote workers may claim a one-time home office stipend of $400 for a desk, chair, or lighting, and a recurring home internet reimbursement of $50 per month. Both are submitted through the Expense Portal under the category &quot;Remote Work&quot; and follow the Expense Reimbursement Policy, including the 45-day submission deadline.
+
+Company equipment must be used on a company-managed device profile. Personal printers may not be used for documents classified Confide</div>
+<div class='chunk'><span class='cid'>#5 benefits_overview:c004</span>
+ment.
+
+Employees with 5 years of continuous service may take a 4-week paid sabbatical, which must be scheduled at least 3 months in advance.
+
+## Insurance
+
+Basic life insurance of 2 times annual salary is provided at no cost, up to a maximum of $500,000. Employees may purchase additional coverage. Short-term disability pays 60% of salary for up to 12 weeks; long-term disability continues at 60% after that.
+
+## Learning and Wellness
+
+Each employee has a learning stipend of $1,200 per calendar year for course</div>
+<div class='k'>Answer</div><div class='answer'>The on-call stipend per week is $300.
+
+The company offers a $200 subsidy toward an annual transit pass.</div></section>
+<section id='S13'><h2>S13</h2>
+<div class='k'>Question</div><div>How many unused PTO days can be carried over into the next year?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 employee_handbook:c000</span>
+# Employee Handbook
+
+## Paid Time Off
+
+Full-time employees accrue 1.25 days of PTO per month, for a total of 15 days per year.
+Part-time employees accrue PTO on a pro-rated basis according to scheduled hours.
+
+Unused PTO may be carried over up to a maximum of 5 days into the next calendar year.
+Requests for PTO must be submitted at least 7 days in advance except for emergencies.
+
+## Work Hours
+
+Standard office hours are Monday through Friday, 9:00 to 17:30 local time.
+Remote work is permitted up to 2 days p</div>
+<div class='chunk'><span class='cid'>#2 data_retention:c004</span>
+gs tied to an active investigation must not be deleted.
+
+## Exceptions
+
+Teams that need to keep data longer than the schedule allows must file Form DR-4 (Retention Exception Request) with the Data Retention Officer. Exceptions are granted for a maximum of 12 months and must be renewed. Exceptions are never granted for data whose owner has requested deletion.
+
+## Backups
+
+Backups are retained for 35 days and then overwritten. Data deleted from production is therefore fully purged from backups within 35 days</div>
+<div class='chunk'><span class='cid'>#3 data_retention:c001</span>
+Customer account records | 7 years after account closure |
+| Financial and tax records | 7 years after the fiscal year ends |
+| Application logs (hot storage) | 90 days |
+| Application logs (cold archive) | 1 year |
+| Security audit logs | 2 years |
+| Employee email | 3 years |
+| Recruiting records for unsuccessful candidates | 12 months after the decision |
+| Database backups | 35 days on a rolling basis |
+| Chat messages in public channels | 18 months |
+
+Where law requires a longer period than this sched</div>
+<div class='chunk'><span class='cid'>#4 data_retention:c005</span>
+roduction is therefore fully purged from backups within 35 days of deletion. Restoring a backup to satisfy a deletion request is not required, but restored data must be re-deleted within 7 days.
+
+## Review
+
+The retention schedule is reviewed quarterly by the Data Retention Officer and annually by Legal and Security together. Changes are communicated in the #policy-updates channel and recorded in the schedule&#x27;s version history.
+
+## Responsibilities
+
+Data owners are responsible for configuring automated delet</div>
+<div class='chunk'><span class='cid'>#5 benefits_overview:c002</span>
+-deductible plan.
+
+## Retirement
+
+The 401(k) plan matches 100% of employee contributions up to 4% of salary. Employees are automatically enrolled at a 4% contribution rate and may change it at any time. Company matching contributions vest gradually over 3 years: one third after each year of service. Employee contributions are always fully vested.
+
+## Time Away
+
+Paid time off accrues as described in the Employee Handbook, 1.25 days per month for a total of 15 days per year. In addition, employees receive 10</div>
+<div class='k'>Answer</div><div class='answer'>According to the Employee Handbook, unused PTO may be carried over up to a maximum of 5 days into the next calendar year.</div></section>
+<section id='S14'><h2>S14</h2>
+<div class='k'>Question</div><div>What is the 401(k) matching policy?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 benefits_overview:c002</span>
+-deductible plan.
+
+## Retirement
+
+The 401(k) plan matches 100% of employee contributions up to 4% of salary. Employees are automatically enrolled at a 4% contribution rate and may change it at any time. Company matching contributions vest gradually over 3 years: one third after each year of service. Employee contributions are always fully vested.
+
+## Time Away
+
+Paid time off accrues as described in the Employee Handbook, 1.25 days per month for a total of 15 days per year. In addition, employees receive 10</div>
+<div class='chunk'><span class='cid'>#2 benefits_overview:c001</span>
+hin 30 days of the event.
+
+## Health Coverage
+
+The company offers medical, dental, and vision plans. The company pays 85% of the premium for employee coverage and 60% of the premium for dependents. Two medical plans are available: a PPO plan with a $500 deductible and a high-deductible plan with a $1,600 deductible paired with a health savings account. The company contributes $750 per year to the health savings account for employees on the high-deductible plan.
+
+## Retirement
+
+The 401(k) plan matches 100% o</div>
+<div class='chunk'><span class='cid'>#3 onboarding_checklist:c004</span>
+means waiting until the next open enrollment in November unless a qualifying life event occurs. Retirement plan enrollment is automatic at a 4% contribution unless the employee changes it.
+
+## Probation and Check-Ins
+
+The probation period is 90 days. Managers hold structured check-ins at 30, 60, and 90 days using the Check-In template in the performance tool. The 90-day check-in doubles as the probation review; a satisfactory review unlocks eligibility for regular remote work under the Remote Work Policy.</div>
+<div class='chunk'><span class='cid'>#4 it_acceptable_use:c000</span>
+# IT Acceptable Use Policy
+
+## Scope
+
+This policy applies to everyone who uses company systems, networks, or data, including employees, contractors, and interns. It complements the Security Policy, which governs production access and secrets handling.
+
+## Accounts and Passwords
+
+Passwords for company accounts must be at least 14 characters long and must not reuse any of the previous 8 passwords. Passwords must be rotated every 180 days, or immediately if compromise is suspected. All passwords must be stored</div>
+<div class='chunk'><span class='cid'>#5 benefits_overview:c006</span>
+the number on the benefits card to schedule.
+
+## Commuter and Other Benefits
+
+Employees may set aside pre-tax funds for transit and parking. The company offers a $200 subsidy toward an annual transit pass. Employee referrals that result in a hire earn a $2,000 bonus, paid after the new hire completes 90 days.
+
+## Questions
+
+Benefits questions go to benefits@example.com. Plan documents govern in the event of a conflict with this summary.</div>
+<div class='k'>Answer</div><div class='answer'>The company matches 100% of employee contributions up to 4% of salary, with contributions vesting gradually over 3 years.</div></section>
+<section id='S15'><h2>S15</h2>
+<div class='k'>Question</div><div>How many free counseling sessions does the Employee Assistance Program offer?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 benefits_overview:c005</span>
+ee has a learning stipend of $1,200 per calendar year for courses, books, and conferences, approved by the manager and claimed through the Expense Portal. A separate wellness stipend of $300 per year covers gym memberships, fitness equipment, or mental health apps. Unused stipend amounts do not roll over.
+
+The Employee Assistance Program offers 6 free confidential counseling sessions per issue per year for employees and household members. Call the number on the benefits card to schedule.
+
+## Commuter and Ot</div>
+<div class='chunk'><span class='cid'>#2 benefits_overview:c006</span>
+the number on the benefits card to schedule.
+
+## Commuter and Other Benefits
+
+Employees may set aside pre-tax funds for transit and parking. The company offers a $200 subsidy toward an annual transit pass. Employee referrals that result in a hire earn a $2,000 bonus, paid after the new hire completes 90 days.
+
+## Questions
+
+Benefits questions go to benefits@example.com. Plan documents govern in the event of a conflict with this summary.</div>
+<div class='chunk'><span class='cid'>#3 onboarding_checklist:c003</span>
+Mandatory compliance training, which covers the code of conduct, anti-harassment, and data protection, must be completed within 14 days of the start date. New hires read the Security Policy, the Data Retention Policy, and the Expense Reimbursement Policy and confirm in the HR portal that they have done so.
+
+## Benefits Enrollment
+
+New hires have 31 days from their start date to enroll in health, dental, and vision coverage. Missing the window means waiting until the next open enrollment in November unless</div>
+<div class='chunk'><span class='cid'>#4 remote_work_policy:c000</span>
+# Remote Work Policy
+
+## Purpose and Scope
+
+This policy describes how employees may work away from a company office. It supplements the Employee Handbook, which sets the default allowance of up to 2 remote days per week with manager approval. Nothing in this document changes the standard office hours of 9:00 to 17:30 local time described in the handbook.
+
+## Eligibility
+
+Employees become eligible for regular remote work after completing 90 days of continuous employment and a satisfactory probation review. R</div>
+<div class='chunk'><span class='cid'>#5 remote_work_policy:c002</span>
+oval by both the manager and the department head. Fully remote arrangements are approved only by the VP of People and are reviewed every 12 months.
+
+## Requesting Remote Work
+
+Recurring remote schedules must be requested using Form RW-1 (Remote Work Agreement) in the HR portal. Ad hoc remote days do not require a form but must be agreed with the manager the day before, except in emergencies. Managers must respond to Form RW-1 requests within 5 business days.
+
+## Core Hours and Availability
+
+Remote employees</div>
+<div class='k'>Answer</div><div class='answer'>The Employee Assistance Program offers 6 free confidential counseling sessions per issue per year for employees and household members.</div></section>
+<section id='S16'><h2>S16</h2>
+<div class='k'>Question</div><div>What is the company&#x27;s policy on stock options for new hires?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 it_acceptable_use:c000</span>
+# IT Acceptable Use Policy
+
+## Scope
+
+This policy applies to everyone who uses company systems, networks, or data, including employees, contractors, and interns. It complements the Security Policy, which governs production access and secrets handling.
+
+## Accounts and Passwords
+
+Passwords for company accounts must be at least 14 characters long and must not reuse any of the previous 8 passwords. Passwords must be rotated every 180 days, or immediately if compromise is suspected. All passwords must be stored</div>
+<div class='chunk'><span class='cid'>#2 benefits_overview:c000</span>
+# Benefits Overview
+
+## Eligibility and Enrollment
+
+Full-time employees are eligible for benefits from their first day. New hires must enroll within 31 days of their start date; otherwise enrollment waits for the annual open enrollment period, which runs from November 1 to November 15 each year. Changes outside those windows are allowed only for qualifying life events such as marriage, birth, or loss of other coverage, and must be submitted within 30 days of the event.
+
+## Health Coverage
+
+The company offer</div>
+<div class='chunk'><span class='cid'>#3 onboarding_checklist:c003</span>
+Mandatory compliance training, which covers the code of conduct, anti-harassment, and data protection, must be completed within 14 days of the start date. New hires read the Security Policy, the Data Retention Policy, and the Expense Reimbursement Policy and confirm in the HR portal that they have done so.
+
+## Benefits Enrollment
+
+New hires have 31 days from their start date to enroll in health, dental, and vision coverage. Missing the window means waiting until the next open enrollment in November unless</div>
+<div class='chunk'><span class='cid'>#4 onboarding_checklist:c000</span>
+# New Hire Onboarding Checklist
+
+## Before the Start Date
+
+The hiring manager owns pre-boarding. At least 5 business days before the start date the manager must submit Form IT-1 (Access Request) listing the systems the new hire needs, and Form IT-2 (Equipment Request) for a laptop and peripherals. Laptops are shipped to remote hires so that they arrive 2 business days before day one.
+
+HR sends the welcome packet 1 week before the start date. It contains the offer confirmation, the Employee Handbook, the tax</div>
+<div class='chunk'><span class='cid'>#5 incident_response:c006</span>
+tations are weekly, from Monday 09:00 to the following Monday 09:00. Engineers on call receive a stipend of $300 per week in addition to salary. Secondary on-call is paged if the primary does not acknowledge within the response target. Swaps must be recorded in the scheduling tool.
+
+## Training and Drills
+
+All engineers complete incident response training during onboarding and take part in a tabletop exercise at least twice per year. The plan is tested with a game-day exercise every quarter.</div>
+<div class='k'>Answer</div><div class='answer'>INSUFFICIENT CONTEXT</div></section>
+<section id='S17'><h2>S17</h2>
+<div class='k'>Question</div><div>Up to what percentage of salary does the company match 401(k) contributions?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 benefits_overview:c002</span>
+-deductible plan.
+
+## Retirement
+
+The 401(k) plan matches 100% of employee contributions up to 4% of salary. Employees are automatically enrolled at a 4% contribution rate and may change it at any time. Company matching contributions vest gradually over 3 years: one third after each year of service. Employee contributions are always fully vested.
+
+## Time Away
+
+Paid time off accrues as described in the Employee Handbook, 1.25 days per month for a total of 15 days per year. In addition, employees receive 10</div>
+<div class='chunk'><span class='cid'>#2 retirement_plan_summary:c000</span>
+# Retirement Plan Summary
+
+The company retirement plan matches 50% of employee contributions up to 6% of salary. New employees can join the plan after 3 months of service. Matching contributions vest after 2 years of service in full.
+
+Employees can change their contribution rate once per quarter through the benefits portal.</div>
+<div class='chunk'><span class='cid'>#3 benefits_overview:c001</span>
+hin 30 days of the event.
+
+## Health Coverage
+
+The company offers medical, dental, and vision plans. The company pays 85% of the premium for employee coverage and 60% of the premium for dependents. Two medical plans are available: a PPO plan with a $500 deductible and a high-deductible plan with a $1,600 deductible paired with a health savings account. The company contributes $750 per year to the health savings account for employees on the high-deductible plan.
+
+## Retirement
+
+The 401(k) plan matches 100% o</div>
+<div class='chunk'><span class='cid'>#4 benefits_overview:c006</span>
+the number on the benefits card to schedule.
+
+## Commuter and Other Benefits
+
+Employees may set aside pre-tax funds for transit and parking. The company offers a $200 subsidy toward an annual transit pass. Employee referrals that result in a hire earn a $2,000 bonus, paid after the new hire completes 90 days.
+
+## Questions
+
+Benefits questions go to benefits@example.com. Plan documents govern in the event of a conflict with this summary.</div>
+<div class='chunk'><span class='cid'>#5 benefits_overview:c004</span>
+ment.
+
+Employees with 5 years of continuous service may take a 4-week paid sabbatical, which must be scheduled at least 3 months in advance.
+
+## Insurance
+
+Basic life insurance of 2 times annual salary is provided at no cost, up to a maximum of $500,000. Employees may purchase additional coverage. Short-term disability pays 60% of salary for up to 12 weeks; long-term disability continues at 60% after that.
+
+## Learning and Wellness
+
+Each employee has a learning stipend of $1,200 per calendar year for course</div>
+<div class='k'>Answer</div><div class='answer'>The company matches 100% of employee contributions up to 4% of salary.</div></section>
+<section id='S18'><h2>S18</h2>
+<div class='k'>Question</div><div>When is business class allowed on flights?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 expense_reimbursement:c003</span>
+uted to Finance for review before payment.
+
+Managers may not approve their own expenses. Expenses for a manager are approved by that manager&#x27;s own manager.
+
+## Meals and Entertainment
+
+Daily meal per diem while traveling is $65 for domestic travel and $95 for international travel. Per diem covers all meals and incidentals; separate meal receipts are not needed when per diem is claimed. Client entertainment is reimbursable with the names of attendees and the business purpose recorded. Alcohol is not reimburs</div>
+<div class='chunk'><span class='cid'>#2 expense_reimbursement:c000</span>
+# Expense Reimbursement Policy
+
+## Overview
+
+Employees are reimbursed for reasonable business expenses that are necessary to perform their jobs. All claims are submitted through the Expense Portal. This policy covers general expenses; travel-specific rules such as flight class and hotel caps are in the Travel Policy, and remote work stipends are in the Remote Work Policy.
+
+## Submission Deadlines
+
+Expense reports must be submitted within 45 days of the date the expense was incurred. Reports submitted after</div>
+<div class='chunk'><span class='cid'>#3 it_acceptable_use:c004</span>
+e from the approved list.
+
+## Network Use
+
+The corporate VPN must be used when accessing internal systems from outside the office. Guests must use the Guest Wi-Fi network, which is isolated from internal resources. Peer-to-peer file sharing, cryptocurrency mining, and running personal servers on company equipment are prohibited.
+
+## Email and Messaging
+
+Company email is for business use; limited personal use is acceptable if it does not interfere with work. Auto-forwarding company email to personal accounts</div>
+<div class='chunk'><span class='cid'>#4 onboarding_checklist:c000</span>
+# New Hire Onboarding Checklist
+
+## Before the Start Date
+
+The hiring manager owns pre-boarding. At least 5 business days before the start date the manager must submit Form IT-1 (Access Request) listing the systems the new hire needs, and Form IT-2 (Equipment Request) for a laptop and peripherals. Laptops are shipped to remote hires so that they arrive 2 business days before day one.
+
+HR sends the welcome packet 1 week before the start date. It contains the offer confirmation, the Employee Handbook, the tax</div>
+<div class='chunk'><span class='cid'>#5 expense_reimbursement:c004</span>
+ndees and the business purpose recorded. Alcohol is not reimbursable except as part of a client dinner, where it is capped at $40 per person.
+
+## Mileage and Ground Transport
+
+Use of a personal vehicle for business is reimbursed at $0.67 per mile, which covers fuel, wear, and insurance. Commuting between home and the regular office is not reimbursable. Parking fees and tolls incurred on business trips are reimbursable with receipts. Ride-share and taxi fares are reimbursable when public transport is impract</div>
+<div class='k'>Answer</div><div class='answer'>INSUFFICIENT CONTEXT</div></section>
+<section id='S19'><h2>S19</h2>
+<div class='k'>Question</div><div>What is the deadline for submitting an expense report?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 expense_reimbursement:c001</span>
+s of the date the expense was incurred. Reports submitted after 45 days require written justification and VP approval, and reports older than 90 days will not be reimbursed. Corporate card transactions must be reconciled in the Expense Portal by the 5th of the following month.
+
+## Receipts and Documentation
+
+An itemized receipt is required for any single expense of $25 or more. For expenses under $25, a receipt is preferred but not required if the business purpose is clearly described. Credit card statement</div>
+<div class='chunk'><span class='cid'>#2 expense_reimbursement:c006</span>
+business days of final approval. Reimbursements are paid to the bank account on file in the HR portal. Finance may hold payment for reports that are missing receipts or business purpose.
+
+## Audit and Compliance
+
+Finance audits a random sample of 10% of expense reports each quarter. Falsifying expense claims is grounds for immediate termination. Questions about this policy go to expenses@example.com.</div>
+<div class='chunk'><span class='cid'>#3 expense_reimbursement:c000</span>
+# Expense Reimbursement Policy
+
+## Overview
+
+Employees are reimbursed for reasonable business expenses that are necessary to perform their jobs. All claims are submitted through the Expense Portal. This policy covers general expenses; travel-specific rules such as flight class and hotel caps are in the Travel Policy, and remote work stipends are in the Remote Work Policy.
+
+## Submission Deadlines
+
+Expense reports must be submitted within 45 days of the date the expense was incurred. Reports submitted after</div>
+<div class='chunk'><span class='cid'>#4 performance_reviews:c000</span>
+# Performance Review Process
+
+## Cycle Overview
+
+The company runs one formal performance review each year, completed in March, plus a lighter mid-year check-in in September. Reviews cover the calendar year. The process is managed in the performance tool, and HR publishes the exact dates each January.
+
+## Annual Review Timeline
+
+- January 31: promotion nominations are due from managers.
+- February 15: employee self-assessments are due.
+- March 1: manager assessments are due.
+- March 1 to March 15: calibratio</div>
+<div class='chunk'><span class='cid'>#5 expense_reimbursement:c002</span>
+the business purpose is clearly described. Credit card statements alone are not accepted as receipts. Lost receipts must be declared using Form EXP-7 (Missing Receipt Declaration), which may be used no more than 3 times per calendar year.
+
+## Approval Thresholds
+
+- Expense reports up to $2,500 are approved by the employee&#x27;s direct manager.
+- Reports above $2,500 also require approval from the department VP.
+- Any single item above $10,000 is routed to Finance for review before payment.
+
+Managers may not app</div>
+<div class='k'>Answer</div><div class='answer'>Expense reports must be submitted within 45 days of the date the expense was incurred.</div></section>
+<section id='S20'><h2>S20</h2>
+<div class='k'>Question</div><div>How far in advance must PTO requests be submitted?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 employee_handbook:c000</span>
+# Employee Handbook
+
+## Paid Time Off
+
+Full-time employees accrue 1.25 days of PTO per month, for a total of 15 days per year.
+Part-time employees accrue PTO on a pro-rated basis according to scheduled hours.
+
+Unused PTO may be carried over up to a maximum of 5 days into the next calendar year.
+Requests for PTO must be submitted at least 7 days in advance except for emergencies.
+
+## Work Hours
+
+Standard office hours are Monday through Friday, 9:00 to 17:30 local time.
+Remote work is permitted up to 2 days p</div>
+<div class='chunk'><span class='cid'>#2 remote_work_policy:c002</span>
+oval by both the manager and the department head. Fully remote arrangements are approved only by the VP of People and are reviewed every 12 months.
+
+## Requesting Remote Work
+
+Recurring remote schedules must be requested using Form RW-1 (Remote Work Agreement) in the HR portal. Ad hoc remote days do not require a form but must be agreed with the manager the day before, except in emergencies. Managers must respond to Form RW-1 requests within 5 business days.
+
+## Core Hours and Availability
+
+Remote employees</div>
+<div class='chunk'><span class='cid'>#3 data_retention:c002</span>
+18 months |
+
+Where law requires a longer period than this schedule, the legal requirement prevails.
+
+## Deletion Requests
+
+Customers may request deletion of their personal data. Verified requests must be completed within 30 days of receipt, with a written confirmation sent to the requester. Requests are logged in the Privacy Request Tracker and handled by the Privacy team. Data that must be retained for legal or financial reasons, such as invoices, is excluded from deletion and the requester is told which</div>
+<div class='chunk'><span class='cid'>#4 procurement_policy:c004</span>
+minder 60 days before renewal.
+
+## Purchase Orders and Payment
+
+A purchase order (PO) is required for any purchase of $1,000 or more. Vendors must reference the PO number on invoices; invoices without a PO are returned. Standard payment terms are net 30 days from receipt of a valid invoice. Early payment discounts may be accepted when they exceed 2%. Invoices are submitted to ap@example.com.
+
+## Conflicts of Interest
+
+Employees must disclose any personal or financial relationship with a vendor using the Con</div>
+<div class='chunk'><span class='cid'>#5 performance_reviews:c000</span>
+# Performance Review Process
+
+## Cycle Overview
+
+The company runs one formal performance review each year, completed in March, plus a lighter mid-year check-in in September. Reviews cover the calendar year. The process is managed in the performance tool, and HR publishes the exact dates each January.
+
+## Annual Review Timeline
+
+- January 31: promotion nominations are due from managers.
+- February 15: employee self-assessments are due.
+- March 1: manager assessments are due.
+- March 1 to March 15: calibratio</div>
+<div class='k'>Answer</div><div class='answer'>Requests for PTO must be submitted at least 7 days in advance, except for emergencies.</div></section>
+<section id='S21'><h2>S21</h2>
+<div class='k'>Question</div><div>What is the daily meal per diem for international travel?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 expense_reimbursement:c003</span>
+uted to Finance for review before payment.
+
+Managers may not approve their own expenses. Expenses for a manager are approved by that manager&#x27;s own manager.
+
+## Meals and Entertainment
+
+Daily meal per diem while traveling is $65 for domestic travel and $95 for international travel. Per diem covers all meals and incidentals; separate meal receipts are not needed when per diem is claimed. Client entertainment is reimbursable with the names of attendees and the business purpose recorded. Alcohol is not reimburs</div>
+<div class='chunk'><span class='cid'>#2 travel_policy:c000</span>
+# Travel Policy
+
+## Scope
+
+This policy covers business travel booking, class of service, and lodging. Meal per diems, mileage, and receipt requirements are set in the Expense Reimbursement Policy and are not repeated here, except that the daily meal per diem of $65 domestic and $95 international also applies to travel days.
+
+## Booking
+
+All travel must be booked through the corporate travel portal, TripDesk, so that trips are visible to Security and insured through the corporate card program. Flights and ho</div>
+<div class='chunk'><span class='cid'>#3 travel_policy:c002</span>
+approval recorded in TripDesk. Premium economy may be chosen for flights over 4 hours without additional approval when the fare difference is under $200. Employees may keep frequent flyer points earned on business travel but must not choose a more expensive fare to earn them.
+
+Travelers should select the lowest logical fare, defined as the lowest fare that departs within 2 hours of the preferred time and has at most one connection.
+
+## Lodging
+
+Hotel rates are capped at $250 per night for domestic travel an</div>
+<div class='chunk'><span class='cid'>#4 travel_policy:c003</span>
+Hotel rates are capped at $250 per night for domestic travel and $325 per night in international and designated high-cost cities. The portal flags bookings above the cap for manager approval. Employees may stay with friends or family and claim a flat $50 per night in lieu of a hotel. Minibar, movies, and spa charges are personal expenses.
+
+## Ground Transportation
+
+Rental cars should be intermediate class or smaller. In the United States, employees must decline the rental company&#x27;s insurance because covera</div>
+<div class='chunk'><span class='cid'>#5 travel_policy:c005</span>
+fore departure using Form TR-5 (International Travel Registration). Security reviews the destination and may require a loaner laptop for high-risk countries. Employees must carry only the data needed for the trip. Vaccination and visa costs are reimbursable.
+
+## Combining Personal and Business Travel
+
+Personal days may be added to a business trip if the total cost to the company does not increase. The employee pays the difference for any additional nights or fare changes and documents the comparison fare at</div>
+<div class='k'>Answer</div><div class='answer'>$95.</div></section>
+<section id='S22'><h2>S22</h2>
+<div class='k'>Question</div><div>What are the standard office hours?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 employee_handbook:c000</span>
+# Employee Handbook
+
+## Paid Time Off
+
+Full-time employees accrue 1.25 days of PTO per month, for a total of 15 days per year.
+Part-time employees accrue PTO on a pro-rated basis according to scheduled hours.
+
+Unused PTO may be carried over up to a maximum of 5 days into the next calendar year.
+Requests for PTO must be submitted at least 7 days in advance except for emergencies.
+
+## Work Hours
+
+Standard office hours are Monday through Friday, 9:00 to 17:30 local time.
+Remote work is permitted up to 2 days p</div>
+<div class='chunk'><span class='cid'>#2 remote_work_policy:c000</span>
+# Remote Work Policy
+
+## Purpose and Scope
+
+This policy describes how employees may work away from a company office. It supplements the Employee Handbook, which sets the default allowance of up to 2 remote days per week with manager approval. Nothing in this document changes the standard office hours of 9:00 to 17:30 local time described in the handbook.
+
+## Eligibility
+
+Employees become eligible for regular remote work after completing 90 days of continuous employment and a satisfactory probation review. R</div>
+<div class='chunk'><span class='cid'>#3 employee_handbook:c001</span>
+:00 to 17:30 local time.
+Remote work is permitted up to 2 days per week with manager approval.</div>
+<div class='chunk'><span class='cid'>#4 remote_work_policy:c003</span>
+business days.
+
+## Core Hours and Availability
+
+Remote employees must be reachable during core hours of 10:00 to 15:00 in their team&#x27;s primary time zone. Calendars must be kept current, and a status must be set in the chat tool when stepping away for more than 30 minutes. Remote work is not a substitute for PTO or sick leave; employees who are unwell should record sick leave rather than working remotely.
+
+## Location Requirements
+
+Remote work must normally be performed inside the employee&#x27;s country of emplo</div>
+<div class='chunk'><span class='cid'>#5 remote_work_policy:c002</span>
+oval by both the manager and the department head. Fully remote arrangements are approved only by the VP of People and are reviewed every 12 months.
+
+## Requesting Remote Work
+
+Recurring remote schedules must be requested using Form RW-1 (Remote Work Agreement) in the HR portal. Ad hoc remote days do not require a form but must be agreed with the manager the day before, except in emergencies. Managers must respond to Form RW-1 requests within 5 business days.
+
+## Core Hours and Availability
+
+Remote employees</div>
+<div class='k'>Answer</div><div class='answer'>The standard office hours are Monday through Friday, 9:00 to 17:30 local time.
+
+Remote work is permitted up to 2 days per week with manager approval, and core hours for remote employees must be during 10:00 to 15:00 in their team&#x27;s primary time zone.</div></section>
+<section id='S23'><h2>S23</h2>
+<div class='k'>Question</div><div>What is the learning stipend per calendar year?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 benefits_overview:c005</span>
+ee has a learning stipend of $1,200 per calendar year for courses, books, and conferences, approved by the manager and claimed through the Expense Portal. A separate wellness stipend of $300 per year covers gym memberships, fitness equipment, or mental health apps. Unused stipend amounts do not roll over.
+
+The Employee Assistance Program offers 6 free confidential counseling sessions per issue per year for employees and household members. Call the number on the benefits card to schedule.
+
+## Commuter and Ot</div>
+<div class='chunk'><span class='cid'>#2 incident_response:c006</span>
+tations are weekly, from Monday 09:00 to the following Monday 09:00. Engineers on call receive a stipend of $300 per week in addition to salary. Secondary on-call is paged if the primary does not acknowledge within the response target. Swaps must be recorded in the scheduling tool.
+
+## Training and Drills
+
+All engineers complete incident response training during onboarding and take part in a tabletop exercise at least twice per year. The plan is tested with a game-day exercise every quarter.</div>
+<div class='chunk'><span class='cid'>#3 benefits_overview:c004</span>
+ment.
+
+Employees with 5 years of continuous service may take a 4-week paid sabbatical, which must be scheduled at least 3 months in advance.
+
+## Insurance
+
+Basic life insurance of 2 times annual salary is provided at no cost, up to a maximum of $500,000. Employees may purchase additional coverage. Short-term disability pays 60% of salary for up to 12 weeks; long-term disability continues at 60% after that.
+
+## Learning and Wellness
+
+Each employee has a learning stipend of $1,200 per calendar year for course</div>
+<div class='chunk'><span class='cid'>#4 benefits_overview:c006</span>
+the number on the benefits card to schedule.
+
+## Commuter and Other Benefits
+
+Employees may set aside pre-tax funds for transit and parking. The company offers a $200 subsidy toward an annual transit pass. Employee referrals that result in a hire earn a $2,000 bonus, paid after the new hire completes 90 days.
+
+## Questions
+
+Benefits questions go to benefits@example.com. Plan documents govern in the event of a conflict with this summary.</div>
+<div class='chunk'><span class='cid'>#5 travel_policy:c000</span>
+# Travel Policy
+
+## Scope
+
+This policy covers business travel booking, class of service, and lodging. Meal per diems, mileage, and receipt requirements are set in the Expense Reimbursement Policy and are not repeated here, except that the daily meal per diem of $65 domestic and $95 international also applies to travel days.
+
+## Booking
+
+All travel must be booked through the corporate travel portal, TripDesk, so that trips are visible to Security and insured through the corporate card program. Flights and ho</div>
+<div class='k'>Answer</div><div class='answer'>$1,200</div></section>
+<section id='S24'><h2>S24</h2>
+<div class='k'>Question</div><div>What is the one-time home office stipend for remote workers?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 remote_work_policy:c005</span>
+es a laptop, headset, and monitor to every employee. Remote workers may claim a one-time home office stipend of $400 for a desk, chair, or lighting, and a recurring home internet reimbursement of $50 per month. Both are submitted through the Expense Portal under the category &quot;Remote Work&quot; and follow the Expense Reimbursement Policy, including the 45-day submission deadline.
+
+Company equipment must be used on a company-managed device profile. Personal printers may not be used for documents classified Confide</div>
+<div class='chunk'><span class='cid'>#2 remote_work_policy:c000</span>
+# Remote Work Policy
+
+## Purpose and Scope
+
+This policy describes how employees may work away from a company office. It supplements the Employee Handbook, which sets the default allowance of up to 2 remote days per week with manager approval. Nothing in this document changes the standard office hours of 9:00 to 17:30 local time described in the handbook.
+
+## Eligibility
+
+Employees become eligible for regular remote work after completing 90 days of continuous employment and a satisfactory probation review. R</div>
+<div class='chunk'><span class='cid'>#3 remote_work_policy:c002</span>
+oval by both the manager and the department head. Fully remote arrangements are approved only by the VP of People and are reviewed every 12 months.
+
+## Requesting Remote Work
+
+Recurring remote schedules must be requested using Form RW-1 (Remote Work Agreement) in the HR portal. Ad hoc remote days do not require a form but must be agreed with the manager the day before, except in emergencies. Managers must respond to Form RW-1 requests within 5 business days.
+
+## Core Hours and Availability
+
+Remote employees</div>
+<div class='chunk'><span class='cid'>#4 employee_handbook:c001</span>
+:00 to 17:30 local time.
+Remote work is permitted up to 2 days per week with manager approval.</div>
+<div class='chunk'><span class='cid'>#5 remote_work_policy:c001</span>
+of continuous employment and a satisfactory probation review. Roles that require physical presence, such as facilities, reception, and lab operations, are excluded from regular remote work but may request occasional remote days for specific circumstances.
+
+Department heads may designate a role as remote-eligible. Employees in remote-eligible roles may work a third remote day each week by submitting Form RW-2 (Extended Remote Schedule) for approval by both the manager and the department head. Fully remote a</div>
+<div class='k'>Answer</div><div class='answer'>The one-time home office stipend for remote workers is $400.</div></section>
+<section id='S25'><h2>S25</h2>
+<div class='k'>Question</div><div>What purchases require CFO approval?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 procurement_policy:c001</span>
+or receipts and reconciliation.
+- Purchases from $1,000 to $10,000 require Form PR-1 (Purchase Requisition) and at least 2 written quotes.
+- Purchases above $10,000 require 3 competitive bids and sign-off from the Finance Director.
+- Purchases above $50,000 additionally require CFO approval and a Legal review of the contract.
+
+Splitting a purchase into smaller orders to stay below a threshold is prohibited.
+
+## Vendor Onboarding
+
+New vendors are onboarded by the Procurement team before a purchase order is i</div>
+<div class='chunk'><span class='cid'>#2 procurement_policy:c000</span>
+# Procurement Policy
+
+## Purpose
+
+This policy governs how the company buys goods and services. It exists to control spend, manage vendor risk, and ensure that purchases are documented. All amounts refer to the total contract value over the full term, including renewals.
+
+## Approval Thresholds
+
+- Purchases under $1,000 may be made by a manager using a corporate purchasing card without a requisition, subject to the Expense Reimbursement Policy for receipts and reconciliation.
+- Purchases from $1,000 to $10,0</div>
+<div class='chunk'><span class='cid'>#3 expense_reimbursement:c002</span>
+the business purpose is clearly described. Credit card statements alone are not accepted as receipts. Lost receipts must be declared using Form EXP-7 (Missing Receipt Declaration), which may be used no more than 3 times per calendar year.
+
+## Approval Thresholds
+
+- Expense reports up to $2,500 are approved by the employee&#x27;s direct manager.
+- Reports above $2,500 also require approval from the department VP.
+- Any single item above $10,000 is routed to Finance for review before payment.
+
+Managers may not app</div>
+<div class='chunk'><span class='cid'>#4 procurement_policy:c002</span>
+e onboarded by the Procurement team before a purchase order is issued. The vendor must provide a tax form (W-9 or local equivalent), banking details on company letterhead, and a signed copy of the vendor code of conduct. Vendors whose products process customer data must also complete the vendor security questionnaire and be approved by the Security team before any data is shared, consistent with the Security Policy. Vendor onboarding typically takes 10 business days.
+
+## Software and SaaS
+
+All software purc</div>
+<div class='chunk'><span class='cid'>#5 expense_reimbursement:c006</span>
+business days of final approval. Reimbursements are paid to the bank account on file in the HR portal. Finance may hold payment for reports that are missing receipts or business purpose.
+
+## Audit and Compliance
+
+Finance audits a random sample of 10% of expense reports each quarter. Falsifying expense claims is grounds for immediate termination. Questions about this policy go to expenses@example.com.</div>
+<div class='k'>Answer</div><div class='answer'>Purchases above $50,000 additionally require CFO approval and a Legal review of the contract.</div></section>
+<section id='S26'><h2>S26</h2>
+<div class='k'>Question</div><div>What is the maximum number of overtime hours per week for hourly staff?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 employee_handbook:c001</span>
+:00 to 17:30 local time.
+Remote work is permitted up to 2 days per week with manager approval.</div>
+<div class='chunk'><span class='cid'>#2 employee_handbook:c000</span>
+# Employee Handbook
+
+## Paid Time Off
+
+Full-time employees accrue 1.25 days of PTO per month, for a total of 15 days per year.
+Part-time employees accrue PTO on a pro-rated basis according to scheduled hours.
+
+Unused PTO may be carried over up to a maximum of 5 days into the next calendar year.
+Requests for PTO must be submitted at least 7 days in advance except for emergencies.
+
+## Work Hours
+
+Standard office hours are Monday through Friday, 9:00 to 17:30 local time.
+Remote work is permitted up to 2 days p</div>
+<div class='chunk'><span class='cid'>#3 incident_response:c006</span>
+tations are weekly, from Monday 09:00 to the following Monday 09:00. Engineers on call receive a stipend of $300 per week in addition to salary. Secondary on-call is paged if the primary does not acknowledge within the response target. Swaps must be recorded in the scheduling tool.
+
+## Training and Drills
+
+All engineers complete incident response training during onboarding and take part in a tabletop exercise at least twice per year. The plan is tested with a game-day exercise every quarter.</div>
+<div class='chunk'><span class='cid'>#4 remote_work_policy:c003</span>
+business days.
+
+## Core Hours and Availability
+
+Remote employees must be reachable during core hours of 10:00 to 15:00 in their team&#x27;s primary time zone. Calendars must be kept current, and a status must be set in the chat tool when stepping away for more than 30 minutes. Remote work is not a substitute for PTO or sick leave; employees who are unwell should record sick leave rather than working remotely.
+
+## Location Requirements
+
+Remote work must normally be performed inside the employee&#x27;s country of emplo</div>
+<div class='chunk'><span class='cid'>#5 remote_work_policy:c000</span>
+# Remote Work Policy
+
+## Purpose and Scope
+
+This policy describes how employees may work away from a company office. It supplements the Employee Handbook, which sets the default allowance of up to 2 remote days per week with manager approval. Nothing in this document changes the standard office hours of 9:00 to 17:30 local time described in the handbook.
+
+## Eligibility
+
+Employees become eligible for regular remote work after completing 90 days of continuous employment and a satisfactory probation review. R</div>
+<div class='k'>Answer</div><div class='answer'>INSUFFICIENT CONTEXT</div></section>
+<section id='S27'><h2>S27</h2>
+<div class='k'>Question</div><div>How many PTO days per year do full-time employees get?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 employee_handbook:c000</span>
+# Employee Handbook
+
+## Paid Time Off
+
+Full-time employees accrue 1.25 days of PTO per month, for a total of 15 days per year.
+Part-time employees accrue PTO on a pro-rated basis according to scheduled hours.
+
+Unused PTO may be carried over up to a maximum of 5 days into the next calendar year.
+Requests for PTO must be submitted at least 7 days in advance except for emergencies.
+
+## Work Hours
+
+Standard office hours are Monday through Friday, 9:00 to 17:30 local time.
+Remote work is permitted up to 2 days p</div>
+<div class='chunk'><span class='cid'>#2 time_off_faq:c000</span>
+# Time Off FAQ
+
+## How much paid time off do I get?
+
+Full-time staff earn 1.5 days of paid time off per month, which adds up to 18 days per year. Time off is shown in the HR portal under &quot;Balances&quot;.
+
+## Can I carry days over?
+
+Up to 10 unused days roll over into the next year. Any balance above 10 days expires on January 31.
+
+## How far ahead should I ask?
+
+Please give your manager at least 2 weeks&#x27; notice for time off longer than three days.</div>
+<div class='chunk'><span class='cid'>#3 benefits_overview:c002</span>
+-deductible plan.
+
+## Retirement
+
+The 401(k) plan matches 100% of employee contributions up to 4% of salary. Employees are automatically enrolled at a 4% contribution rate and may change it at any time. Company matching contributions vest gradually over 3 years: one third after each year of service. Employee contributions are always fully vested.
+
+## Time Away
+
+Paid time off accrues as described in the Employee Handbook, 1.25 days per month for a total of 15 days per year. In addition, employees receive 10</div>
+<div class='chunk'><span class='cid'>#4 remote_work_policy:c000</span>
+# Remote Work Policy
+
+## Purpose and Scope
+
+This policy describes how employees may work away from a company office. It supplements the Employee Handbook, which sets the default allowance of up to 2 remote days per week with manager approval. Nothing in this document changes the standard office hours of 9:00 to 17:30 local time described in the handbook.
+
+## Eligibility
+
+Employees become eligible for regular remote work after completing 90 days of continuous employment and a satisfactory probation review. R</div>
+<div class='chunk'><span class='cid'>#5 remote_work_policy:c003</span>
+business days.
+
+## Core Hours and Availability
+
+Remote employees must be reachable during core hours of 10:00 to 15:00 in their team&#x27;s primary time zone. Calendars must be kept current, and a status must be set in the chat tool when stepping away for more than 30 minutes. Remote work is not a substitute for PTO or sick leave; employees who are unwell should record sick leave rather than working remotely.
+
+## Location Requirements
+
+Remote work must normally be performed inside the employee&#x27;s country of emplo</div>
+<div class='k'>Answer</div><div class='answer'>Full-time employees accrue 1.25 days of PTO per month, for a total of 15 days per year.</div></section>
+<section id='S28'><h2>S28</h2>
+<div class='k'>Question</div><div>Who is the current CEO of the company?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 performance_reviews:c002</span>
+ns
+3. Meets Expectations
+4. Exceeds Expectations
+5. Greatly Exceeds Expectations
+
+A rating of 3 describes solid, fully satisfactory performance and is the most common rating. Ratings are calibrated across teams so that similar contributions receive similar ratings; there is no forced distribution.
+
+## Goals
+
+Goals are set at the start of the year in the OKR tool. Each employee should have no more than 5 objectives, each with measurable key results. Goals are revisited at the September mid-year check-in and</div>
+<div class='chunk'><span class='cid'>#2 benefits_overview:c001</span>
+hin 30 days of the event.
+
+## Health Coverage
+
+The company offers medical, dental, and vision plans. The company pays 85% of the premium for employee coverage and 60% of the premium for dependents. Two medical plans are available: a PPO plan with a $500 deductible and a high-deductible plan with a $1,600 deductible paired with a health savings account. The company contributes $750 per year to the health savings account for employees on the high-deductible plan.
+
+## Retirement
+
+The 401(k) plan matches 100% o</div>
+<div class='chunk'><span class='cid'>#3 it_acceptable_use:c004</span>
+e from the approved list.
+
+## Network Use
+
+The corporate VPN must be used when accessing internal systems from outside the office. Guests must use the Guest Wi-Fi network, which is isolated from internal resources. Peer-to-peer file sharing, cryptocurrency mining, and running personal servers on company equipment are prohibited.
+
+## Email and Messaging
+
+Company email is for business use; limited personal use is acceptable if it does not interfere with work. Auto-forwarding company email to personal accounts</div>
+<div class='chunk'><span class='cid'>#4 it_acceptable_use:c005</span>
+re with work. Auto-forwarding company email to personal accounts is disabled and must not be circumvented. Suspected phishing messages should be reported using the &quot;Report Phish&quot; button, which forwards them to the security team. Customer data must never be sent over personal messaging applications.
+
+## Monitoring and Privacy
+
+The company logs network activity, authentication events, and device health for security purposes. Logs are retained according to the Data Retention Policy. Users should have no expect</div>
+<div class='chunk'><span class='cid'>#5 performance_reviews:c000</span>
+# Performance Review Process
+
+## Cycle Overview
+
+The company runs one formal performance review each year, completed in March, plus a lighter mid-year check-in in September. Reviews cover the calendar year. The process is managed in the performance tool, and HR publishes the exact dates each January.
+
+## Annual Review Timeline
+
+- January 31: promotion nominations are due from managers.
+- February 15: employee self-assessments are due.
+- March 1: manager assessments are due.
+- March 1 to March 15: calibratio</div>
+<div class='k'>Answer</div><div class='answer'>INSUFFICIENT CONTEXT</div></section>
+<section id='S29'><h2>S29</h2>
+<div class='k'>Question</div><div>How much is the annual cell phone allowance?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 remote_work_policy:c005</span>
+es a laptop, headset, and monitor to every employee. Remote workers may claim a one-time home office stipend of $400 for a desk, chair, or lighting, and a recurring home internet reimbursement of $50 per month. Both are submitted through the Expense Portal under the category &quot;Remote Work&quot; and follow the Expense Reimbursement Policy, including the 45-day submission deadline.
+
+Company equipment must be used on a company-managed device profile. Personal printers may not be used for documents classified Confide</div>
+<div class='chunk'><span class='cid'>#2 benefits_overview:c005</span>
+ee has a learning stipend of $1,200 per calendar year for courses, books, and conferences, approved by the manager and claimed through the Expense Portal. A separate wellness stipend of $300 per year covers gym memberships, fitness equipment, or mental health apps. Unused stipend amounts do not roll over.
+
+The Employee Assistance Program offers 6 free confidential counseling sessions per issue per year for employees and household members. Call the number on the benefits card to schedule.
+
+## Commuter and Ot</div>
+<div class='chunk'><span class='cid'>#3 benefits_overview:c001</span>
+hin 30 days of the event.
+
+## Health Coverage
+
+The company offers medical, dental, and vision plans. The company pays 85% of the premium for employee coverage and 60% of the premium for dependents. Two medical plans are available: a PPO plan with a $500 deductible and a high-deductible plan with a $1,600 deductible paired with a health savings account. The company contributes $750 per year to the health savings account for employees on the high-deductible plan.
+
+## Retirement
+
+The 401(k) plan matches 100% o</div>
+<div class='chunk'><span class='cid'>#4 travel_policy:c003</span>
+Hotel rates are capped at $250 per night for domestic travel and $325 per night in international and designated high-cost cities. The portal flags bookings above the cap for manager approval. Employees may stay with friends or family and claim a flat $50 per night in lieu of a hotel. Minibar, movies, and spa charges are personal expenses.
+
+## Ground Transportation
+
+Rental cars should be intermediate class or smaller. In the United States, employees must decline the rental company&#x27;s insurance because covera</div>
+<div class='chunk'><span class='cid'>#5 incident_response:c006</span>
+tations are weekly, from Monday 09:00 to the following Monday 09:00. Engineers on call receive a stipend of $300 per week in addition to salary. Secondary on-call is paged if the primary does not acknowledge within the response target. Swaps must be recorded in the scheduling tool.
+
+## Training and Drills
+
+All engineers complete incident response training during onboarding and take part in a tabletop exercise at least twice per year. The plan is tested with a game-day exercise every quarter.</div>
+<div class='k'>Answer</div><div class='answer'>INSUFFICIENT CONTEXT</div></section>
+<section id='S30'><h2>S30</h2>
+<div class='k'>Question</div><div>How quickly must a SEV1 incident be acknowledged by the on-call engineer?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 onboarding_checklist:c005</span>
+igibility for regular remote work under the Remote Work Policy.
+
+## Role-Specific Steps
+
+Engineers are added to the on-call shadow rotation after 60 days and complete incident response training before shadowing. Customer-facing staff complete the product certification within 30 days. Managers complete the manager fundamentals course within 60 days.
+
+## Offboarding Note
+
+The same forms are used in reverse when someone leaves: the manager submits IT-1 to remove access on the last day, and equipment is returne</div>
+<div class='chunk'><span class='cid'>#2 it_acceptable_use:c003</span>
+must be reported to helpdesk@example.com within 4 hours of discovery so that remote wipe can be triggered.
+
+## Software
+
+Only software from the approved catalog may be installed. Requests for new software are submitted as an IT-3 ticket (Software Request) and are reviewed by IT within 3 business days. Software that processes customer data also requires a security review through the Procurement Policy vendor process. Browser extensions must come from the approved list.
+
+## Network Use
+
+The corporate VPN mus</div>
+<div class='chunk'><span class='cid'>#3 onboarding_checklist:c006</span>
+IT-1 to remove access on the last day, and equipment is returned within 10 business days using the prepaid return label.
+
+## Contacts
+
+Questions about onboarding go to onboarding@example.com. Equipment issues go to the IT help desk.</div>
+<div class='chunk'><span class='cid'>#4 procurement_policy:c002</span>
+e onboarded by the Procurement team before a purchase order is issued. The vendor must provide a tax form (W-9 or local equivalent), banking details on company letterhead, and a signed copy of the vendor code of conduct. Vendors whose products process customer data must also complete the vendor security questionnaire and be approved by the Security team before any data is shared, consistent with the Security Policy. Vendor onboarding typically takes 10 business days.
+
+## Software and SaaS
+
+All software purc</div>
+<div class='chunk'><span class='cid'>#5 onboarding_checklist:c003</span>
+Mandatory compliance training, which covers the code of conduct, anti-harassment, and data protection, must be completed within 14 days of the start date. New hires read the Security Policy, the Data Retention Policy, and the Expense Reimbursement Policy and confirm in the HR portal that they have done so.
+
+## Benefits Enrollment
+
+New hires have 31 days from their start date to enroll in health, dental, and vision coverage. Missing the window means waiting until the next open enrollment in November unless</div>
+<div class='k'>Answer</div><div class='answer'>INSUFFICIENT CONTEXT</div></section>
+<section id='S31'><h2>S31</h2>
+<div class='k'>Question</div><div>How much does the company contribute to the health savings account each year?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 benefits_overview:c001</span>
+hin 30 days of the event.
+
+## Health Coverage
+
+The company offers medical, dental, and vision plans. The company pays 85% of the premium for employee coverage and 60% of the premium for dependents. Two medical plans are available: a PPO plan with a $500 deductible and a high-deductible plan with a $1,600 deductible paired with a health savings account. The company contributes $750 per year to the health savings account for employees on the high-deductible plan.
+
+## Retirement
+
+The 401(k) plan matches 100% o</div>
+<div class='chunk'><span class='cid'>#2 benefits_overview:c005</span>
+ee has a learning stipend of $1,200 per calendar year for courses, books, and conferences, approved by the manager and claimed through the Expense Portal. A separate wellness stipend of $300 per year covers gym memberships, fitness equipment, or mental health apps. Unused stipend amounts do not roll over.
+
+The Employee Assistance Program offers 6 free confidential counseling sessions per issue per year for employees and household members. Call the number on the benefits card to schedule.
+
+## Commuter and Ot</div>
+<div class='chunk'><span class='cid'>#3 benefits_overview:c002</span>
+-deductible plan.
+
+## Retirement
+
+The 401(k) plan matches 100% of employee contributions up to 4% of salary. Employees are automatically enrolled at a 4% contribution rate and may change it at any time. Company matching contributions vest gradually over 3 years: one third after each year of service. Employee contributions are always fully vested.
+
+## Time Away
+
+Paid time off accrues as described in the Employee Handbook, 1.25 days per month for a total of 15 days per year. In addition, employees receive 10</div>
+<div class='chunk'><span class='cid'>#4 benefits_overview:c004</span>
+ment.
+
+Employees with 5 years of continuous service may take a 4-week paid sabbatical, which must be scheduled at least 3 months in advance.
+
+## Insurance
+
+Basic life insurance of 2 times annual salary is provided at no cost, up to a maximum of $500,000. Employees may purchase additional coverage. Short-term disability pays 60% of salary for up to 12 weeks; long-term disability continues at 60% after that.
+
+## Learning and Wellness
+
+Each employee has a learning stipend of $1,200 per calendar year for course</div>
+<div class='chunk'><span class='cid'>#5 benefits_overview:c003</span>
+a total of 15 days per year. In addition, employees receive 10 days of paid sick leave per year, which does not carry over, and 5 days of paid bereavement leave per qualifying event. The company observes 11 public holidays per year.
+
+Parental leave is 16 weeks fully paid for the primary caregiver and 6 weeks fully paid for the secondary caregiver, available after 6 months of employment. Leave may be taken within 12 months of the birth or placement.
+
+Employees with 5 years of continuous service may take a 4</div>
+<div class='k'>Answer</div><div class='answer'>The company contributes $750 per year to the health savings account for employees on the high-deductible plan.</div></section>
+<section id='S32'><h2>S32</h2>
+<div class='k'>Question</div><div>What is the minimum length of a Performance Improvement Plan?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 onboarding_checklist:c004</span>
+means waiting until the next open enrollment in November unless a qualifying life event occurs. Retirement plan enrollment is automatic at a 4% contribution unless the employee changes it.
+
+## Probation and Check-Ins
+
+The probation period is 90 days. Managers hold structured check-ins at 30, 60, and 90 days using the Check-In template in the performance tool. The 90-day check-in doubles as the probation review; a satisfactory review unlocks eligibility for regular remote work under the Remote Work Policy.</div>
+<div class='chunk'><span class='cid'>#2 onboarding_checklist:c003</span>
+Mandatory compliance training, which covers the code of conduct, anti-harassment, and data protection, must be completed within 14 days of the start date. New hires read the Security Policy, the Data Retention Policy, and the Expense Reimbursement Policy and confirm in the HR portal that they have done so.
+
+## Benefits Enrollment
+
+New hires have 31 days from their start date to enroll in health, dental, and vision coverage. Missing the window means waiting until the next open enrollment in November unless</div>
+<div class='chunk'><span class='cid'>#3 onboarding_checklist:c005</span>
+igibility for regular remote work under the Remote Work Policy.
+
+## Role-Specific Steps
+
+Engineers are added to the on-call shadow rotation after 60 days and complete incident response training before shadowing. Customer-facing staff complete the product certification within 30 days. Managers complete the manager fundamentals course within 60 days.
+
+## Offboarding Note
+
+The same forms are used in reverse when someone leaves: the manager submits IT-1 to remove access on the last day, and equipment is returne</div>
+<div class='chunk'><span class='cid'>#4 remote_work_policy:c000</span>
+# Remote Work Policy
+
+## Purpose and Scope
+
+This policy describes how employees may work away from a company office. It supplements the Employee Handbook, which sets the default allowance of up to 2 remote days per week with manager approval. Nothing in this document changes the standard office hours of 9:00 to 17:30 local time described in the handbook.
+
+## Eligibility
+
+Employees become eligible for regular remote work after completing 90 days of continuous employment and a satisfactory probation review. R</div>
+<div class='chunk'><span class='cid'>#5 procurement_policy:c003</span>
+takes 10 business days.
+
+## Software and SaaS
+
+All software purchases, including free tiers and trials that store company data, must be reviewed by IT through an IT-3 ticket as required by the IT Acceptable Use Policy. Procurement maintains a preferred vendor list; purchasing from a preferred vendor does not remove the quote requirements above but may shorten onboarding. Auto-renewing contracts must be entered in the contract register with a reminder 60 days before renewal.
+
+## Purchase Orders and Payment</div>
+<div class='k'>Answer</div><div class='answer'>INSUFFICIENT CONTEXT</div></section>
+<section id='S33'><h2>S33</h2>
+<div class='k'>Question</div><div>How many days of paid jury duty leave do employees get?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 benefits_overview:c003</span>
+a total of 15 days per year. In addition, employees receive 10 days of paid sick leave per year, which does not carry over, and 5 days of paid bereavement leave per qualifying event. The company observes 11 public holidays per year.
+
+Parental leave is 16 weeks fully paid for the primary caregiver and 6 weeks fully paid for the secondary caregiver, available after 6 months of employment. Leave may be taken within 12 months of the birth or placement.
+
+Employees with 5 years of continuous service may take a 4</div>
+<div class='chunk'><span class='cid'>#2 employee_handbook:c000</span>
+# Employee Handbook
+
+## Paid Time Off
+
+Full-time employees accrue 1.25 days of PTO per month, for a total of 15 days per year.
+Part-time employees accrue PTO on a pro-rated basis according to scheduled hours.
+
+Unused PTO may be carried over up to a maximum of 5 days into the next calendar year.
+Requests for PTO must be submitted at least 7 days in advance except for emergencies.
+
+## Work Hours
+
+Standard office hours are Monday through Friday, 9:00 to 17:30 local time.
+Remote work is permitted up to 2 days p</div>
+<div class='chunk'><span class='cid'>#3 remote_work_policy:c000</span>
+# Remote Work Policy
+
+## Purpose and Scope
+
+This policy describes how employees may work away from a company office. It supplements the Employee Handbook, which sets the default allowance of up to 2 remote days per week with manager approval. Nothing in this document changes the standard office hours of 9:00 to 17:30 local time described in the handbook.
+
+## Eligibility
+
+Employees become eligible for regular remote work after completing 90 days of continuous employment and a satisfactory probation review. R</div>
+<div class='chunk'><span class='cid'>#4 employee_handbook:c001</span>
+:00 to 17:30 local time.
+Remote work is permitted up to 2 days per week with manager approval.</div>
+<div class='chunk'><span class='cid'>#5 onboarding_checklist:c004</span>
+means waiting until the next open enrollment in November unless a qualifying life event occurs. Retirement plan enrollment is automatic at a 4% contribution unless the employee changes it.
+
+## Probation and Check-Ins
+
+The probation period is 90 days. Managers hold structured check-ins at 30, 60, and 90 days using the Check-In template in the performance tool. The 90-day check-in doubles as the probation review; a satisfactory review unlocks eligibility for regular remote work under the Remote Work Policy.</div>
+<div class='k'>Answer</div><div class='answer'>INSUFFICIENT CONTEXT</div></section>
+<section id='S34'><h2>S34</h2>
+<div class='k'>Question</div><div>How many written quotes are needed for a purchase between $1,000 and $10,000?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 procurement_policy:c001</span>
+or receipts and reconciliation.
+- Purchases from $1,000 to $10,000 require Form PR-1 (Purchase Requisition) and at least 2 written quotes.
+- Purchases above $10,000 require 3 competitive bids and sign-off from the Finance Director.
+- Purchases above $50,000 additionally require CFO approval and a Legal review of the contract.
+
+Splitting a purchase into smaller orders to stay below a threshold is prohibited.
+
+## Vendor Onboarding
+
+New vendors are onboarded by the Procurement team before a purchase order is i</div>
+<div class='chunk'><span class='cid'>#2 procurement_policy:c000</span>
+# Procurement Policy
+
+## Purpose
+
+This policy governs how the company buys goods and services. It exists to control spend, manage vendor risk, and ensure that purchases are documented. All amounts refer to the total contract value over the full term, including renewals.
+
+## Approval Thresholds
+
+- Purchases under $1,000 may be made by a manager using a corporate purchasing card without a requisition, subject to the Expense Reimbursement Policy for receipts and reconciliation.
+- Purchases from $1,000 to $10,0</div>
+<div class='chunk'><span class='cid'>#3 procurement_policy:c005</span>
+y personal or financial relationship with a vendor using the Conflict of Interest form before participating in a purchase decision. Gifts from vendors with a value above $50 must be declined or reported to Procurement.
+
+## Contracts
+
+Only officers of the company and employees with delegated signing authority may sign contracts. Standard contract templates are maintained by Legal. Any deviation from the standard limitation of liability or data protection terms requires Legal approval regardless of contract v</div>
+<div class='chunk'><span class='cid'>#4 travel_policy:c000</span>
+# Travel Policy
+
+## Scope
+
+This policy covers business travel booking, class of service, and lodging. Meal per diems, mileage, and receipt requirements are set in the Expense Reimbursement Policy and are not repeated here, except that the daily meal per diem of $65 domestic and $95 international also applies to travel days.
+
+## Booking
+
+All travel must be booked through the corporate travel portal, TripDesk, so that trips are visible to Security and insured through the corporate card program. Flights and ho</div>
+<div class='chunk'><span class='cid'>#5 expense_reimbursement:c002</span>
+the business purpose is clearly described. Credit card statements alone are not accepted as receipts. Lost receipts must be declared using Form EXP-7 (Missing Receipt Declaration), which may be used no more than 3 times per calendar year.
+
+## Approval Thresholds
+
+- Expense reports up to $2,500 are approved by the employee&#x27;s direct manager.
+- Reports above $2,500 also require approval from the department VP.
+- Any single item above $10,000 is routed to Finance for review before payment.
+
+Managers may not app</div>
+<div class='k'>Answer</div><div class='answer'>Two written quotes are needed for a purchase between $1,000 and $10,000.</div></section>
+<section id='S35'><h2>S35</h2>
+<div class='k'>Question</div><div>Within how many days must a verified personal data deletion request be completed?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 data_retention:c002</span>
+18 months |
+
+Where law requires a longer period than this schedule, the legal requirement prevails.
+
+## Deletion Requests
+
+Customers may request deletion of their personal data. Verified requests must be completed within 30 days of receipt, with a written confirmation sent to the requester. Requests are logged in the Privacy Request Tracker and handled by the Privacy team. Data that must be retained for legal or financial reasons, such as invoices, is excluded from deletion and the requester is told which</div>
+<div class='chunk'><span class='cid'>#2 data_retention:c005</span>
+roduction is therefore fully purged from backups within 35 days of deletion. Restoring a backup to satisfy a deletion request is not required, but restored data must be re-deleted within 7 days.
+
+## Review
+
+The retention schedule is reviewed quarterly by the Data Retention Officer and annually by Legal and Security together. Changes are communicated in the #policy-updates channel and recorded in the schedule&#x27;s version history.
+
+## Responsibilities
+
+Data owners are responsible for configuring automated delet</div>
+<div class='chunk'><span class='cid'>#3 data_retention:c004</span>
+gs tied to an active investigation must not be deleted.
+
+## Exceptions
+
+Teams that need to keep data longer than the schedule allows must file Form DR-4 (Retention Exception Request) with the Data Retention Officer. Exceptions are granted for a maximum of 12 months and must be renewed. Exceptions are never granted for data whose owner has requested deletion.
+
+## Backups
+
+Backups are retained for 35 days and then overwritten. Data deleted from production is therefore fully purged from backups within 35 days</div>
+<div class='chunk'><span class='cid'>#4 incident_response:c004</span>
+are published within 60 minutes of declaration. If personal data is confirmed to be affected, affected customers and regulators are notified within 72 hours, coordinated by Legal.
+
+## Evidence Handling
+
+Do not delete, rotate, or modify logs related to an active incident. Snapshots of affected systems are taken before remediation when it is safe to do so. Evidence is stored in the restricted incident bucket, which is covered by legal hold procedures in the Data Retention Policy.
+
+## Postmortems
+
+Every SEV1</div>
+<div class='chunk'><span class='cid'>#5 data_retention:c003</span>
+ices, is excluded from deletion and the requester is told which categories were retained and why.
+
+## Legal Hold
+
+When litigation or a regulatory investigation is reasonably anticipated, Legal issues a legal hold notice. A legal hold suspends all scheduled deletion for the named data until the hold is lifted in writing. Deleting data that is subject to a legal hold is a serious policy violation. This complements the Security Policy rule that logs tied to an active investigation must not be deleted.
+
+## Exce</div>
+<div class='k'>Answer</div><div class='answer'>30 days</div></section>
+<section id='S36'><h2>S36</h2>
+<div class='k'>Question</div><div>How long must company passwords be?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 it_acceptable_use:c000</span>
+# IT Acceptable Use Policy
+
+## Scope
+
+This policy applies to everyone who uses company systems, networks, or data, including employees, contractors, and interns. It complements the Security Policy, which governs production access and secrets handling.
+
+## Accounts and Passwords
+
+Passwords for company accounts must be at least 14 characters long and must not reuse any of the previous 8 passwords. Passwords must be rotated every 180 days, or immediately if compromise is suspected. All passwords must be stored</div>
+<div class='chunk'><span class='cid'>#2 it_acceptable_use:c001</span>
+diately if compromise is suspected. All passwords must be stored in the approved password manager, Vaultkeeper. Writing passwords on paper or storing them in plain text files is prohibited.
+
+Multi-factor authentication is required for email, the VPN, the HR portal, and all production systems, consistent with the Security Policy. Shared accounts are not permitted; every login must be attributable to one person.
+
+## Devices
+
+Company laptops are managed by the IT device management profile and must not be unenr</div>
+<div class='chunk'><span class='cid'>#3 data_retention:c001</span>
+Customer account records | 7 years after account closure |
+| Financial and tax records | 7 years after the fiscal year ends |
+| Application logs (hot storage) | 90 days |
+| Application logs (cold archive) | 1 year |
+| Security audit logs | 2 years |
+| Employee email | 3 years |
+| Recruiting records for unsuccessful candidates | 12 months after the decision |
+| Database backups | 35 days on a rolling basis |
+| Chat messages in public channels | 18 months |
+
+Where law requires a longer period than this sched</div>
+<div class='chunk'><span class='cid'>#4 it_acceptable_use:c002</span>
+anaged by the IT device management profile and must not be unenrolled. Screens must lock automatically after 10 minutes of inactivity. Personal phones may access company email only after enrolling in the mobile device management (MDM) program, which allows IT to wipe company data if the device is lost.
+
+Removable USB storage devices are blocked on company laptops. Files may be shared only through the approved cloud drive. Lost or stolen devices must be reported to helpdesk@example.com within 4 hours of disc</div>
+<div class='chunk'><span class='cid'>#5 security_policy:c000</span>
+# Security Policy
+
+## Access Control
+
+Production systems require multi-factor authentication.
+API keys must never be committed to source control.
+Secrets are stored in the approved secrets manager only.
+
+## Incident Response
+
+Suspected security incidents must be reported to security@example.com within 1 hour.
+Do not delete logs related to an active investigation.
+Customer data exports require written approval from a security owner.</div>
+<div class='k'>Answer</div><div class='answer'>Company passwords must be at least 14 characters long and must not reuse any of the previous 8 passwords.</div></section>
+<section id='S37'><h2>S37</h2>
+<div class='k'>Question</div><div>When are employee self-assessments due in the annual review?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 expense_reimbursement:c006</span>
+business days of final approval. Reimbursements are paid to the bank account on file in the HR portal. Finance may hold payment for reports that are missing receipts or business purpose.
+
+## Audit and Compliance
+
+Finance audits a random sample of 10% of expense reports each quarter. Falsifying expense claims is grounds for immediate termination. Questions about this policy go to expenses@example.com.</div>
+<div class='chunk'><span class='cid'>#2 expense_reimbursement:c002</span>
+the business purpose is clearly described. Credit card statements alone are not accepted as receipts. Lost receipts must be declared using Form EXP-7 (Missing Receipt Declaration), which may be used no more than 3 times per calendar year.
+
+## Approval Thresholds
+
+- Expense reports up to $2,500 are approved by the employee&#x27;s direct manager.
+- Reports above $2,500 also require approval from the department VP.
+- Any single item above $10,000 is routed to Finance for review before payment.
+
+Managers may not app</div>
+<div class='chunk'><span class='cid'>#3 expense_reimbursement:c001</span>
+s of the date the expense was incurred. Reports submitted after 45 days require written justification and VP approval, and reports older than 90 days will not be reimbursed. Corporate card transactions must be reconciled in the Expense Portal by the 5th of the following month.
+
+## Receipts and Documentation
+
+An itemized receipt is required for any single expense of $25 or more. For expenses under $25, a receipt is preferred but not required if the business purpose is clearly described. Credit card statement</div>
+<div class='chunk'><span class='cid'>#4 onboarding_checklist:c004</span>
+means waiting until the next open enrollment in November unless a qualifying life event occurs. Retirement plan enrollment is automatic at a 4% contribution unless the employee changes it.
+
+## Probation and Check-Ins
+
+The probation period is 90 days. Managers hold structured check-ins at 30, 60, and 90 days using the Check-In template in the performance tool. The 90-day check-in doubles as the probation review; a satisfactory review unlocks eligibility for regular remote work under the Remote Work Policy.</div>
+<div class='chunk'><span class='cid'>#5 onboarding_checklist:c003</span>
+Mandatory compliance training, which covers the code of conduct, anti-harassment, and data protection, must be completed within 14 days of the start date. New hires read the Security Policy, the Data Retention Policy, and the Expense Reimbursement Policy and confirm in the HR portal that they have done so.
+
+## Benefits Enrollment
+
+New hires have 31 days from their start date to enroll in health, dental, and vision coverage. Missing the window means waiting until the next open enrollment in November unless</div>
+<div class='k'>Answer</div><div class='answer'>INSUFFICIENT CONTEXT</div></section>
+<section id='S38'><h2>S38</h2>
+<div class='k'>Question</div><div>How many remote days per week are allowed by default?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 employee_handbook:c001</span>
+:00 to 17:30 local time.
+Remote work is permitted up to 2 days per week with manager approval.</div>
+<div class='chunk'><span class='cid'>#2 remote_work_policy:c000</span>
+# Remote Work Policy
+
+## Purpose and Scope
+
+This policy describes how employees may work away from a company office. It supplements the Employee Handbook, which sets the default allowance of up to 2 remote days per week with manager approval. Nothing in this document changes the standard office hours of 9:00 to 17:30 local time described in the handbook.
+
+## Eligibility
+
+Employees become eligible for regular remote work after completing 90 days of continuous employment and a satisfactory probation review. R</div>
+<div class='chunk'><span class='cid'>#3 hybrid_work_guide:c000</span>
+# Hybrid Work Guide
+
+## How many days can I work from home?
+
+Most teams follow a hybrid pattern of 3 remote days and 2 office days each week. Managers can agree a different pattern with their team.
+
+## What equipment support is available?
+
+Home workers can claim an internet allowance of $30 per month and a one-time setup allowance of $250 for furniture. Claims are made through the Expense Portal.</div>
+<div class='chunk'><span class='cid'>#4 remote_work_policy:c001</span>
+of continuous employment and a satisfactory probation review. Roles that require physical presence, such as facilities, reception, and lab operations, are excluded from regular remote work but may request occasional remote days for specific circumstances.
+
+Department heads may designate a role as remote-eligible. Employees in remote-eligible roles may work a third remote day each week by submitting Form RW-2 (Extended Remote Schedule) for approval by both the manager and the department head. Fully remote a</div>
+<div class='chunk'><span class='cid'>#5 remote_work_policy:c002</span>
+oval by both the manager and the department head. Fully remote arrangements are approved only by the VP of People and are reviewed every 12 months.
+
+## Requesting Remote Work
+
+Recurring remote schedules must be requested using Form RW-1 (Remote Work Agreement) in the HR portal. Ad hoc remote days do not require a form but must be agreed with the manager the day before, except in emergencies. Managers must respond to Form RW-1 requests within 5 business days.
+
+## Core Hours and Availability
+
+Remote employees</div>
+<div class='k'>Answer</div><div class='answer'>Up to 2 days per week by default, with manager approval.</div></section>
+<section id='S39'><h2>S39</h2>
+<div class='k'>Question</div><div>How many weeks of paid parental leave does the primary caregiver get?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 benefits_overview:c003</span>
+a total of 15 days per year. In addition, employees receive 10 days of paid sick leave per year, which does not carry over, and 5 days of paid bereavement leave per qualifying event. The company observes 11 public holidays per year.
+
+Parental leave is 16 weeks fully paid for the primary caregiver and 6 weeks fully paid for the secondary caregiver, available after 6 months of employment. Leave may be taken within 12 months of the birth or placement.
+
+Employees with 5 years of continuous service may take a 4</div>
+<div class='chunk'><span class='cid'>#2 benefits_overview:c004</span>
+ment.
+
+Employees with 5 years of continuous service may take a 4-week paid sabbatical, which must be scheduled at least 3 months in advance.
+
+## Insurance
+
+Basic life insurance of 2 times annual salary is provided at no cost, up to a maximum of $500,000. Employees may purchase additional coverage. Short-term disability pays 60% of salary for up to 12 weeks; long-term disability continues at 60% after that.
+
+## Learning and Wellness
+
+Each employee has a learning stipend of $1,200 per calendar year for course</div>
+<div class='chunk'><span class='cid'>#3 onboarding_checklist:c004</span>
+means waiting until the next open enrollment in November unless a qualifying life event occurs. Retirement plan enrollment is automatic at a 4% contribution unless the employee changes it.
+
+## Probation and Check-Ins
+
+The probation period is 90 days. Managers hold structured check-ins at 30, 60, and 90 days using the Check-In template in the performance tool. The 90-day check-in doubles as the probation review; a satisfactory review unlocks eligibility for regular remote work under the Remote Work Policy.</div>
+<div class='chunk'><span class='cid'>#4 benefits_overview:c000</span>
+# Benefits Overview
+
+## Eligibility and Enrollment
+
+Full-time employees are eligible for benefits from their first day. New hires must enroll within 31 days of their start date; otherwise enrollment waits for the annual open enrollment period, which runs from November 1 to November 15 each year. Changes outside those windows are allowed only for qualifying life events such as marriage, birth, or loss of other coverage, and must be submitted within 30 days of the event.
+
+## Health Coverage
+
+The company offer</div>
+<div class='chunk'><span class='cid'>#5 benefits_overview:c001</span>
+hin 30 days of the event.
+
+## Health Coverage
+
+The company offers medical, dental, and vision plans. The company pays 85% of the premium for employee coverage and 60% of the premium for dependents. Two medical plans are available: a PPO plan with a $500 deductible and a high-deductible plan with a $1,600 deductible paired with a health savings account. The company contributes $750 per year to the health savings account for employees on the high-deductible plan.
+
+## Retirement
+
+The 401(k) plan matches 100% o</div>
+<div class='k'>Answer</div><div class='answer'>16 weeks.</div></section>
+<section id='S40'><h2>S40</h2>
+<div class='k'>Question</div><div>How soon after resolution must a SEV1 postmortem be published?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 procurement_policy:c006</span>
+rotection terms requires Legal approval regardless of contract value.
+
+## Receiving and Disputes
+
+The requester confirms receipt of goods or services in the procurement system before payment is released. Disputes with vendors are raised through Procurement, which coordinates with Legal where necessary.
+
+## Record Keeping
+
+Procurement records, including quotes, bids, and signed contracts, are retained for 7 years after the contract ends, in line with the Data Retention Policy for financial records.</div>
+<div class='chunk'><span class='cid'>#2 it_acceptable_use:c003</span>
+must be reported to helpdesk@example.com within 4 hours of discovery so that remote wipe can be triggered.
+
+## Software
+
+Only software from the approved catalog may be installed. Requests for new software are submitted as an IT-3 ticket (Software Request) and are reviewed by IT within 3 business days. Software that processes customer data also requires a security review through the Procurement Policy vendor process. Browser extensions must come from the approved list.
+
+## Network Use
+
+The corporate VPN mus</div>
+<div class='chunk'><span class='cid'>#3 procurement_policy:c004</span>
+minder 60 days before renewal.
+
+## Purchase Orders and Payment
+
+A purchase order (PO) is required for any purchase of $1,000 or more. Vendors must reference the PO number on invoices; invoices without a PO are returned. Standard payment terms are net 30 days from receipt of a valid invoice. Early payment discounts may be accepted when they exceed 2%. Invoices are submitted to ap@example.com.
+
+## Conflicts of Interest
+
+Employees must disclose any personal or financial relationship with a vendor using the Con</div>
+<div class='chunk'><span class='cid'>#4 onboarding_checklist:c005</span>
+igibility for regular remote work under the Remote Work Policy.
+
+## Role-Specific Steps
+
+Engineers are added to the on-call shadow rotation after 60 days and complete incident response training before shadowing. Customer-facing staff complete the product certification within 30 days. Managers complete the manager fundamentals course within 60 days.
+
+## Offboarding Note
+
+The same forms are used in reverse when someone leaves: the manager submits IT-1 to remove access on the last day, and equipment is returne</div>
+<div class='chunk'><span class='cid'>#5 onboarding_checklist:c004</span>
+means waiting until the next open enrollment in November unless a qualifying life event occurs. Retirement plan enrollment is automatic at a 4% contribution unless the employee changes it.
+
+## Probation and Check-Ins
+
+The probation period is 90 days. Managers hold structured check-ins at 30, 60, and 90 days using the Check-In template in the performance tool. The 90-day check-in doubles as the probation review; a satisfactory review unlocks eligibility for regular remote work under the Remote Work Policy.</div>
+<div class='k'>Answer</div><div class='answer'>INSUFFICIENT CONTEXT</div></section>
+<section id='S41'><h2>S41</h2>
+<div class='k'>Question</div><div>Within how many days of purchase can a customer request a full refund?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 refund_policy:c000</span>
+# Refund Policy
+
+## Eligibility
+
+Customers may request a full refund within 30 days of purchase if the product is unused and in original packaging.
+Digital goods are eligible for refund only within 14 days and only if the download was never completed.
+
+## Process
+
+1. Submit a refund request through the support portal.
+2. Include the order ID and reason for the refund.
+3. Approved refunds are issued to the original payment method within 5–10 business days.
+
+Chargebacks initiated without contacting support fi</div>
+<div class='chunk'><span class='cid'>#2 procurement_policy:c003</span>
+takes 10 business days.
+
+## Software and SaaS
+
+All software purchases, including free tiers and trials that store company data, must be reviewed by IT through an IT-3 ticket as required by the IT Acceptable Use Policy. Procurement maintains a preferred vendor list; purchasing from a preferred vendor does not remove the quote requirements above but may shorten onboarding. Auto-renewing contracts must be entered in the contract register with a reminder 60 days before renewal.
+
+## Purchase Orders and Payment</div>
+<div class='chunk'><span class='cid'>#3 expense_reimbursement:c001</span>
+s of the date the expense was incurred. Reports submitted after 45 days require written justification and VP approval, and reports older than 90 days will not be reimbursed. Corporate card transactions must be reconciled in the Expense Portal by the 5th of the following month.
+
+## Receipts and Documentation
+
+An itemized receipt is required for any single expense of $25 or more. For expenses under $25, a receipt is preferred but not required if the business purpose is clearly described. Credit card statement</div>
+<div class='chunk'><span class='cid'>#4 procurement_policy:c004</span>
+minder 60 days before renewal.
+
+## Purchase Orders and Payment
+
+A purchase order (PO) is required for any purchase of $1,000 or more. Vendors must reference the PO number on invoices; invoices without a PO are returned. Standard payment terms are net 30 days from receipt of a valid invoice. Early payment discounts may be accepted when they exceed 2%. Invoices are submitted to ap@example.com.
+
+## Conflicts of Interest
+
+Employees must disclose any personal or financial relationship with a vendor using the Con</div>
+<div class='chunk'><span class='cid'>#5 onboarding_checklist:c006</span>
+IT-1 to remove access on the last day, and equipment is returned within 10 business days using the prepaid return label.
+
+## Contacts
+
+Questions about onboarding go to onboarding@example.com. Equipment issues go to the IT help desk.</div>
+<div class='k'>Answer</div><div class='answer'>Customers may request a full refund within 30 days of purchase if the product is unused and in original packaging.</div></section>
+<section id='S42'><h2>S42</h2>
+<div class='k'>Question</div><div>How long are security audit logs retained?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 data_retention:c001</span>
+Customer account records | 7 years after account closure |
+| Financial and tax records | 7 years after the fiscal year ends |
+| Application logs (hot storage) | 90 days |
+| Application logs (cold archive) | 1 year |
+| Security audit logs | 2 years |
+| Employee email | 3 years |
+| Recruiting records for unsuccessful candidates | 12 months after the decision |
+| Database backups | 35 days on a rolling basis |
+| Chat messages in public channels | 18 months |
+
+Where law requires a longer period than this sched</div>
+<div class='chunk'><span class='cid'>#2 data_retention:c004</span>
+gs tied to an active investigation must not be deleted.
+
+## Exceptions
+
+Teams that need to keep data longer than the schedule allows must file Form DR-4 (Retention Exception Request) with the Data Retention Officer. Exceptions are granted for a maximum of 12 months and must be renewed. Exceptions are never granted for data whose owner has requested deletion.
+
+## Backups
+
+Backups are retained for 35 days and then overwritten. Data deleted from production is therefore fully purged from backups within 35 days</div>
+<div class='chunk'><span class='cid'>#3 data_retention:c006</span>
+ies
+
+Data owners are responsible for configuring automated deletion in their systems and confirming it in the annual review. Engineering must ensure that log pipelines expire hot logs at 90 days and archive copies at 1 year. Questions go to privacy@example.com.</div>
+<div class='chunk'><span class='cid'>#4 data_retention:c005</span>
+roduction is therefore fully purged from backups within 35 days of deletion. Restoring a backup to satisfy a deletion request is not required, but restored data must be re-deleted within 7 days.
+
+## Review
+
+The retention schedule is reviewed quarterly by the Data Retention Officer and annually by Legal and Security together. Changes are communicated in the #policy-updates channel and recorded in the schedule&#x27;s version history.
+
+## Responsibilities
+
+Data owners are responsible for configuring automated delet</div>
+<div class='chunk'><span class='cid'>#5 incident_response:c004</span>
+are published within 60 minutes of declaration. If personal data is confirmed to be affected, affected customers and regulators are notified within 72 hours, coordinated by Legal.
+
+## Evidence Handling
+
+Do not delete, rotate, or modify logs related to an active incident. Snapshots of affected systems are taken before remediation when it is safe to do so. Evidence is stored in the restricted incident bucket, which is covered by legal hold procedures in the Data Retention Policy.
+
+## Postmortems
+
+Every SEV1</div>
+<div class='k'>Answer</div><div class='answer'>Security audit logs are retained for 2 years.
+
+Security audit logs are typically retained for a period of 2 years, which is a standard practice in many organizations to ensure that they can be used for auditing and compliance purposes.</div></section>
+<section id='S43'><h2>S43</h2>
+<div class='k'>Question</div><div>How often must passwords be rotated?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 password_guidelines:c000</span>
+# Password Guidelines
+
+Choose a password of at least 10 characters that mixes letters, numbers and symbols. Change your password every 90 days; the system will prompt you seven days before it expires. Do not reuse any of your last 4 passwords.
+
+If you forget your password, use the self-service reset page or call the help desk.</div>
+<div class='chunk'><span class='cid'>#2 it_acceptable_use:c000</span>
+# IT Acceptable Use Policy
+
+## Scope
+
+This policy applies to everyone who uses company systems, networks, or data, including employees, contractors, and interns. It complements the Security Policy, which governs production access and secrets handling.
+
+## Accounts and Passwords
+
+Passwords for company accounts must be at least 14 characters long and must not reuse any of the previous 8 passwords. Passwords must be rotated every 180 days, or immediately if compromise is suspected. All passwords must be stored</div>
+<div class='chunk'><span class='cid'>#3 it_acceptable_use:c001</span>
+diately if compromise is suspected. All passwords must be stored in the approved password manager, Vaultkeeper. Writing passwords on paper or storing them in plain text files is prohibited.
+
+Multi-factor authentication is required for email, the VPN, the HR portal, and all production systems, consistent with the Security Policy. Shared accounts are not permitted; every login must be attributable to one person.
+
+## Devices
+
+Company laptops are managed by the IT device management profile and must not be unenr</div>
+<div class='chunk'><span class='cid'>#4 benefits_overview:c002</span>
+-deductible plan.
+
+## Retirement
+
+The 401(k) plan matches 100% of employee contributions up to 4% of salary. Employees are automatically enrolled at a 4% contribution rate and may change it at any time. Company matching contributions vest gradually over 3 years: one third after each year of service. Employee contributions are always fully vested.
+
+## Time Away
+
+Paid time off accrues as described in the Employee Handbook, 1.25 days per month for a total of 15 days per year. In addition, employees receive 10</div>
+<div class='chunk'><span class='cid'>#5 onboarding_checklist:c004</span>
+means waiting until the next open enrollment in November unless a qualifying life event occurs. Retirement plan enrollment is automatic at a 4% contribution unless the employee changes it.
+
+## Probation and Check-Ins
+
+The probation period is 90 days. Managers hold structured check-ins at 30, 60, and 90 days using the Check-In template in the performance tool. The 90-day check-in doubles as the probation review; a satisfactory review unlocks eligibility for regular remote work under the Remote Work Policy.</div>
+<div class='k'>Answer</div><div class='answer'>According to the IT Acceptable Use Policy, passwords must be rotated every 180 days, or immediately if compromise is suspected.</div></section>
+<section id='S44'><h2>S44</h2>
+<div class='k'>Question</div><div>What mileage rate is reimbursed for business driving?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 driving_for_work:c000</span>
+# Driving for Work
+
+Employees who drive their own car for business purposes are reimbursed at $0.55 per mile. The rate is reviewed every two years by Finance. Mileage must be logged with start and end locations and claimed within 60 days.
+
+Employees who drive more than 500 business miles per month may request a pool car instead. Pool cars are booked through the facilities desk.</div>
+<div class='chunk'><span class='cid'>#2 expense_reimbursement:c004</span>
+ndees and the business purpose recorded. Alcohol is not reimbursable except as part of a client dinner, where it is capped at $40 per person.
+
+## Mileage and Ground Transport
+
+Use of a personal vehicle for business is reimbursed at $0.67 per mile, which covers fuel, wear, and insurance. Commuting between home and the regular office is not reimbursable. Parking fees and tolls incurred on business trips are reimbursable with receipts. Ride-share and taxi fares are reimbursable when public transport is impract</div>
+<div class='chunk'><span class='cid'>#3 expense_reimbursement:c005</span>
+and taxi fares are reimbursable when public transport is impractical.
+
+## Non-Reimbursable Items
+
+The following are never reimbursed: traffic fines, personal entertainment, minibar charges, spa or gym fees, upgrades not permitted by the Travel Policy, and purchases for family members. Gift cards may only be purchased through the Procurement team.
+
+## Payment Timing
+
+Approved expenses are reimbursed in the next payroll cycle, normally within 10 business days of final approval. Reimbursements are paid to the</div>
+<div class='chunk'><span class='cid'>#4 travel_policy:c004</span>
+oyees must decline the rental company&#x27;s insurance because coverage is provided by the corporate card program; outside the United States, basic insurance should be accepted. Ride-share and taxis are permitted when cheaper than a rental or when driving is impractical. Personal vehicle mileage is reimbursed at the rate in the Expense Reimbursement Policy.
+
+## International Travel
+
+International trips must be registered at least 10 business days before departure using Form TR-5 (International Travel Registratio</div>
+<div class='chunk'><span class='cid'>#5 travel_policy:c000</span>
+# Travel Policy
+
+## Scope
+
+This policy covers business travel booking, class of service, and lodging. Meal per diems, mileage, and receipt requirements are set in the Expense Reimbursement Policy and are not repeated here, except that the daily meal per diem of $65 domestic and $95 international also applies to travel days.
+
+## Booking
+
+All travel must be booked through the corporate travel portal, TripDesk, so that trips are visible to Security and insured through the corporate card program. Flights and ho</div>
+<div class='k'>Answer</div><div class='answer'>$0.55 per mile for employees who drive their own car for business purposes.</div></section>
+<section id='S45'><h2>S45</h2>
+<div class='k'>Question</div><div>How long is the probation period for new hires?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 onboarding_checklist:c004</span>
+means waiting until the next open enrollment in November unless a qualifying life event occurs. Retirement plan enrollment is automatic at a 4% contribution unless the employee changes it.
+
+## Probation and Check-Ins
+
+The probation period is 90 days. Managers hold structured check-ins at 30, 60, and 90 days using the Check-In template in the performance tool. The 90-day check-in doubles as the probation review; a satisfactory review unlocks eligibility for regular remote work under the Remote Work Policy.</div>
+<div class='chunk'><span class='cid'>#2 onboarding_checklist:c003</span>
+Mandatory compliance training, which covers the code of conduct, anti-harassment, and data protection, must be completed within 14 days of the start date. New hires read the Security Policy, the Data Retention Policy, and the Expense Reimbursement Policy and confirm in the HR portal that they have done so.
+
+## Benefits Enrollment
+
+New hires have 31 days from their start date to enroll in health, dental, and vision coverage. Missing the window means waiting until the next open enrollment in November unless</div>
+<div class='chunk'><span class='cid'>#3 onboarding_checklist:c002</span>
+in the IT Acceptable Use Policy.
+- Attend the new hire welcome session at 10:00.
+- Meet the onboarding buddy and the manager for a 30-minute introduction.
+
+## First 3 Days
+
+Complete the Security Awareness training in the learning portal within 3 days of starting. Access to production systems is not granted until this training is complete. Submit Form HR-1 (Direct Deposit) in the HR portal so the first paycheck is not delayed.
+
+## First 2 Weeks
+
+Mandatory compliance training, which covers the code of conduc</div>
+<div class='chunk'><span class='cid'>#4 data_retention:c001</span>
+Customer account records | 7 years after account closure |
+| Financial and tax records | 7 years after the fiscal year ends |
+| Application logs (hot storage) | 90 days |
+| Application logs (cold archive) | 1 year |
+| Security audit logs | 2 years |
+| Employee email | 3 years |
+| Recruiting records for unsuccessful candidates | 12 months after the decision |
+| Database backups | 35 days on a rolling basis |
+| Chat messages in public channels | 18 months |
+
+Where law requires a longer period than this sched</div>
+<div class='chunk'><span class='cid'>#5 onboarding_checklist:c000</span>
+# New Hire Onboarding Checklist
+
+## Before the Start Date
+
+The hiring manager owns pre-boarding. At least 5 business days before the start date the manager must submit Form IT-1 (Access Request) listing the systems the new hire needs, and Form IT-2 (Equipment Request) for a laptop and peripherals. Laptops are shipped to remote hires so that they arrive 2 business days before day one.
+
+HR sends the welcome packet 1 week before the start date. It contains the offer confirmation, the Employee Handbook, the tax</div>
+<div class='k'>Answer</div><div class='answer'>The probation period for new hires is 90 days.</div></section>
+<section id='S46'><h2>S46</h2>
+<div class='k'>Question</div><div>What is the nightly hotel rate cap for domestic travel?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 expense_reimbursement:c003</span>
+uted to Finance for review before payment.
+
+Managers may not approve their own expenses. Expenses for a manager are approved by that manager&#x27;s own manager.
+
+## Meals and Entertainment
+
+Daily meal per diem while traveling is $65 for domestic travel and $95 for international travel. Per diem covers all meals and incidentals; separate meal receipts are not needed when per diem is claimed. Client entertainment is reimbursable with the names of attendees and the business purpose recorded. Alcohol is not reimburs</div>
+<div class='chunk'><span class='cid'>#2 expense_reimbursement:c004</span>
+ndees and the business purpose recorded. Alcohol is not reimbursable except as part of a client dinner, where it is capped at $40 per person.
+
+## Mileage and Ground Transport
+
+Use of a personal vehicle for business is reimbursed at $0.67 per mile, which covers fuel, wear, and insurance. Commuting between home and the regular office is not reimbursable. Parking fees and tolls incurred on business trips are reimbursable with receipts. Ride-share and taxi fares are reimbursable when public transport is impract</div>
+<div class='chunk'><span class='cid'>#3 remote_work_policy:c005</span>
+es a laptop, headset, and monitor to every employee. Remote workers may claim a one-time home office stipend of $400 for a desk, chair, or lighting, and a recurring home internet reimbursement of $50 per month. Both are submitted through the Expense Portal under the category &quot;Remote Work&quot; and follow the Expense Reimbursement Policy, including the 45-day submission deadline.
+
+Company equipment must be used on a company-managed device profile. Personal printers may not be used for documents classified Confide</div>
+<div class='chunk'><span class='cid'>#4 employee_handbook:c001</span>
+:00 to 17:30 local time.
+Remote work is permitted up to 2 days per week with manager approval.</div>
+<div class='chunk'><span class='cid'>#5 expense_reimbursement:c000</span>
+# Expense Reimbursement Policy
+
+## Overview
+
+Employees are reimbursed for reasonable business expenses that are necessary to perform their jobs. All claims are submitted through the Expense Portal. This policy covers general expenses; travel-specific rules such as flight class and hotel caps are in the Travel Policy, and remote work stipends are in the Remote Work Policy.
+
+## Submission Deadlines
+
+Expense reports must be submitted within 45 days of the date the expense was incurred. Reports submitted after</div>
+<div class='k'>Answer</div><div class='answer'>There is no information about a nightly hotel rate cap for domestic travel in the provided context.</div></section>
+<section id='S47'><h2>S47</h2>
+<div class='k'>Question</div><div>Within what time must a lost or stolen laptop be reported?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 it_acceptable_use:c002</span>
+anaged by the IT device management profile and must not be unenrolled. Screens must lock automatically after 10 minutes of inactivity. Personal phones may access company email only after enrolling in the mobile device management (MDM) program, which allows IT to wipe company data if the device is lost.
+
+Removable USB storage devices are blocked on company laptops. Files may be shared only through the approved cloud drive. Lost or stolen devices must be reported to helpdesk@example.com within 4 hours of disc</div>
+<div class='chunk'><span class='cid'>#2 incident_response:c004</span>
+are published within 60 minutes of declaration. If personal data is confirmed to be affected, affected customers and regulators are notified within 72 hours, coordinated by Legal.
+
+## Evidence Handling
+
+Do not delete, rotate, or modify logs related to an active incident. Snapshots of affected systems are taken before remediation when it is safe to do so. Evidence is stored in the restricted incident bucket, which is covered by legal hold procedures in the Data Retention Policy.
+
+## Postmortems
+
+Every SEV1</div>
+<div class='chunk'><span class='cid'>#3 it_acceptable_use:c003</span>
+must be reported to helpdesk@example.com within 4 hours of discovery so that remote wipe can be triggered.
+
+## Software
+
+Only software from the approved catalog may be installed. Requests for new software are submitted as an IT-3 ticket (Software Request) and are reviewed by IT within 3 business days. Software that processes customer data also requires a security review through the Procurement Policy vendor process. Browser extensions must come from the approved list.
+
+## Network Use
+
+The corporate VPN mus</div>
+<div class='chunk'><span class='cid'>#4 data_retention:c002</span>
+18 months |
+
+Where law requires a longer period than this schedule, the legal requirement prevails.
+
+## Deletion Requests
+
+Customers may request deletion of their personal data. Verified requests must be completed within 30 days of receipt, with a written confirmation sent to the requester. Requests are logged in the Privacy Request Tracker and handled by the Privacy team. Data that must be retained for legal or financial reasons, such as invoices, is excluded from deletion and the requester is told which</div>
+<div class='chunk'><span class='cid'>#5 it_acceptable_use:c001</span>
+diately if compromise is suspected. All passwords must be stored in the approved password manager, Vaultkeeper. Writing passwords on paper or storing them in plain text files is prohibited.
+
+Multi-factor authentication is required for email, the VPN, the HR portal, and all production systems, consistent with the Security Policy. Shared accounts are not permitted; every login must be attributable to one person.
+
+## Devices
+
+Company laptops are managed by the IT device management profile and must not be unenr</div>
+<div class='k'>Answer</div><div class='answer'>Within 4 hours of discovery.</div></section>
+<section id='S48'><h2>S48</h2>
+<div class='k'>Question</div><div>What are the core hours remote employees must be reachable?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 remote_work_policy:c003</span>
+business days.
+
+## Core Hours and Availability
+
+Remote employees must be reachable during core hours of 10:00 to 15:00 in their team&#x27;s primary time zone. Calendars must be kept current, and a status must be set in the chat tool when stepping away for more than 30 minutes. Remote work is not a substitute for PTO or sick leave; employees who are unwell should record sick leave rather than working remotely.
+
+## Location Requirements
+
+Remote work must normally be performed inside the employee&#x27;s country of emplo</div>
+<div class='chunk'><span class='cid'>#2 employee_handbook:c001</span>
+:00 to 17:30 local time.
+Remote work is permitted up to 2 days per week with manager approval.</div>
+<div class='chunk'><span class='cid'>#3 remote_work_policy:c000</span>
+# Remote Work Policy
+
+## Purpose and Scope
+
+This policy describes how employees may work away from a company office. It supplements the Employee Handbook, which sets the default allowance of up to 2 remote days per week with manager approval. Nothing in this document changes the standard office hours of 9:00 to 17:30 local time described in the handbook.
+
+## Eligibility
+
+Employees become eligible for regular remote work after completing 90 days of continuous employment and a satisfactory probation review. R</div>
+<div class='chunk'><span class='cid'>#4 remote_work_policy:c002</span>
+oval by both the manager and the department head. Fully remote arrangements are approved only by the VP of People and are reviewed every 12 months.
+
+## Requesting Remote Work
+
+Recurring remote schedules must be requested using Form RW-1 (Remote Work Agreement) in the HR portal. Ad hoc remote days do not require a form but must be agreed with the manager the day before, except in emergencies. Managers must respond to Form RW-1 requests within 5 business days.
+
+## Core Hours and Availability
+
+Remote employees</div>
+<div class='chunk'><span class='cid'>#5 remote_work_policy:c001</span>
+of continuous employment and a satisfactory probation review. Roles that require physical presence, such as facilities, reception, and lab operations, are excluded from regular remote work but may request occasional remote days for specific circumstances.
+
+Department heads may designate a role as remote-eligible. Employees in remote-eligible roles may work a third remote day each week by submitting Form RW-2 (Extended Remote Schedule) for approval by both the manager and the department head. Fully remote a</div>
+<div class='k'>Answer</div><div class='answer'>Remote employees must be reachable during core hours of 10:00 to 15:00 in their team&#x27;s primary time zone.
+
+Remote employees are also required to be reachable during core hours of 9:00 to 17:30 local time, as this is the standard office hours described in the Employee Handbook.</div></section>
+<section id='S49'><h2>S49</h2>
+<div class='k'>Question</div><div>Which form is used to request new software?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 procurement_policy:c002</span>
+e onboarded by the Procurement team before a purchase order is issued. The vendor must provide a tax form (W-9 or local equivalent), banking details on company letterhead, and a signed copy of the vendor code of conduct. Vendors whose products process customer data must also complete the vendor security questionnaire and be approved by the Security team before any data is shared, consistent with the Security Policy. Vendor onboarding typically takes 10 business days.
+
+## Software and SaaS
+
+All software purc</div>
+<div class='chunk'><span class='cid'>#2 it_acceptable_use:c003</span>
+must be reported to helpdesk@example.com within 4 hours of discovery so that remote wipe can be triggered.
+
+## Software
+
+Only software from the approved catalog may be installed. Requests for new software are submitted as an IT-3 ticket (Software Request) and are reviewed by IT within 3 business days. Software that processes customer data also requires a security review through the Procurement Policy vendor process. Browser extensions must come from the approved list.
+
+## Network Use
+
+The corporate VPN mus</div>
+<div class='chunk'><span class='cid'>#3 procurement_policy:c003</span>
+takes 10 business days.
+
+## Software and SaaS
+
+All software purchases, including free tiers and trials that store company data, must be reviewed by IT through an IT-3 ticket as required by the IT Acceptable Use Policy. Procurement maintains a preferred vendor list; purchasing from a preferred vendor does not remove the quote requirements above but may shorten onboarding. Auto-renewing contracts must be entered in the contract register with a reminder 60 days before renewal.
+
+## Purchase Orders and Payment</div>
+<div class='chunk'><span class='cid'>#4 onboarding_checklist:c001</span>
+contains the offer confirmation, the Employee Handbook, the tax forms, and instructions for the HR portal. The manager assigns an onboarding buddy from the same team before day one.
+
+## Day One
+
+- Collect the ID badge from reception or, for remote hires, complete the virtual identity verification call.
+- Sign in to the laptop and enroll in the device management profile.
+- Set up the password manager and multi-factor authentication as described in the IT Acceptable Use Policy.
+- Attend the new hire welcome</div>
+<div class='chunk'><span class='cid'>#5 data_retention:c002</span>
+18 months |
+
+Where law requires a longer period than this schedule, the legal requirement prevails.
+
+## Deletion Requests
+
+Customers may request deletion of their personal data. Verified requests must be completed within 30 days of receipt, with a written confirmation sent to the requester. Requests are logged in the Privacy Request Tracker and handled by the Privacy team. Data that must be retained for legal or financial reasons, such as invoices, is excluded from deletion and the requester is told which</div>
+<div class='k'>Answer</div><div class='answer'>According to the IT Acceptable Use Policy, software purchases, including free tiers and trials that store company data, must be reviewed by IT through an IT-3 ticket.</div></section>
+<section id='S50'><h2>S50</h2>
+<div class='k'>Question</div><div>Can employees bring their dogs to the office?</div>
+<div class='k'>Retrieved chunks (rank order)</div>
+<div class='chunk'><span class='cid'>#1 remote_work_policy:c001</span>
+of continuous employment and a satisfactory probation review. Roles that require physical presence, such as facilities, reception, and lab operations, are excluded from regular remote work but may request occasional remote days for specific circumstances.
+
+Department heads may designate a role as remote-eligible. Employees in remote-eligible roles may work a third remote day each week by submitting Form RW-2 (Extended Remote Schedule) for approval by both the manager and the department head. Fully remote a</div>
+<div class='chunk'><span class='cid'>#2 remote_work_policy:c002</span>
+oval by both the manager and the department head. Fully remote arrangements are approved only by the VP of People and are reviewed every 12 months.
+
+## Requesting Remote Work
+
+Recurring remote schedules must be requested using Form RW-1 (Remote Work Agreement) in the HR portal. Ad hoc remote days do not require a form but must be agreed with the manager the day before, except in emergencies. Managers must respond to Form RW-1 requests within 5 business days.
+
+## Core Hours and Availability
+
+Remote employees</div>
+<div class='chunk'><span class='cid'>#3 remote_work_policy:c000</span>
+# Remote Work Policy
+
+## Purpose and Scope
+
+This policy describes how employees may work away from a company office. It supplements the Employee Handbook, which sets the default allowance of up to 2 remote days per week with manager approval. Nothing in this document changes the standard office hours of 9:00 to 17:30 local time described in the handbook.
+
+## Eligibility
+
+Employees become eligible for regular remote work after completing 90 days of continuous employment and a satisfactory probation review. R</div>
+<div class='chunk'><span class='cid'>#4 remote_work_policy:c006</span>
+rsonal printers may not be used for documents classified Confidential or above.
+
+## Security Expectations
+
+Remote employees must connect through the corporate VPN for any access to internal systems, use the screen lock settings enforced by the IT Acceptable Use Policy, and never work on Confidential material in public spaces where screens can be observed. Lost or stolen devices must be reported to the IT help desk within 4 hours.
+
+## Review and Termination of Arrangements
+
+Managers may suspend a remote arra</div>
+<div class='chunk'><span class='cid'>#5 employee_handbook:c001</span>
+:00 to 17:30 local time.
+Remote work is permitted up to 2 days per week with manager approval.</div>
+<div class='k'>Answer</div><div class='answer'>INSUFFICIENT CONTEXT</div></section>
+</main></body></html>
