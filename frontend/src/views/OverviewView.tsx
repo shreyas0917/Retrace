@@ -154,6 +154,8 @@ export function OverviewView({ apiKey, onNavigate }: Props) {
     null;
   const p95 = dwin?.http_latency?.p95_ms ?? null;
   const errorRate = dwin?.request_error_rate ?? null;
+  // Colour follows the configured request_error_rate signal, not a fixed cut-off.
+  const errorSignalAlert = alerts.some((s) => s.signal === "request_error_rate");
 
   if (loading) {
     return (
@@ -272,7 +274,7 @@ export function OverviewView({ apiKey, onNavigate }: Props) {
                 <InfoDot label="Share of HTTP requests that returned a server error. This is service reliability, separate from answer quality." />
               </span>
               <span
-                className={`stat-v tnum sm ${errorRate == null ? "" : errorRate > 0.02 ? "err" : "ok"}`}
+                className={`stat-v tnum sm ${errorRate == null ? "" : errorSignalAlert ? "err" : "ok"}`}
               >
                 {errorRate == null ? "Not available" : pct(errorRate, 2)}
               </span>
