@@ -2,9 +2,9 @@
 
 ## Unreleased
 
-### Judge validation (PROVISIONAL — AI-drafted labels, not yet reviewed by the author)
-- A second, fresh AI agent checked all 173 judge labels from the review sheet alone and suggested no changes (notes on 3 borderline rows). Applied with `judge_labels_review.py apply --annotator ai_draft_blind`: label values unchanged, annotator `ai_draft_blind`, manifest marked provisional, new hash.
-- `docs/benchmarks/judge_validation.md` regenerated with `judges validate --faithfulness-backend both`: the LLM and NLI faithfulness backends side by side, a PROVISIONAL banner, the label provenance read from the manifest, the exact command, and a Limits section.
+### Judge validation (labels: AI-drafted, cross-checked by a second independent AI; not reviewed by a human)
+- A second, fresh AI agent checked all 173 judge labels from the review sheet alone and suggested no changes (notes on 3 borderline rows). Applied with `judge_labels_review.py apply --annotator ai_draft_blind`: label values unchanged, annotator `ai_draft_blind`, manifest `human_reviewed: false`, new hash.
+- `docs/benchmarks/judge_validation.md` regenerated with `judges validate --faithfulness-backend both`: the LLM and NLI faithfulness backends side by side, the label provenance read from the manifest, the exact command, and a Limits section.
 - `judge_labels_review.py apply --annotator` takes `ai_draft_author_reviewed` (default, after the author's review) or `ai_draft_blind`.
 
 ### Calibration, cross-validated on live_v1 (labels: independent AI annotator, not yet reviewed by a human)

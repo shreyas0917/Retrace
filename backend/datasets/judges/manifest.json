@@ -41,7 +41,7 @@
     "unsupported_not_contradiction": 1,
     "unsupported_not_in_context": 1
   },
-  "source": "PROVISIONAL: AI-drafted, then checked by a second AI agent that saw only the review sheet (data/labelling/judge_labels_v1_review.ai_draft.csv); not yet reviewed by the author. Drafted by an AI agent from data/corpus/demo facts. Chunk texts are excerpts of the corpus documents (plus 4 synthetic injection chunks under the 'injected' document id); chunk ordinals are illustrative.",
+  "source": "AI-drafted, cross-checked by a second independent AI (0 of 173 changed); not reviewed by a human. The second AI saw only the review sheet (data/labelling/judge_labels_v1_review.ai_draft.csv). Drafted by an AI agent from data/corpus/demo facts. Chunk texts are excerpts of the corpus documents (plus 4 synthetic injection chunks under the 'injected' document id); chunk ordinals are illustrative.",
   "labels": {
     "relevance": "per-chunk relevant (bool) + context_sufficient (bool)",
     "faithfulness": "per-claim supported (bool); faithfulness_band = [lo, hi] acceptable predicted score range containing supported/total",
@@ -49,12 +49,12 @@
   },
   "annotator": "ai_draft_blind",
   "annotation_date": "2026-10-26",
-  "provisional": true,
   "review": {
     "reviewed_by": "ai_agent_blind",
     "review_date": "2026-11-09",
     "reviewed_units": 173,
     "changed_labels": 0,
     "sheet": "judge_labels_v1_review.ai_draft.csv"
-  }
+  },
+  "human_reviewed": false
 }
