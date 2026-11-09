@@ -1,15 +1,19 @@
 # Judge validation against labeled examples
 
+> **Labels: AI-drafted, cross-checked by a second independent AI (0 of 173 changed); not reviewed by a human.**
+
 **Source of these numbers: live model run (llama3.2:latest via http://host.docker.internal:11434/v1).**
 
-Generated 2026-10-26T06:59:03+00:00 by `retrace judges validate` (elapsed 5460.49s). Model `llama3.2:latest` at `http://host.docker.internal:11434/v1`, temperature 0.0, provider class `OpenAICompatibleProvider`.
+Generated 2026-11-08T20:33:13+00:00 by `retrace judges validate` (elapsed 4381.81s). Model `llama3.2:latest` at `http://host.docker.internal:11434/v1`, temperature 0.0, provider class `OpenAICompatibleProvider`.
 
-> **Provenance note (2026-11-08).** The labels used for this run are AI-drafted and not yet reviewed by a human. Their values are unchanged since the run, but the dataset's annotator metadata was later corrected from `author` to `ai_draft`. That edit changed the file hash, so the hash recorded below identifies the file as it was when this report was generated.
+Labels: AI-drafted, cross-checked by a second independent AI (0 of 173 changed); not reviewed by a human. The second AI saw only the review sheet. Two AI passes agreeing is weak evidence that a label is right. (These two provenance lines were reworded by hand after the run; the numbers, the labels and the labels file hash are the run's.)
+
+Command: `scripts/dev_test.sh python -m app.cli.retrace judges validate --faithfulness-backend both --markdown /docs/benchmarks/judge_validation.md --out /data/reports/judge_validation.json` (prompt variants v1, v1b, v1c; v1 is production).
 
 ## Labeled example set
 
 - 66 examples (relevance: 24, faithfulness: 24, contradiction: 18).
-- Example-set hash: `sha256:c6d8fc9c8bf2a7344788b8c0f5ad98381dc566000d3370afe1c05c1cda268934`; labels file hash: `sha256:565837c67b72ea6b7c95334ab4cf181c6e4593db082d1bf46350b16af23cdd28`.
+- Example-set hash: `sha256:e46238e914f13c5f8d976d41328c74cb245eedfff104ac008000a9ce67da84c4`; labels file hash: `sha256:19e601ed4821eff6ad110263673d6d08f269104ebe726a331c3311f39a3fca68`.
 
 ## Prompt versions
 
@@ -29,21 +33,21 @@ Generated 2026-10-26T06:59:03+00:00 by `retrace judges validate` (elapsed 5460.4
 
 | judge | variant | n | metric | acc | prec | rec | F1 | kappa | score MAE | schema fail | mean ms |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| relevance | v1 | 51 | chunk relevant | 0.843 | 0.815 | 0.880 | 0.846 | 0.687 | 0.298 | 0.000 | 23087.732 |
-| relevance | v1 | 24 | context_sufficient | 0.292 | 1.000 | 0.191 | 0.320 | 0.056 | n/a | 0.000 | 23087.732 |
-| relevance | v1b | 51 | chunk relevant | 0.804 | 0.759 | 0.880 | 0.815 | 0.609 | 0.251 | 0.000 | 22016.835 |
-| relevance | v1b | 24 | context_sufficient | 0.333 | 1.000 | 0.238 | 0.385 | 0.072 | n/a | 0.000 | 22016.835 |
-| relevance | v1c | 51 | chunk relevant | 0.843 | 0.840 | 0.840 | 0.840 | 0.686 | 0.291 | 0.000 | 25286.600 |
-| relevance | v1c | 24 | context_sufficient | 0.375 | 1.000 | 0.286 | 0.444 | 0.091 | n/a | 0.000 | 25286.600 |
-| faithfulness | v1 | 24 | has unsupported claim | 0.542 | 0.545 | 0.923 | 0.686 | 0.015 | 0.618 | 0.000 | 21298.472 |
+| relevance | v1 | 51 | chunk relevant | 0.843 | 0.815 | 0.880 | 0.846 | 0.687 | 0.298 | 0.000 | 23322.330 |
+| relevance | v1 | 24 | context_sufficient | 0.292 | 1.000 | 0.191 | 0.320 | 0.056 | n/a | 0.000 | 23322.330 |
+| relevance | v1b | 51 | chunk relevant | 0.804 | 0.759 | 0.880 | 0.815 | 0.609 | 0.251 | 0.000 | 19074.565 |
+| relevance | v1b | 24 | context_sufficient | 0.333 | 1.000 | 0.238 | 0.385 | 0.072 | n/a | 0.000 | 19074.565 |
+| relevance | v1c | 51 | chunk relevant | 0.843 | 0.840 | 0.840 | 0.840 | 0.686 | 0.291 | 0.000 | 17426.288 |
+| relevance | v1c | 24 | context_sufficient | 0.375 | 1.000 | 0.286 | 0.444 | 0.091 | n/a | 0.000 | 17426.288 |
+| faithfulness | v1 | 24 | has unsupported claim | 0.542 | 0.545 | 0.923 | 0.686 | 0.015 | 0.618 | 0.000 | 21734.036 |
 | faithfulness | v1 | 24 | score within labeled band | 0.167 | | | | | | | |
-| faithfulness | v1b | 24 | has unsupported claim | 0.583 | 0.565 | 1.000 | 0.722 | 0.098 | 0.528 | 0.000 | 24419.259 |
+| faithfulness | v1b | 24 | has unsupported claim | 0.583 | 0.565 | 1.000 | 0.722 | 0.098 | 0.528 | 0.000 | 17618.845 |
 | faithfulness | v1b | 24 | score within labeled band | 0.208 | | | | | | | |
-| faithfulness | v1c | 24 | has unsupported claim | 0.583 | 0.565 | 1.000 | 0.722 | 0.098 | 0.653 | 0.000 | 19536.492 |
+| faithfulness | v1c | 24 | has unsupported claim | 0.583 | 0.565 | 1.000 | 0.722 | 0.098 | 0.653 | 0.000 | 14421.616 |
 | faithfulness | v1c | 24 | score within labeled band | 0.167 | | | | | | | |
-| contradiction | v1 | 18 | contradicts | 0.889 | 0.818 | 1.000 | 0.900 | 0.778 | n/a | 0.000 | 14770.276 |
-| contradiction | v1b | 18 | contradicts | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | n/a | 0.000 | 14206.544 |
-| contradiction | v1c | 18 | contradicts | 0.889 | 0.818 | 1.000 | 0.900 | 0.778 | n/a | 0.000 | 16464.823 |
+| contradiction | v1 | 18 | contradicts | 0.889 | 0.818 | 1.000 | 0.900 | 0.778 | n/a | 0.000 | 14747.922 |
+| contradiction | v1b | 18 | contradicts | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | n/a | 0.000 | 10160.307 |
+| contradiction | v1c | 18 | contradicts | 0.889 | 0.818 | 1.000 | 0.900 | 0.778 | n/a | 0.000 | 12319.784 |
 
 ## Prompt sensitivity (meaning-preserving rewordings)
 
@@ -75,4 +79,50 @@ Flagged examples: rel_001 (relevance_items_missing); rel_003 (relevance_items_mi
 
 ## Reliability over all calls
 
-- 282 judge calls; schema-failure rate 0.000, other error rate 0.000, retry rate 0.007, mean latency 19317.878 ms, p95 32129.760 ms.
+- 282 judge calls; schema-failure rate 0.000, other error rate 0.000, retry rate 0.007, mean latency 15534.366 ms, p95 27140.730 ms.
+
+## Faithfulness: NLI backend
+
+Model `cross-encoder/nli-deberta-v3-small` at revision `fa2804872c3b4bd748f38c0185cc85775361e735`, decision rule `entailment_is_top_label` (label order read from the model config: contradiction, entailment, neutral). Version `faithfulness.nli.v1`. Example-set hash `sha256:e46238e914f13c5f8d976d41328c74cb245eedfff104ac008000a9ce67da84c4`.
+
+| view | n | acc | prec | rec | F1 | kappa |
+|---|---|---|---|---|---|---|
+| labelled claims: supported | 56 | 0.875 | 0.973 | 0.857 | 0.911 | 0.702 |
+| answers: has unsupported claim | 24 | 0.917 | 0.923 | 0.923 | 0.923 | 0.832 |
+| contradiction flag vs labels | 18 | 0.944 | 0.900 | 1.000 | 0.947 | 0.889 |
+
+Answer-level score error (mean absolute): 0.236; share of scores inside the labelled band: 0.583; answers with no checkable claim: 0.
+
+Agreement between the NLI contradiction flag and the LLM contradiction judge on 18 examples: raw 0.833, kappa 0.658.
+
+Side by side on the same examples (has unsupported claim):
+
+| backend | n | acc | prec | rec | F1 | kappa | score MAE | in band |
+|---|---|---|---|---|---|---|---|---|
+| llm | 24 | 0.542 | 0.545 | 0.923 | 0.686 | 0.015 | 0.618 | 0.167 |
+| nli | 24 | 0.917 | 0.923 | 0.923 | 0.923 | 0.832 | 0.236 | 0.583 |
+
+### Entailment threshold sensitivity (not used to choose the rule)
+
+Sensitivity only. The decision rule stays 'entailment is the top label'; these thresholds were not used to choose it.
+
+| entailment threshold | n | acc | kappa |
+|---|---|---|---|
+| 0.1 | 56 | 0.893 | 0.727 |
+| 0.2 | 56 | 0.911 | 0.778 |
+| 0.3 | 56 | 0.875 | 0.702 |
+| 0.4 | 56 | 0.875 | 0.702 |
+| 0.5 | 56 | 0.875 | 0.702 |
+| 0.6 | 56 | 0.875 | 0.702 |
+| 0.7 | 56 | 0.839 | 0.633 |
+| 0.8 | 56 | 0.839 | 0.633 |
+| 0.9 | 56 | 0.804 | 0.585 |
+
+Grouped 5-fold cross-validation by example (threshold chosen on the training folds, scored on the held-out fold): mean held-out accuracy 0.889, mean held-out kappa 0.748; chosen thresholds per fold: 0.2, 0.2, 0.5, 0.2, 0.2.
+
+## Limits
+
+- Small sets: 24 relevance, 24 faithfulness (56 claims) and 18 contradiction examples. One or two examples move accuracy by several points, so the confidence intervals are wide; read differences between backends and variants with that in mind.
+- The examples are short excerpts of one synthetic policy corpus, written for this test.
+- NLI is weak on numeric reasoning (comparing amounts, dates and durations), on claims that need several sentences, and on claims that combine facts from more than one chunk.
+- NLI thresholds are the fixed rule (a claim is supported when entailment is the top label); the cross-validated threshold table is a sensitivity check, not a tuned setting.

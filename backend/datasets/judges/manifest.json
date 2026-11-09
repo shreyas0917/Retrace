@@ -2,7 +2,7 @@
   "dataset_id": "judge_labels",
   "version": "1",
   "file": "judge_labels_v1.jsonl",
-  "dataset_hash": "sha256:45ca7b58cf6767d38bb74615cb25d634235dfe409bcbbf3bdcfafb413f655af6",
+  "dataset_hash": "sha256:19e601ed4821eff6ad110263673d6d08f269104ebe726a331c3311f39a3fca68",
   "example_count": 66,
   "per_judge": {
     "relevance": 24,
@@ -41,12 +41,20 @@
     "unsupported_not_contradiction": 1,
     "unsupported_not_in_context": 1
   },
-  "source": "AI-drafted, not yet reviewed. Written by an AI agent from data/corpus/demo facts; no human has checked these labels yet. Chunk texts are excerpts of the corpus documents (plus 4 synthetic injection chunks under the 'injected' document id); chunk ordinals are illustrative, not the production 512/64 chunking.",
+  "source": "AI-drafted, cross-checked by a second independent AI (0 of 173 changed); not reviewed by a human. The second AI saw only the review sheet (data/labelling/judge_labels_v1_review.ai_draft.csv). Drafted by an AI agent from data/corpus/demo facts. Chunk texts are excerpts of the corpus documents (plus 4 synthetic injection chunks under the 'injected' document id); chunk ordinals are illustrative.",
   "labels": {
     "relevance": "per-chunk relevant (bool) + context_sufficient (bool)",
     "faithfulness": "per-claim supported (bool); faithfulness_band = [lo, hi] acceptable predicted score range containing supported/total",
     "contradiction": "contradicts (bool); missing or extra information is not a contradiction"
   },
-  "annotator": "ai_draft",
-  "annotation_date": "2026-10-26"
+  "annotator": "ai_draft_blind",
+  "annotation_date": "2026-10-26",
+  "review": {
+    "reviewed_by": "ai_agent_blind",
+    "review_date": "2026-11-09",
+    "reviewed_units": 173,
+    "changed_labels": 0,
+    "sheet": "judge_labels_v1_review.ai_draft.csv"
+  },
+  "human_reviewed": false
 }

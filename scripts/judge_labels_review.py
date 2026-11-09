@@ -56,6 +56,19 @@ REVIEWED_SOURCE = (
     "document id); chunk ordinals are illustrative."
 )
 
+AI_REVIEWED_ANNOTATOR = "ai_draft_blind"
+AI_REVIEWED_SOURCE = (
+    "AI-drafted, cross-checked by a second independent AI ({changed} of {units} changed); not reviewed by a "
+    "human. The second AI saw only the review sheet (data/labelling/judge_labels_v1_review.ai_draft.csv). "
+    "Drafted by an AI agent from data/corpus/demo facts. Chunk texts are excerpts of the corpus documents (plus 4 synthetic "
+    "injection chunks under the 'injected' document id); chunk ordinals are illustrative."
+)
+# annotator -> (source text, who reviewed)
+ANNOTATORS = {
+    REVIEWED_ANNOTATOR: (REVIEWED_SOURCE, "author"),
+    AI_REVIEWED_ANNOTATOR: (AI_REVIEWED_SOURCE, "ai_agent_blind"),
+}
+
 ASK = {
     "chunk": "Is this chunk relevant to the question? (true/false)",
     "context_sufficient": (
@@ -303,7 +316,11 @@ def apply_sheet(
     *,
     review_date: str,
     dry_run: bool = False,
+    annotator: str = REVIEWED_ANNOTATOR,
 ) -> dict[str, Any]:
+    if annotator not in ANNOTATORS:
+        raise ReviewError(f"unknown annotator {annotator!r}; use one of {sorted(ANNOTATORS)}")
+    source, reviewed_by = ANNOTATORS[annotator]
     rows = load_rows(dataset)
     units = {row_id: (idx, kind, key) for row_id, idx, kind, key, _ in iter_units(rows)}
 
@@ -339,7 +356,7 @@ def apply_sheet(
             changes.append({"row_id": row_id, "old": old, "new": new})
 
     for r in rows:
-        r["annotator"] = REVIEWED_ANNOTATOR
+        r["annotator"] = annotator
         r["review_date"] = review_date
 
     summary = {
@@ -355,11 +372,13 @@ def apply_sheet(
     lines = write_rows(dataset, rows)
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["dataset_hash"] = canonical_hash(lines)
-    manifest["annotator"] = REVIEWED_ANNOTATOR
-    manifest["source"] = REVIEWED_SOURCE
+    manifest["annotator"] = annotator
+    manifest["source"] = source.format(changed=len(changes), units=len(units))
+    manifest.pop("provisional", None)
+    manifest["human_reviewed"] = annotator == REVIEWED_ANNOTATOR
     manifest["label_counts"] = label_counts(rows)
     manifest["review"] = {
-        "reviewed_by": "author",
+        "reviewed_by": reviewed_by,
         "review_date": review_date,
         "reviewed_units": len(units),
         "changed_labels": len(changes),
@@ -383,6 +402,12 @@ def main(argv: list[str] | None = None) -> int:
     app.add_argument("--sheet", type=Path, default=DEFAULT_SHEET)
     app.add_argument("--date", default=dt.date.today().isoformat())
     app.add_argument("--dry-run", action="store_true")
+    app.add_argument(
+        "--annotator",
+        default=REVIEWED_ANNOTATOR,
+        choices=sorted(ANNOTATORS),
+        help="ai_draft_author_reviewed (the author reviewed the sheet) or ai_draft_blind (a second AI agent did)",
+    )
     args = parser.parse_args(argv)
 
     try:
@@ -390,7 +415,14 @@ def main(argv: list[str] | None = None) -> int:
             n = export_sheet(args.dataset, args.sheet, force=args.force)
             print(f"wrote {n} label rows to {args.sheet}")
             return 0
-        summary = apply_sheet(args.dataset, args.manifest, args.sheet, review_date=args.date, dry_run=args.dry_run)
+        summary = apply_sheet(
+            args.dataset,
+            args.manifest,
+            args.sheet,
+            review_date=args.date,
+            dry_run=args.dry_run,
+            annotator=args.annotator,
+        )
     except ReviewError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
