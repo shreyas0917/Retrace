@@ -88,8 +88,9 @@ NO = {"no", "n", "false", "0"}
 ANNOTATORS = {
     "author": "labelled blind by the author from data/labelling/live_v1_sheet.csv",
     "ai_draft_blind": (
-        "PROVISIONAL: labels drafted by an AI agent that saw only the blind sheet, the labelling guide and "
-        "the corpus chunks (never the runs, conditions or Retrace's predictions); not yet reviewed by the author"
+        "labelled blind by an independent AI annotator (fresh subagent, no access to Retrace predictions); "
+        "not yet reviewed by a human. The annotator saw only the blind sheet, the labelling guide and the "
+        "corpus chunks"
     ),
     "ai_draft_author_reviewed": (
         "labels drafted blind by an AI agent, then reviewed and corrected by the author, who also saw only "
@@ -444,7 +445,7 @@ def merge(args: argparse.Namespace) -> int:
             f"Real pipeline runs recorded in runs.jsonl, {ANNOTATORS[args.annotator]}. "
             f"Labels sheet: {sheet_path.name}. Injected conditions are tags, not labels."
         ),
-        "provisional": args.annotator == "ai_draft_blind",
+        "human_reviewed": args.annotator in {"author", "ai_draft_author_reviewed"},
         **({"review": review} if review else {}),
         "runs_hash": runs_hash(runs_lines),
         "labels_sheet_sha256": "sha256:" + hashlib.sha256(sheet_path.read_bytes()).hexdigest(),

@@ -259,14 +259,20 @@ def _render(workspace) -> str:
         db.close()
 
 
-def test_ai_draft_labels_are_marked_provisional_everywhere(workspace) -> None:
+AI_WORDING = (
+    "labelled blind by an independent AI annotator (fresh subagent, no access to Retrace predictions); "
+    "not yet reviewed by a human"
+)
+
+
+def test_ai_labels_say_who_labelled_them_everywhere(workspace) -> None:
     _fill(workspace.sheet, workspace.records)
     assert tool.merge(_merge_args(workspace, annotator="ai_draft_blind")) == 0
     manifest = json.loads((workspace.suite / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["annotator"] == "ai_draft_blind" and manifest["provisional"] is True
-    assert "PROVISIONAL" in manifest["provenance"] and "not yet reviewed" in manifest["provenance"]
+    assert manifest["annotator"] == "ai_draft_blind" and manifest["human_reviewed"] is False
+    assert AI_WORDING in manifest["provenance"]
     text = _render(workspace)
-    assert "PROVISIONAL — AI-drafted labels, not yet reviewed by the author" in text
+    assert AI_WORDING in text and "PROVISIONAL" not in text
     assert "## What this does and doesn't show" in text and "Suggested cause" in text
     assert "One labeller (author)" not in text
 
@@ -302,10 +308,10 @@ def test_reviewed_merge_counts_the_cases_the_author_changed(workspace, tmp_path)
     add_decisions(undecided=0)
     assert tool.merge(reviewed) == 0
     manifest = json.loads((workspace.suite / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["review"]["changed_cases"] == 2 and manifest["provisional"] is False
+    assert manifest["review"]["changed_cases"] == 2 and manifest["human_reviewed"] is True
     text = _render(workspace)
     assert f"AI-drafted, reviewed and corrected by the author (2 of {len(workspace.records)} changed)" in text
-    assert "PROVISIONAL" not in text
+    assert "not yet reviewed by a human" not in text
 
 
 def test_bootstrap_is_seeded_and_brackets_the_point() -> None:
