@@ -26,30 +26,32 @@ EXIT_OK = 0
 EXIT_ERROR = 2
 
 
-PROVISIONAL_BANNER = "PROVISIONAL — AI-drafted labels, not yet reviewed by the author"
+def ai_cross_checked_wording(changed: object, units: object) -> str:
+    return (
+        f"AI-drafted, cross-checked by a second independent AI ({changed} of {units} changed); not reviewed by a human"
+    )
 
 
 def label_provenance(labels_path: str | Path) -> tuple[str, bool]:
-    """(sentence, provisional) describing who produced the labels, from the dataset manifest."""
+    """(sentence, human_reviewed) describing who produced the labels, from the dataset manifest."""
     manifest_path = Path(labels_path).with_name("manifest.json")
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
-        return "Label provenance unknown (no manifest.json next to the labels file).", True
+        return "Label provenance unknown (no manifest.json next to the labels file).", False
     annotator = manifest.get("annotator")
     review = manifest.get("review") or {}
     units = review.get("reviewed_units", "?")
     changed = review.get("changed_labels", "?")
     if annotator == "ai_draft_author_reviewed":
-        return f"Labels: AI-drafted, reviewed and corrected by the author ({changed} of {units} labels changed).", False
+        return f"Labels: AI-drafted, reviewed and corrected by the author ({changed} of {units} labels changed).", True
     if annotator == "ai_draft_blind":
         return (
-            f"Labels: AI-drafted, then checked by a second AI agent that saw only the review sheet "
-            f"({changed} of {units} labels changed). Not yet reviewed by the author. Two AI passes agreeing "
-            "is weak evidence that a label is right.",
-            True,
+            f"Labels: {ai_cross_checked_wording(changed, units)}. The second AI saw only the review sheet. "
+            "Two AI passes agreeing is weak evidence that a label is right.",
+            False,
         )
-    return f"Labels: {manifest.get('source') or annotator}", annotator != "author"
+    return f"Labels: {manifest.get('source') or annotator}", annotator == "author"
 
 
 def limits_markdown(examples: list) -> str:
@@ -148,15 +150,16 @@ def cmd_judges_validate(args: argparse.Namespace) -> int:
     if args.markdown:
         md = Path(args.markdown)
         md.parent.mkdir(parents=True, exist_ok=True)
-        provenance, provisional = label_provenance(args.labels)
+        provenance, human_reviewed = label_provenance(args.labels)
         text = format_markdown(report, source_label=source_label, notes=provenance)
         if nli_section is not None:
             llm_faith = (report.get("per_judge", {}).get("faithfulness") or {}).get(primary)
             text = text.rstrip("\n") + "\n\n" + format_nli_markdown(nli_section, llm_faithfulness=llm_faith)
         text = text.rstrip("\n") + "\n\n" + limits_markdown(examples)
-        if provisional:
+        if not human_reviewed:
             head, _, rest = text.partition("\n")
-            text = f"{head}\n\n> **{PROVISIONAL_BANNER}.** Do not quote these numbers until the review is done.\n{rest}"
+            first_sentence = provenance.split(". ", 1)[0].rstrip(".")
+            text = f"{head}\n\n> **{first_sentence}.**\n{rest}"
         md.write_text(text, encoding="utf-8")
         print(f"wrote {md}")
 

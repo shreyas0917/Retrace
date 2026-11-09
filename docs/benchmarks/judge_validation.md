@@ -1,12 +1,12 @@
 # Judge validation against labeled examples
 
-> **PROVISIONAL — AI-drafted labels, not yet reviewed by the author.** Do not quote these numbers until the review is done.
+> **Labels: AI-drafted, cross-checked by a second independent AI (0 of 173 changed); not reviewed by a human.**
 
 **Source of these numbers: live model run (llama3.2:latest via http://host.docker.internal:11434/v1).**
 
 Generated 2026-11-08T20:33:13+00:00 by `retrace judges validate` (elapsed 4381.81s). Model `llama3.2:latest` at `http://host.docker.internal:11434/v1`, temperature 0.0, provider class `OpenAICompatibleProvider`.
 
-Labels: AI-drafted, then checked by a second AI agent that saw only the review sheet (0 of 173 labels changed). Not yet reviewed by the author. Two AI passes agreeing is weak evidence that a label is right.
+Labels: AI-drafted, cross-checked by a second independent AI (0 of 173 changed); not reviewed by a human. The second AI saw only the review sheet. Two AI passes agreeing is weak evidence that a label is right. (These two provenance lines were reworded by hand after the run; the numbers, the labels and the labels file hash are the run's.)
 
 Command: `scripts/dev_test.sh python -m app.cli.retrace judges validate --faithfulness-backend both --markdown /docs/benchmarks/judge_validation.md --out /data/reports/judge_validation.json` (prompt variants v1, v1b, v1c; v1 is production).
 

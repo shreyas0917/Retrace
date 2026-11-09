@@ -58,9 +58,9 @@ REVIEWED_SOURCE = (
 
 AI_REVIEWED_ANNOTATOR = "ai_draft_blind"
 AI_REVIEWED_SOURCE = (
-    "PROVISIONAL: AI-drafted, then checked by a second AI agent that saw only the review sheet "
-    "(data/labelling/judge_labels_v1_review.ai_draft.csv); not yet reviewed by the author. Drafted by an "
-    "AI agent from data/corpus/demo facts. Chunk texts are excerpts of the corpus documents (plus 4 synthetic "
+    "AI-drafted, cross-checked by a second independent AI ({changed} of {units} changed); not reviewed by a "
+    "human. The second AI saw only the review sheet (data/labelling/judge_labels_v1_review.ai_draft.csv). "
+    "Drafted by an AI agent from data/corpus/demo facts. Chunk texts are excerpts of the corpus documents (plus 4 synthetic "
     "injection chunks under the 'injected' document id); chunk ordinals are illustrative."
 )
 # annotator -> (source text, who reviewed)
@@ -373,8 +373,9 @@ def apply_sheet(
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["dataset_hash"] = canonical_hash(lines)
     manifest["annotator"] = annotator
-    manifest["source"] = source
-    manifest["provisional"] = annotator != REVIEWED_ANNOTATOR
+    manifest["source"] = source.format(changed=len(changes), units=len(units))
+    manifest.pop("provisional", None)
+    manifest["human_reviewed"] = annotator == REVIEWED_ANNOTATOR
     manifest["label_counts"] = label_counts(rows)
     manifest["review"] = {
         "reviewed_by": reviewed_by,
