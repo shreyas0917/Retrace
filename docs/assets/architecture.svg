@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1344" height="1296" viewBox="0 0 1344 1296" role="img" aria-labelledby="t d">
 <title id="t">Retrace system architecture</title>
-<desc id="d">Console (session cookie) and CLI drive a FastAPI backend with session auth, rate limiting and request hardening; a six-stage diagnostic pipeline (ingest, retrieve with injection flags, generate, judge, diagnose with calibrated confidence and an uncertain outcome, investigate) persists to PostgreSQL (traces plus durable telemetry) and ChromaDB, is measured by planted, held-out and calibration suites, experiments, baselines and a regression gate, and feeds operations endpoints with p50/p95/p99 latency, cost and runbooks.</desc>
+<desc id="d">Console (session cookie) and CLI drive a FastAPI backend with session auth, rate limiting and request hardening; a six-stage diagnostic pipeline (ingest, retrieve with injection flags, generate, judge, diagnose with a rule-strength confidence and an uncertain outcome, investigate) persists to PostgreSQL (traces plus durable telemetry) and ChromaDB, is measured by planted, held-out and calibration suites, experiments, baselines and a regression gate, and feeds operations endpoints with p50/p95/p99 latency, cost and runbooks.</desc>
 <defs>
 <marker id="ag" orient="auto" markerWidth="5" markerHeight="5" refX="2" refY="2" overflow="visible"><path d="M0 0 L4 2 L0 4 Z" fill="#5c6478"/></marker>
 <marker id="aa" orient="auto" markerWidth="5" markerHeight="5" refX="2" refY="2" overflow="visible"><path d="M0 0 L4 2 L0 4 Z" fill="#4f7df3"/></marker>
@@ -60,7 +60,7 @@
 <path d="M 912 521 H 1056" stroke="#4f7df3" stroke-width="2"/>
 <text x="984.0" y="554.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#eceef2">Diagnose</text>
 <text x="984.0" y="572.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">ordered rules R00–R90</text>
-<text x="984.0" y="590.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">calibrated confidence</text>
+<text x="984.0" y="590.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">rule strength</text>
 <text x="984.0" y="608.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">uncertain · explanation</text>
 <rect x="1112.5" y="520.5" width="159" height="111" rx="8" fill="#151820" stroke="#262b38"/>
 <path d="M 1120 521 H 1264" stroke="#4f7df3" stroke-width="2"/>
@@ -99,7 +99,7 @@
 <text x="672.0" y="1152.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#eceef2">Operations</text>
 <text x="672.0" y="1170.0" text-anchor="middle" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="13" fill="#8b92a5">/health/ready · durable metrics p50 / p95 / p99 · error rate · tokens + cost · GET /api/v1/signals · runbooks → engineer action</text>
 <text x="64" y="78" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="28" font-weight="600" fill="#eceef2">Retrace · system architecture</text>
-<text x="64" y="108" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="15" fill="#8b92a5">How a RAG request is executed, judged, diagnosed with calibrated confidence and evidence, evaluated against held-out suites and gated.</text>
+<text x="64" y="108" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="15" fill="#8b92a5">How a RAG request is executed, judged, diagnosed with rule strength and evidence, evaluated against held-out suites and gated.</text>
 <text x="72" y="668" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11" font-weight="600" letter-spacing="1.1" fill="#8b92a5">DIAGNOSTIC PIPELINE</text>
 <text x="72" y="1028" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11" font-weight="600" letter-spacing="1.1" fill="#8b92a5">EVALUATION &amp; REGRESSION</text>
 <text x="816" y="1028" font-family="'IBM Plex Sans','Segoe UI',-apple-system,Helvetica,Arial,sans-serif" font-size="11" font-weight="600" letter-spacing="1.1" fill="#8b92a5">STORES &amp; MODEL PROVIDERS</text>

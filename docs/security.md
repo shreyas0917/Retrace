@@ -120,6 +120,33 @@ restart. Trusting `X-Forwarded-For` assumes a reverse proxy that overwrites it.
   pydantic error details.
 * Security headers are added to every response, including errors and `429`s.
 
+## External traces (`/api/v1/traces`)
+
+`POST /api/v1/traces` (one trace) and `POST /api/v1/traces/batch` (a JSON
+array or JSON Lines) accept data from outside Retrace, so they are validated
+more tightly than internal routes. Code: `api/routes_traces.py`,
+`schemas/traces.py`, `services/external_traces.py`; tests:
+`tests/test_external_traces.py`.
+
+| Control | Rule |
+| --- | --- |
+| Authentication | Both routes depend on `require_api_key` (Bearer key or console session); without one they return `401`. |
+| Request size | `MAX_REQUEST_BYTES` (1 MiB by default) applies before the route runs; larger bodies get `413 PAYLOAD_TOO_LARGE`. |
+| Chunk count | At most `MAX_TRACE_CHUNKS` (50) retrieved chunks per trace; `chunk_id` values must be unique. |
+| Chunk text | Non-empty after cleaning, at most `MAX_TRACE_CHUNK_CHARS` (8,000) characters each. |
+| Answer | At most `MAX_TRACE_ANSWER_CHARS` (20,000) characters. |
+| Query | Same rule as other queries: trimmed, non-empty, at most `MAX_QUERY_CHARS`. |
+| Chunk and document ids | `^[A-Za-z0-9._:/#-]+$`, at most 256 characters. Unlike corpus ids, `:`, `/` and `#` are allowed so ids from other systems (`doc:c001`, `kb/page#3`) pass unchanged. The same rule applies to `gold_chunk_ids` (at most 50). |
+| Control characters | C0/C1 control characters (except tab, newline and carriage return) are stripped from the query, every chunk text and the answer before anything is stored or judged. |
+| Metadata | Optional `metadata` object of at most 50 keys and 8 KB serialized; stored in `trace_metadata`, never interpreted. |
+| Prompt injection | Every chunk goes through the same scanner as retrieval (below). Matches come back in the response as `injection_flags` (chunk id → pattern names) with a warning, are stored with the chunk snapshot, and do not block diagnosis. |
+| Rate limits | The normal `/api/v1` budget (`RATE_LIMIT_PER_MINUTE`, 120 per credential per minute); a batch counts as one request. |
+| Batch cap | At most `MAX_TRACE_BATCH` (25) traces per batch request; more is rejected with a pointer to `retrace diagnose --batch`, which has no cap. Each trace is validated and diagnosed independently, so one bad trace never fails the batch. |
+
+External traces are stored with `source = 'external'` and no corpus version
+(migration `008_external_traces`), and Retrace never reads its own corpus to
+diagnose them: only the chunks in the request are judged.
+
 ## Prompt-injection detection
 
 `app/core/injection.py` is a detector, not a filter. Each retrieved chunk is
