@@ -9,7 +9,7 @@ vi.mock("../api", async (orig) => ({
 }));
 
 describe("InvestigationReport", () => {
-  it("leads with the verdict, code, rule and calibrated confidence", () => {
+  it("leads with the verdict, code, rule and rule strength (no calibrated percentage)", () => {
     render(<InvestigationReport inv={makeInvestigation()} />);
     const verdict = document.getElementById("verdict")!;
     expect(within(verdict).getByRole("heading", { level: 2 })).toHaveTextContent(
@@ -17,7 +17,9 @@ describe("InvestigationReport", () => {
     );
     expect(within(verdict).getByText("GENERATION_CONTRADICTION")).toBeInTheDocument();
     expect(within(verdict).getByText("R30")).toBeInTheDocument();
-    expect(within(verdict).getByText("50%")).toBeInTheDocument();
+    expect(within(verdict).getByText("Rule strength")).toBeInTheDocument();
+    expect(within(verdict).getByText("High")).toBeInTheDocument();
+    expect(within(verdict).queryByText("50%")).not.toBeInTheDocument();
     const stages = within(verdict).getByRole("list", { name: "Pipeline stages" });
     expect(within(stages).getAllByText("Broke here")).toHaveLength(1);
     expect(within(stages).getAllByText("Not assessed")).toHaveLength(1);

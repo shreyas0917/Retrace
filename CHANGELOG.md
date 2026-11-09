@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Console: rule strength instead of a calibrated percentage
+- The Investigate verdict now shows **Rule strength: High/Medium/Low** rather than a "Calibrated confidence" percentage, because the committed calibrator is miscalibrated on real runs. The tooltip explains this and gives the observed live accuracy (highest strength ~95% correct, lowest ~6%, on a small AI-labelled, not-yet-human-reviewed sample), linking `docs/benchmarks/calibration_live_v1.md`.
+
 ### Calibration on real runs: observed accuracy, not a calibrated percentage (labels: independent AI annotator, not yet reviewed by a human)
 - `retrace benchmark calibration-cv` measures the confidence score on the live runs, using the as-recorded diagnoses (ADR-047 exact matching) so its numbers match the `live_v1` headline. `docs/benchmarks/calibration_live_v1.md` now leads with an **observed-accuracy-by-rule-strength-level** table (raw 0.70 → 6.5% correct over 31 cases, raw 1.00 → 94.7% over 19, each with a Wilson 95% CI).
 - The committed calibrator, fitted on the synthetic `calib_v1` suite, is **miscalibrated on real runs** (ECE 0.60 against the raw score's 0.41), so Retrace does not present a calibrated-confidence percentage on real runs. `calibration.json` is unchanged; nothing here writes it. A live-fitted calibrator would be a two-entry lookup table and is not adopted; refitting waits for a larger, human-reviewed live set with a held-out split (Future work).
