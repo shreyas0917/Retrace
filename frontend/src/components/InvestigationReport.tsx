@@ -270,7 +270,6 @@ function Verdict({ inv }: { inv: Investigation }) {
     );
   }
   const fd = friendlyDiagnosis(diag.failure_code);
-  const calibrated = diag.calibrated_confidence ?? inv.why?.calibrated_confidence ?? null;
   const strength = diag.confidence
     ? diag.confidence.charAt(0).toUpperCase() + diag.confidence.slice(1).toLowerCase()
     : null;
@@ -310,24 +309,23 @@ function Verdict({ inv }: { inv: Investigation }) {
         </div>
         <div className="verdict-fact">
           <dt>
-            Calibrated confidence{" "}
+            Rule strength{" "}
             <Tip
-              text={`Calibrated probability that this diagnosis is correct${diag.calibration_version ? ` (${diag.calibration_version})` : ""}. Rule strength is the rule's own heuristic, not a probability.`}
+              text={
+                "The rule engine's own strength signal for this diagnosis, not a calibrated probability. " +
+                "Retrace does not show a calibrated percentage: the committed calibrator was fitted on synthetic " +
+                "data and is miscalibrated on real runs. As a rough guide, on a small live sample labelled by an " +
+                "AI annotator (not yet human-reviewed) the highest-strength diagnoses were correct about 95% of " +
+                "the time and the lowest-strength ones about 6%. See docs/benchmarks/calibration_live_v1.md."
+              }
             />
           </dt>
           <dd>
-            {calibrated != null ? (
-              <>
-                <span className="verdict-conf tnum">{Math.round(calibrated * 100)}%</span>
-                <Bar
-                  value={calibrated}
-                  label={`Calibrated confidence ${Math.round(calibrated * 100)}%`}
-                />
-              </>
+            {strength ? (
+              <span className="verdict-conf">{strength}</span>
             ) : (
-              <span className="muted">Not calibrated</span>
+              <span className="muted">Not scored</span>
             )}
-            {strength ? <span className="muted small">Rule strength: {strength}</span> : null}
           </dd>
         </div>
       </dl>
