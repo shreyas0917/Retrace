@@ -16,6 +16,7 @@ from app.core.errors import NotFoundError
 from app.core.logging import bind_correlation, get_logger
 from app.core.ops import record_diagnosis  # noqa: F401 — used via _emit_ops
 from app.db.models import Diagnosis, DiagnosisEvidence, ExecutionTrace, JudgeResult
+from app.services.abstention import is_sentinel
 from app.services.diagnosis.calibration import apply_calibration, get_calibrator
 from app.services.diagnosis.explain import build_explanation
 from app.services.diagnosis.models import DiagnosisDecision, SignalBag
@@ -33,7 +34,6 @@ from app.services.judges.contradiction import (
 )
 from app.services.judges.faithfulness_router import judge_faithfulness_routed
 from app.services.judges.relevance import RELEVANCE_PROMPT_VERSION, judge_relevance
-from app.services.prompts import ABSTENTION_ANSWER
 
 logger = get_logger(__name__)
 
@@ -90,7 +90,7 @@ def _base_signals(
         gold_hit = None
         recall = None
 
-    abstained = bool(execution.abstained) or ((execution.answer_text or "").strip() == ABSTENTION_ANSWER)
+    abstained = bool(execution.abstained) or is_sentinel(execution.answer_text)
 
     stage_error = None
     if execution.status == "GENERATION_TIMEOUT" or execution.error_code == "GENERATION_TIMEOUT":

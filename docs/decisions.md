@@ -480,3 +480,15 @@ Labelling: `scripts/live_labelling.py export` writes a blind sheet: query, ranke
 Reason: the headline numbers so far come from synthetic cases whose judge outputs were scripted from the same picture of failures as the rules. Real runs with blind human labels measure the whole system, judges included.
 
 Status: Accepted. Recorded; awaiting labels.
+
+## ADR-047 — Tolerant matching of the abstention sentinel
+
+Context: the generator is told to reply exactly `INSUFFICIENT_CONTEXT` when the context does not answer the question. The demo pipeline (`rag.py`, which sets `abstained`), Retrace's diagnosis engine (which also checks the answer text) and external-trace ingestion all compared the answer with that string exactly. **This bug was found during the `live_v1` evaluation:** in all 8 `unanswerable` runs, `llama3.2` wrote `INSUFFICIENT CONTEXT` with a space, so every one was recorded as `abstained: false` and diagnosed `ABSTENTION_FALSE_NEGATIVE` (R20), although a reader sees a correct refusal.
+
+Decision: `app/services/abstention.is_sentinel()` decides whether a whole answer is the sentinel, ignoring case, surrounding whitespace, quotes, backticks or bold markers, trailing punctuation, and any run of spaces, underscores or hyphens between the two words (or none). An answer that only contains the words inside a longer sentence is not the sentinel. `rag.py`, the engine's signal bag and `detect_abstention` all use it.
+
+`exact_sentinel_matching()` restores the old exact comparison inside a `with` block. It exists only to replay recordings "as recorded": the `live_v1` headline stays the diagnosis Retrace made with the code that recorded the runs, and the fixed diagnosis of the same recordings is reported beside it as a secondary, optimistic number, not an independent measurement. No recording is redone.
+
+Not changed here: the relevance judge's "context sufficient" weakness, the other main finding of `live_v1`; a change to it needs a separate validation set first.
+
+Status: Accepted.
