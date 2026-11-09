@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Calibration on real runs: observed accuracy, not a calibrated percentage (labels: independent AI annotator, not yet reviewed by a human)
+- `retrace benchmark calibration-cv` measures the confidence score on the live runs, using the as-recorded diagnoses (ADR-047 exact matching) so its numbers match the `live_v1` headline. `docs/benchmarks/calibration_live_v1.md` now leads with an **observed-accuracy-by-rule-strength-level** table (raw 0.70 → 6.5% correct over 31 cases, raw 1.00 → 94.7% over 19, each with a Wilson 95% CI).
+- The committed calibrator, fitted on the synthetic `calib_v1` suite, is **miscalibrated on real runs** (ECE 0.60 against the raw score's 0.41), so Retrace does not present a calibrated-confidence percentage on real runs. `calibration.json` is unchanged; nothing here writes it. A live-fitted calibrator would be a two-entry lookup table and is not adopted; refitting waits for a larger, human-reviewed live set with a held-out split (Future work).
+- `docs/benchmarks/heldout_v1.md` warns that its calibrated confidence puts 153 of 160 cases in one bin, so its ECE is not meaningful evidence; `benchmark report` writes that warning itself when one bin holds 80% of the cases.
+
 ### Abstention sentinel parsing (ADR-047)
 - The abstention sentinel is now matched tolerantly (case, whitespace, underscores or hyphens between the words, quotes and trailing punctuation): `INSUFFICIENT CONTEXT`, `insufficient_context` and `Insufficient context.` are abstentions. Before, only the exact `INSUFFICIENT_CONTEXT` counted, in the demo pipeline, the diagnosis engine and external-trace ingestion. Found during the `live_v1` evaluation, where all 8 unanswerable runs were missed this way.
 - `exact_sentinel_matching()` brings back the old comparison for replaying earlier recordings as recorded.

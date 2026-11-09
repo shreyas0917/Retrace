@@ -224,6 +224,40 @@ def _signed(ci: dict[str, float | None]) -> str:
     return f"{ci['point']:+.3f} ({ci['low']:+.3f} to {ci['high']:+.3f})"
 
 
+def _wilson(k: int, n: int) -> tuple[float, float]:
+    """95% Wilson score interval for a binomial proportion k/n."""
+    if n == 0:
+        return (0.0, 1.0)
+    z = 1.959963984540054
+    phat = k / n
+    denom = 1 + z * z / n
+    centre = (phat + z * z / (2 * n)) / denom
+    half = z * ((phat * (1 - phat) / n + z * z / (4 * n * n)) ** 0.5) / denom
+    return (max(0.0, centre - half), min(1.0, centre + half))
+
+
+def _observed_table(raw_bins: list[dict[str, Any]]) -> list[str]:
+    """Observed accuracy per raw-score level, with Wilson 95% CIs."""
+    rows = [b for b in raw_bins if b.get("count")]
+    lines = [
+        "## Observed accuracy by rule-strength level",
+        "",
+        "This is what the raw `diagnosis_score` actually predicts on the live runs: the share of correct "
+        "diagnoses among the cases at each score, with a 95% Wilson interval. It is the honest summary of the "
+        "confidence signal — a level, not a calibrated percentage.",
+        "",
+        "| Raw score | Cases | Observed accuracy (95% CI) |",
+        "| ---: | ---: | --- |",
+    ]
+    for b in rows:
+        n, acc = b["count"], b["accuracy"]
+        k = round(acc * n)
+        lo, hi = _wilson(k, n)
+        lines.append(f"| {b['mean_score']:.2f} | {n} | {acc * 100:.1f}% ({lo * 100:.0f}% to {hi * 100:.0f}%) |")
+    lines.append("")
+    return lines
+
+
 def render_cv_markdown(report: dict[str, Any], *, command: str, suite: str, provenance: str, banner: str | None) -> str:
     r = report
     p = r["predictors"]
@@ -243,6 +277,7 @@ def render_cv_markdown(report: dict[str, Any], *, command: str, suite: str, prov
         f"({', '.join(f'{v:g}' for v in r['distinct_raw_scores'])}), so any calibrator can only map those few values "
         "to probabilities.",
         "",
+        *_observed_table(p["raw"]["bins"]),
         "## Pooled results",
         "",
         "Lower is better. 95% CIs: percentile bootstrap over cases "
@@ -283,32 +318,32 @@ def render_cv_markdown(report: dict[str, Any], *, command: str, suite: str, prov
                 lines.append(
                     f"| {b['lo']:.1f}–{b['hi']:.1f} | {b['count']} | {b['mean_score']:.3f} | {b['accuracy']:.3f} |"
                 )
+    cal = p["calib_v1"]
     lines += [
         "",
         "## What the data supports",
         "",
-        f"Decision rule, fixed before looking at the numbers: {r['decision']['rule']}.",
+        "**The committed calibrator is miscalibrated on real runs.** It was fitted on the synthetic `calib_v1` "
+        f"suite, and on the live runs it maps every case to 1.0 while 40% are correct: ECE {_ci(cal['ece'])} "
+        f"against the raw score's {_ci(p['raw']['ece'])} (a difference of {_signed(cal['ece_minus_raw'])}, worse). "
+        "So Retrace does not present a calibrated-confidence percentage on real runs; the honest summary of the "
+        "confidence signal is the observed-accuracy-by-level table above.",
         "",
     ]
     if r["decision"]["cv_clearly_lower_than_raw"]:
         cv = p["cv_live"]
-        lines.append(
-            f"The cross-validated live calibrator is clearly better calibrated than the raw score: ECE "
-            f"{_ci(cv['ece'])} against {_ci(p['raw']['ece'])}, Brier {_ci(cv['brier'])} against {_ci(p['raw']['brier'])}."
-        )
         lines += [
-            "",
-            f"Read this narrowly. With {len(r['distinct_raw_scores'])} distinct raw values the calibrator is a lookup "
-            "table: it replaces each value with the accuracy that value had on the other folds (see the raw "
-            "reliability table). It learns which kinds of diagnosis tend to be wrong on these runs; it does not make "
-            "the score finer-grained, and it would need refitting for another model or corpus.",
+            f"Analysis only: a calibrator cross-validated on these live cases would pass the pre-set rule "
+            f"({r['decision']['rule']}) — ECE {_ci(cv['ece'])} against {_ci(p['raw']['ece'])}. But with "
+            f"{len(r['distinct_raw_scores'])} distinct raw values it is a two-entry lookup table, not a finer-grained "
+            "confidence, and it would be fitted on everything we have, leaving nothing held out to report it "
+            "honestly. **It is not adopted:** the committed calibrator is unchanged and `calibration.json` is not "
+            "written. Refitting waits for a larger, human-reviewed live set with a held-out split (Future work).",
         ]
     else:
         lines.append(
-            "The cross-validated live calibrator is **not** clearly better than the raw score on these cases. "
-            "The honest claim is: confidence is a rule-strength score, and its calibration on real runs is "
-            f"limited by sample size ({r['n']} cases) and by the raw score taking only "
-            f"{len(r['distinct_raw_scores'])} values."
+            "A calibrator cross-validated on these live cases is not clearly better than the raw score either, so "
+            "there is nothing to adopt. Confidence stays a rule-strength signal, summarised by the observed table above."
         )
     lines += [
         "",

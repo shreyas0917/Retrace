@@ -51,6 +51,8 @@ def test_report_shape_and_decision_rule() -> None:
     assert spread["seeds"] == cv.SPLIT_SEEDS and spread["ece"]["min"] <= spread["ece"]["median"] <= spread["ece"]["max"]
     md = cv.render_cv_markdown(report, command="cmd", suite="live_v1", provenance="p", banner=None)
     assert "lookup table" in md and "Other fold splits" in md and "> **" not in md
+    assert "Observed accuracy by rule-strength level" in md and "not adopted" in md
+    assert "miscalibrated on real runs" in md
     # The committed calibrator falls back to the raw score when calibrated_confidence is missing.
     assert p["calib_v1"]["ece"]["point"] == p["raw"]["ece"]["point"]
 
@@ -60,8 +62,24 @@ def test_no_claim_when_the_raw_score_is_already_calibrated() -> None:
     report = cv.cross_validated_calibration(_rows(pattern, calibrated=0.8), k=5, resamples=300)
     assert report["decision"]["cv_clearly_lower_than_raw"] is False
     md = cv.render_cv_markdown(report, command="cmd", suite="live_v1", provenance="p", banner="Labels: x")
-    assert "**not** clearly better" in md and "rule-strength score" in md and "> **Labels: x.**" in md
+    assert "not clearly better" in md and "rule-strength signal" in md and "> **Labels: x.**" in md
     assert "| Bin | Cases |" in md and "never writes `backend/configs/calibration.json`" in md
+    assert "Observed accuracy by rule-strength level" in md
+
+
+def test_heldout_report_warns_when_one_bin_holds_most_cases() -> None:
+    from app.cli.benchmark_cmd import calibration_report, concentration_caveat
+
+    cases = [{"diagnosis_score": 0.95, "calibrated_confidence": 1.0, "correct_failure_code": True}] * 153 + [
+        {"diagnosis_score": 0.75, "calibrated_confidence": 0.667, "correct_failure_code": i < 4} for i in range(7)
+    ]
+    text = concentration_caveat(calibration_report(cases))
+    assert text is not None and "153 of 160 cases in one bin" in text and "only 2 of the 10 bins" in text
+    spread = [
+        {"diagnosis_score": s, "calibrated_confidence": s, "correct_failure_code": True}
+        for s in (0.15, 0.45, 0.75, 0.95)
+    ]
+    assert concentration_caveat(calibration_report(spread)) is None
 
 
 def test_score_distribution_counts_bins() -> None:

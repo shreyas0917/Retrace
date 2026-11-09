@@ -75,6 +75,10 @@ Reliability bins on this suite (calibrated confidence):
 | 0.6–0.7 | 7 | 0.667 | 0.571 |
 | 0.9–1.0 | 153 | 1.000 | 1.000 |
 
+**Caveat:** the calibrated confidence puts 153 of 160 cases in one bin (0.9–1.0), and the raw score falls in only 4 of the 10 bins, so the calibrated ECE of 0.004 is not meaningful evidence of calibration. It mostly says that the synthetic cases the engine gets right sit at the top of the scale. For calibration on real runs, see `docs/benchmarks/calibration_live_v1.md` (cross-validated on `live_v1`).
+
+(Checked with `retrace benchmark calibration-cv --suite heldout_v1 --distribution-only`: 160 cases, raw score in 4 bins, largest calibrated bin 153, calibrated ECE 0.004167. This paragraph was added by hand to the report generated on the date above; `benchmark report` now writes it itself.)
+
 ## Classifier comparison on identical signal bags
 
 Every classifier receives the exact signal bag the rule engine saw (retrieval counts, gold hit, judge verdicts). `majority` predicts the most common label; `heuristic` uses four cheap non-judge branches; `llm` prompts the configured model with the signals and the taxonomy.
