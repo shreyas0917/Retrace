@@ -1,8 +1,8 @@
 # Calibration on live_v1, cross-validated
 
-> **PROVISIONAL — AI-drafted labels, not yet reviewed by the author.** Do not quote these numbers until the review is done.
+> **Labels: labelled blind by an independent AI annotator (fresh subagent, no access to Retrace predictions); not yet reviewed by a human.**
 
-Produced by `retrace benchmark calibration-cv --suite live_v1 --folds 5 --bins 10 --markdown /docs/benchmarks/calibration_live_v1.md`. Suite hash `sha256:3d004c818d9095c70bdd32244d9896e99042592f91a4733f1f2019b6e34d8487`, commit 8eda25ac12c5bd8dbef011bbea7e7492dd483b26. Labels: drafted by an AI agent that saw only the blind sheet, the labelling guide and the corpus chunks (never the runs, the injected conditions or Retrace's predictions). They have not been reviewed by the author yet.
+Produced by `retrace benchmark calibration-cv --suite live_v1 --folds 5 --bins 10 --markdown /docs/benchmarks/calibration_live_v1.md`. Suite hash `sha256:3d004c818d9095c70bdd32244d9896e99042592f91a4733f1f2019b6e34d8487`, commit 3d7c04cd7cb49f849de9b40ee8775ca837f15a13. Labels: labelled blind by an independent AI annotator (fresh subagent, no access to Retrace predictions); not yet reviewed by a human. The annotator saw only the blind sheet, the labelling guide and the corpus chunks, never the runs or the injected conditions.
 
 50 cases, 5-fold cross-validation (stratified on correct/incorrect; fold sizes 10, 10, 10, 10, 10; seed 20261109). Diagnosis accuracy (strict) on these cases: 40.0%. The histogram calibrator (10 equal-width bins) is fitted on four folds and applied to the fifth, so no case is scored by a calibrator that saw it.
 

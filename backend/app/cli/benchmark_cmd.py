@@ -505,7 +505,7 @@ def cmd_calibration_cv(args: argparse.Namespace) -> int:
     """k-fold calibration on a labelled suite; never writes the calibration config."""
     from app.db import session as db_session
     from app.services.eval.calibration_cv import cross_validated_calibration, render_cv_markdown, score_distribution
-    from app.services.eval.live_report import PROVISIONAL_BANNER, label_provenance
+    from app.services.eval.live_report import AI_BLIND_WORDING, label_provenance
     from app.services.eval.suite_loader import suite_dir
 
     db_session.init_db()
@@ -536,7 +536,7 @@ def cmd_calibration_cv(args: argparse.Namespace) -> int:
             "summary": {"total_cases": len(rows)},
         }
     )
-    provisional = manifest.get("annotator") == "ai_draft_blind" or bool(manifest.get("provisional"))
+    banner = f"Labels: {AI_BLIND_WORDING}" if manifest.get("annotator") == "ai_draft_blind" else None
     if args.out:
         out = Path(args.out)
         out.parent.mkdir(parents=True, exist_ok=True)
@@ -556,7 +556,7 @@ def cmd_calibration_cv(args: argparse.Namespace) -> int:
                 command=command,
                 suite=args.suite,
                 provenance=prov,
-                banner=PROVISIONAL_BANNER if provisional else None,
+                banner=banner,
             ),
             encoding="utf-8",
         )

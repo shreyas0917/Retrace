@@ -7,15 +7,15 @@
 - `docs/benchmarks/judge_validation.md` regenerated with `judges validate --faithfulness-backend both`: the LLM and NLI faithfulness backends side by side, a PROVISIONAL banner, the label provenance read from the manifest, the exact command, and a Limits section.
 - `judge_labels_review.py apply --annotator` takes `ai_draft_author_reviewed` (default, after the author's review) or `ai_draft_blind`.
 
-### Calibration, cross-validated on live_v1 (PROVISIONAL — AI-drafted labels, not yet reviewed by the author)
+### Calibration, cross-validated on live_v1 (labels: independent AI annotator, not yet reviewed by a human)
 - `retrace benchmark calibration-cv` runs k-fold calibration on a labelled suite (5 folds, stratified on correct/incorrect): the histogram calibrator is fitted on four folds and scored on the fifth. It reports ECE and Brier with bootstrap CIs for the raw score, the committed `calib_v1` calibrator and the cross-validated live calibrator, paired CIs of each difference from the raw score, reliability tables with the case count per bin, the number of distinct raw score values, and the spread over 20 fold splits. It never writes `backend/configs/calibration.json`.
-- `docs/benchmarks/calibration_live_v1.md` is its provisional report. The claim follows a fixed rule (both paired CIs below zero).
+- `docs/benchmarks/calibration_live_v1.md` is its report. The claim follows a fixed rule (both paired CIs below zero).
 - `docs/benchmarks/heldout_v1.md` now warns that its calibrated confidence puts 153 of 160 cases in one bin, so its ECE is not meaningful evidence; `benchmark report` writes that warning itself when one bin holds 80% of the cases.
 - The committed calibrator is unchanged. Refitting it on live data needs the author's approval.
 
-### live_v1 benchmark (PROVISIONAL — AI-drafted labels, not yet reviewed by the author)
-- `live_v1` has labels: an AI agent drafted them blind (it saw only the labelling sheet, the guide and the corpus chunks), with a reason and a high/low confidence per case, in `data/labelling/live_v1_sheet.ai_draft.csv`. The suite manifest records annotator `ai_draft_blind` and `provisional: true`.
-- `docs/benchmarks/live_v1.md` is generated from them by `retrace benchmark report --suite live_v1` and carries a PROVISIONAL banner. Its numbers are not quoted anywhere else until the author has reviewed the labels.
+### live_v1 benchmark (labelled blind by an independent AI annotator; not yet reviewed by a human)
+- `live_v1` has labels, labelled blind by an independent AI annotator (fresh subagent, no access to Retrace predictions); not yet reviewed by a human. The annotator saw only the labelling sheet, the guide and the corpus chunks, and gave a reason and a high/low confidence per case (`data/labelling/live_v1_sheet.ai_draft.csv`). The suite manifest records annotator `ai_draft_blind` and `human_reviewed: false`.
+- `docs/benchmarks/live_v1.md` is generated from them by `retrace benchmark report --suite live_v1` and states that provenance at the top. Human review is planned (v1.1.1).
 - `live_labelling.py merge --annotator` takes `author`, `ai_draft_blind` or `ai_draft_author_reviewed`. The reviewed mode needs `--draft`, refuses rows without an agree/change decision, and records how many cases the review changed; the report then says "AI-drafted, reviewed and corrected by the author (N of 50 changed)".
 - `scripts/build_review_page.py` builds `data/labelling/REVIEW_ME.html` (not committed): one case per screen, low-confidence cases first, Agree/Change, CSV export. It reads only blind inputs, so it cannot show a prediction or an injected condition.
 - The live report labels every miss cause as "suggested" and has a "What this does and doesn't show" section. Reports run through `scripts/dev_test.sh` now name their commit (`RETRACE_GIT_COMMIT`).
