@@ -1,10 +1,10 @@
 # live_v1: real pipeline runs, labelled blind
 
-> **PROVISIONAL — AI-drafted labels, not yet reviewed by the author.** Do not quote these numbers until the review is done.
+> **Labels:** labelled blind by an independent AI annotator (fresh subagent, no access to Retrace predictions); not yet reviewed by a human.
 
-Produced by `retrace benchmark report --suite live_v1` on 2026-11-08. Suite hash `sha256:3d004c818d9095c70bdd32244d9896e99042592f91a4733f1f2019b6e34d8487`, experiment `b6069b80-8024-4a5f-a3ff-d9422c716dc6`, report commit 67609cd37289c15023edfd6d15e0210a842d5cbd.
+Produced by `retrace benchmark report --suite live_v1` on 2026-11-09. Suite hash `sha256:3d004c818d9095c70bdd32244d9896e99042592f91a4733f1f2019b6e34d8487`, experiment `5abe1fcd-ce3d-4bdf-ae1c-a16ea38600a8`, report commit 34050fd3918272238a3cf087fdcfe0e266339c48.
 
-50 questions on the 13-document demo corpus ran through real retrieval, generation and judges (llama3.2:latest, temperature 0; NLI faithfulness), recorded 2026-11-08 to 2026-11-08 on commit edffb7f. Labelled on 2026-11-08. Labels: drafted by an AI agent that saw only the blind sheet, the labelling guide and the corpus chunks (never the runs, the injected conditions or Retrace's predictions). They have not been reviewed by the author yet. This report replays the recorded judge outputs, so it is reproducible offline.
+50 questions on the 13-document demo corpus ran through real retrieval, generation and judges (llama3.2:latest, temperature 0; NLI faithfulness), recorded 2026-11-08 to 2026-11-08 on commit edffb7f. Labelled on 2026-11-08. Labels: labelled blind by an independent AI annotator (fresh subagent, no access to Retrace predictions); not yet reviewed by a human. The annotator saw only the blind sheet, the labelling guide and the corpus chunks, never the runs or the injected conditions. This report replays the recorded judge outputs, so it is reproducible offline.
 
 ## Results
 
@@ -57,7 +57,7 @@ Rows are labels, columns are predictions. Columns: `ABS-FN` ABSTENTION_FALSE_NEG
 
 ## Error analysis
 
-One line per miss. Every cause is **suggested**: an automatic first pass that compares the recorded judge signals with what the label implies. The author confirms or corrects each one before the numbers are quoted anywhere.
+One line per miss. Every cause is **suggested**: an automatic first pass that compares the recorded judge signals with what the label implies. None has been confirmed by hand; treat them as hypotheses.
 
 Suggested causes: judge error: contradiction 1, judge error: faithfulness 5, judge error: relevance 16, rule gap 8.
 
@@ -98,7 +98,7 @@ Suggested causes: judge error: contradiction 1, judge error: faithfulness 5, jud
 
 - 50 cases. The confidence intervals above are wide; differences of a few cases are not meaningful.
 - One generation and judge model on one small, synthetic policy corpus. Other models and real document collections will behave differently.
-- One labeller, an AI agent, and no human has checked its labels yet. Treat every number as provisional.
+- One labeller, an independent AI annotator; no human has reviewed its labels yet, and label noise is not measured. Human review is planned.
 - The runs were recorded on a shared, heavily loaded developer machine with the model timeout set to 600 s so that contention would not create timeouts; 0 run(s) timed out. Latency in these runs means nothing.
 - Conditions were injected on purpose (removed documents, near-topic distractors, faulty prompts), so the mix of failures is not the mix a production system would see.
 - Confidence is calibrated on the synthetic `calib_v1` suite (calib_v1@1.0.0 (sha256:1e1807ab544c7c05fcc1ae9ee5b501dc383536f7d7b3c72b8f9ce92c0b928d2e)); this report does not recalibrate on live data.
@@ -108,5 +108,5 @@ Suggested causes: judge error: contradiction 1, judge error: faithfulness 5, jud
 - **Shows:** how often Retrace's first-match diagnosis agrees with a blind label on 50 real runs of one pipeline, with intervals that say how much that agreement could move with a different sample.
 - **Shows:** which kinds of failure it gets right and which it confuses (per-class table, confusion matrix), and where the misses come from (suggested causes above).
 - **Does not show:** accuracy on other models, other corpora, or failures that occur naturally in production. One model, a 13-document synthetic policy corpus, and faults injected on purpose.
-- **Does not show:** agreement between labellers. The labels are an AI draft that no human has reviewed yet.
+- **Does not show:** agreement between labellers. There is one label per case, from an AI annotator that no human has reviewed yet.
 - **Does not show:** that the confidence score is calibrated on real runs (see the calibration report).

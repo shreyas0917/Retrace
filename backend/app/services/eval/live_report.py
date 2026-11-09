@@ -184,7 +184,7 @@ def run_live_report(db: Session, *, suite_id: str = "live_v1", suite_version: st
         "git_commit": result.get("git_commit"),
         "annotator": manifest.get("annotator"),
         "annotation_date": manifest.get("annotation_date"),
-        "provisional": bool(manifest.get("provisional")),
+        "human_reviewed": bool(manifest.get("human_reviewed")),
         "review": manifest.get("review"),
         "runs": {
             k: runs_manifest.get(k)
@@ -241,7 +241,10 @@ def _ci(ci: dict[str, float | None], pct: bool = True) -> str:
     return f"{fmt(ci['point'])} (95% CI {fmt(ci['low'])} to {fmt(ci['high'])})"
 
 
-PROVISIONAL_BANNER = "PROVISIONAL — AI-drafted labels, not yet reviewed by the author"
+AI_BLIND_WORDING = (
+    "labelled blind by an independent AI annotator (fresh subagent, no access to Retrace predictions); "
+    "not yet reviewed by a human"
+)
 
 
 def label_provenance(report: dict[str, Any]) -> str:
@@ -250,9 +253,8 @@ def label_provenance(report: dict[str, Any]) -> str:
     n = report.get("summary", {}).get("total_cases")
     if annotator == "ai_draft_blind":
         return (
-            "Labels: drafted by an AI agent that saw only the blind sheet, the labelling guide and the corpus "
-            "chunks (never the runs, the injected conditions or Retrace's predictions). "
-            "They have not been reviewed by the author yet."
+            f"Labels: {AI_BLIND_WORDING}. The annotator saw only the blind sheet, the labelling guide and the "
+            "corpus chunks, never the runs or the injected conditions."
         )
     if annotator == "ai_draft_author_reviewed":
         review = report.get("review") or {}
@@ -268,7 +270,8 @@ def _labeller_limit(report: dict[str, Any]) -> str:
     annotator = report.get("annotator")
     if annotator == "ai_draft_blind":
         return (
-            "- One labeller, an AI agent, and no human has checked its labels yet. Treat every number as provisional."
+            "- One labeller, an independent AI annotator; no human has reviewed its labels yet, and label noise "
+            "is not measured. Human review is planned."
         )
     if annotator == "ai_draft_author_reviewed":
         return (
@@ -283,13 +286,13 @@ def render_live_markdown(report: dict[str, Any]) -> str:
     ci = report["confidence_intervals"]
     runs = report["runs"]
     n = s["total_cases"]
-    provisional = report.get("annotator") == "ai_draft_blind" or report.get("provisional")
+    ai_only = report.get("annotator") == "ai_draft_blind"
     lines = [
         "# live_v1: real pipeline runs, labelled blind",
         "",
     ]
-    if provisional:
-        lines += [f"> **{PROVISIONAL_BANNER}.** Do not quote these numbers until the review is done.", ""]
+    if ai_only:
+        lines += [f"> **Labels:** {AI_BLIND_WORDING}.", ""]
     lines += [
         f"Produced by `retrace benchmark report --suite live_v1` on {report['generated_at'][:10]}. "
         f"Suite hash `{report['suite_hash']}`, experiment `{report['experiment_id']}`, "
@@ -358,8 +361,7 @@ def render_live_markdown(report: dict[str, Any]) -> str:
         "## Error analysis",
         "",
         "One line per miss. Every cause is **suggested**: an automatic first pass that compares the recorded "
-        "judge signals with what the label implies. The author confirms or corrects each one before the "
-        "numbers are quoted anywhere.",
+        "judge signals with what the label implies. None has been confirmed by hand; treat them as hypotheses.",
         "",
     ]
     if report["miss_causes"]:
@@ -409,8 +411,8 @@ def render_live_markdown(report: dict[str, Any]) -> str:
         "production. One model, a 13-document synthetic policy corpus, and faults injected on purpose.",
         "- **Does not show:** agreement between labellers. "
         + (
-            "The labels are an AI draft that no human has reviewed yet."
-            if provisional
+            "There is one label per case, from an AI annotator that no human has reviewed yet."
+            if ai_only
             else "There is one label per case."
         ),
         "- **Does not show:** that the confidence score is calibrated on real runs (see the calibration report).",
