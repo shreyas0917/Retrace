@@ -1,8 +1,9 @@
 # Observability: durable telemetry, cost accounting, LLM resilience
 
-Retrace v1.0 replaces "in-memory counters that vanish on restart" with a two-tier
-design: a fast per-process view plus a durable Postgres-backed store that survives
-restarts and is shared across uvicorn workers.
+Since v1.0, Retrace replaces "in-memory counters that vanish on restart" with a
+two-tier design: a fast per-process view plus a durable Postgres-backed store that
+survives restarts and is shared across uvicorn workers. v1.1 adds retention for the
+durable store (`retrace telemetry prune`, optionally daily; see Retention).
 
 ## Two tiers
 

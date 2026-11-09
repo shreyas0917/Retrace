@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Docs synced to v1.1
+- `docs/architecture.md`: the intro describes v1.1 (bring-your-own-trace via `POST /api/v1/traces`, `/traces/batch` and `retrace diagnose`; external traces in migration 008; NLI faithfulness by default; `live_v1`). The confidence paragraph says the attached calibrator was fitted on synthetic `calib_v1`, is miscalibrated on real runs, and that the console shows rule strength. The request-flow diagram, the SVG labels, the component and suite tables are updated.
+- `docs/demo.md` leads with `make demo` (manual steps kept as an alternative), adds an "Import a trace" step with `examples/traces`, and lists which example traces `llama3.2` misdiagnoses.
+- `docs/release.md`: UI smoke step checks rule strength and its tooltip; the benchmark table adds the live report, the calibration check and the NLI latency command; a v1.1 release checklist with the claims audit.
+- `docs/security.md`: a section on the `/api/v1/traces` endpoints (auth, 413 size limit, chunk count and text caps, the chunk-id rule allowing `: / #`, control-character stripping, injection scan with `injection_flags`, rate limits, batch cap of 25).
+- `docs/concepts.md`, `docs/diagnosis-benchmark.md`, `docs/observability.md`: "calibrated confidence" wording replaced with rule strength / `calibrated_confidence`; the observability intro no longer reads as if v1.0 were current.
+
 ## 1.1.0 — 2026-11-09
 
 ### Example traces: misdiagnoses with the default model stated

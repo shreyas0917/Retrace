@@ -74,12 +74,14 @@ failure when they do (`ABSTENTION_FALSE_POSITIVE`).
 **Uncertain diagnosis.** `DIAGNOSIS_UNCERTAIN` (rule R90): the judges ran but
 their signals disagree, so Retrace defers to a person instead of guessing.
 
-**Confidence and calibrated confidence.** Each diagnosis has a rule-strength
-score: how clearly the signals cleared the rule's thresholds. It is not a
-probability by itself. A calibrator fitted on a separate calibration suite
-maps it to the observed accuracy of diagnoses with similar scores; that is the
-calibrated confidence. How well it is calibrated on real runs is reported in
-the benchmark docs.
+**Rule strength and calibration.** Each diagnosis has a rule-strength score
+(shown as High / Medium / Low): how clearly the signals cleared the rule's
+thresholds. It is not a probability by itself. A calibrator fitted on the
+synthetic `calib_v1` suite maps it to a probability, returned by the API as
+`calibrated_confidence`. On real runs that calibrator is miscalibrated (it
+says 1.0 for every `live_v1` case while 40% are correct), so the console shows
+rule strength, with the observed accuracy per level in a tooltip, and no
+percentage. See [benchmarks/calibration_live_v1.md](benchmarks/calibration_live_v1.md).
 
 **Suite.** A versioned set of cases with expected failure codes, stored with
 a hash so results can be reproduced: `planted_v1` (one scenario per class),

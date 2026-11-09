@@ -71,11 +71,12 @@ review. The miss causes are suggestions until confirmed by hand.
 - Per-class precision, recall, F1 and support, plus macro, micro and
   support-weighted F1 and a confusion matrix.
 - Deferral: the engine now emits `DIAGNOSIS_UNCERTAIN` (rule R90) when judge
-  outputs are self-inconsistent, and flags any decision whose calibrated
-  confidence is below 0.5 as `uncertain`. The report shows coverage, selective
+  outputs are self-inconsistent, and flags any decision whose
+  `calibrated_confidence` is below 0.5 as `uncertain`. The report shows coverage, selective
   accuracy on answered cases and how many deferred cases would have been right.
 - Calibration: expected calibration error and Brier score for the raw rule
-  score and for the calibrated confidence, plus reliability bins.
+  score and for the calibrator's output (`calibrated_confidence`), plus
+  reliability bins.
 - Classifier comparison on identical signal bags.
 
 ## Confidence calibration
@@ -94,7 +95,7 @@ comparison; only `--write-calibration` writes it to
 `backend/configs/calibration.json`. The report always states which
 calibrator its calibrated numbers used.
 
-On `heldout_v1` the calibrated confidence puts 153 of 160 cases in one bin, so
+On `heldout_v1` the calibrator's output puts 153 of 160 cases in one bin, so
 its low ECE is not evidence of calibration. Calibration on real runs is
 measured by `retrace benchmark calibration-cv --suite live_v1`
 ([report](benchmarks/calibration_live_v1.md)): 5-fold cross-validation on the
