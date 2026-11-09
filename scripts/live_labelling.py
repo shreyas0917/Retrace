@@ -84,6 +84,22 @@ LABEL_CODES = (
 YES = {"yes", "y", "true", "1"}
 NO = {"no", "n", "false", "0"}
 
+# Who produced the labels. The report and docs word their claims from this.
+ANNOTATORS = {
+    "author": "labelled blind by the author from data/labelling/live_v1_sheet.csv",
+    "ai_draft_blind": (
+        "labelled blind by an independent AI annotator (fresh subagent, no access to Retrace predictions); "
+        "not yet reviewed by a human. The annotator saw only the blind sheet, the labelling guide and the "
+        "corpus chunks"
+    ),
+    "ai_draft_author_reviewed": (
+        "labels drafted blind by an AI agent, then reviewed and corrected by the author, who also saw only "
+        "the blind sheet"
+    ),
+}
+# Fields compared when counting how many cases a review changed.
+REVIEW_FIELDS = ("failure_label", "acceptable_primary_codes", "relevant_chunk_ids", "expected_abstention")
+
 
 def read_jsonl(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
@@ -292,6 +308,10 @@ def read_labels(sheet_path: Path, records: list[dict], inventory: list[dict]) ->
     return labels
 
 
+def _norm(value: object) -> object:
+    return sorted(value) if isinstance(value, list) else value
+
+
 def _backend_imports():
     backend = Path("/app") if Path("/app/app").is_dir() else ROOT / "backend"
     if str(backend) not in sys.path:
@@ -365,6 +385,46 @@ def merge(args: argparse.Namespace) -> int:
             print(f"  - {problem}", file=sys.stderr)
         return 1
 
+    review = None
+    if args.annotator == "ai_draft_author_reviewed":
+        if not getattr(args, "draft", None):
+            print("merge: --annotator ai_draft_author_reviewed needs --draft (the AI-drafted sheet)", file=sys.stderr)
+            return 2
+        with sheet_path.open(encoding="utf-8-sig", newline="") as fh:
+            reader = csv.DictReader(fh)
+            if "review_decision" not in (reader.fieldnames or []):
+                print(
+                    "merge: a reviewed sheet needs the review_decision column (export it from REVIEW_ME.html)",
+                    file=sys.stderr,
+                )
+                return 1
+            undecided = [
+                r.get("sheet_id", "?")
+                for r in reader
+                if (r.get("review_decision") or "").strip().lower() not in {"agree", "change"}
+            ]
+        if undecided:
+            print(f"merge: {len(undecided)} case(s) not reviewed yet: {', '.join(undecided)}", file=sys.stderr)
+            return 1
+        try:
+            draft = read_labels(Path(args.draft), records, inventory)
+        except SheetError as exc:
+            print(f"merge: the draft sheet has problems: {exc}", file=sys.stderr)
+            return 1
+        changed = sorted(
+            labels[qid]["sheet_id"]
+            for qid in labels
+            if any(_norm(labels[qid][f]) != _norm(draft[qid][f]) for f in REVIEW_FIELDS)
+        )
+        review = {
+            "reviewed_by": "author",
+            "reviewed_cases": len(labels),
+            "changed_cases": len(changed),
+            "changed_sheet_ids": changed,
+            "draft_sheet_sha256": "sha256:" + hashlib.sha256(Path(args.draft).read_bytes()).hexdigest(),
+        }
+        print(f"merge: the review changed {len(changed)} of {len(labels)} cases: {', '.join(changed) or 'none'}")
+
     cases = build_cases(records, labels, annotator=args.annotator, annotation_date=args.date)
     _, runs_hash, _, compute_suite_hash = _backend_imports()
     lines = [json.dumps(case, ensure_ascii=False) for case in cases]
@@ -382,9 +442,11 @@ def merge(args: argparse.Namespace) -> int:
         "annotator": args.annotator,
         "annotation_date": args.date,
         "provenance": (
-            "Real pipeline runs recorded in runs.jsonl, labelled blind by the author from "
-            "data/labelling/live_v1_sheet.csv. Injected conditions are tags, not labels."
+            f"Real pipeline runs recorded in runs.jsonl, {ANNOTATORS[args.annotator]}. "
+            f"Labels sheet: {sheet_path.name}. Injected conditions are tags, not labels."
         ),
+        "human_reviewed": args.annotator in {"author", "ai_draft_author_reviewed"},
+        **({"review": review} if review else {}),
         "runs_hash": runs_hash(runs_lines),
         "labels_sheet_sha256": "sha256:" + hashlib.sha256(sheet_path.read_bytes()).hexdigest(),
         "label_counts": dict(sorted(label_counts.items())),
@@ -416,7 +478,8 @@ def main() -> int:
     m = sub.add_parser("merge", help="Merge the labelled sheet into cases.jsonl")
     m.add_argument("--suite-dir", default=str(SUITE_DIR))
     m.add_argument("--sheet", default=str(OUT_DIR / "live_v1_sheet.csv"))
-    m.add_argument("--annotator", default="author")
+    m.add_argument("--annotator", default="author", choices=sorted(ANNOTATORS))
+    m.add_argument("--draft", default=None, help="The AI-drafted sheet, to count what the author's review changed")
     m.add_argument("--date", default=date.today().isoformat(), help="Annotation date (YYYY-MM-DD)")
     m.add_argument("--dry-run", action="store_true", help="Validate and summarise; write nothing")
     m.add_argument("--force", action="store_true", help="Replace an existing cases.jsonl")
