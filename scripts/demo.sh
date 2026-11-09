@@ -88,3 +88,6 @@ echo "Diagnosis:    ${code:-not diagnosed (see the console)}"
 echo "Console:      $CONSOLE"
 echo "API key:      API_KEY in .env at the repo root (paste it on the console's sign-in screen)"
 echo "Investigate:  $CONSOLE/?execution=$execution_id"
+if [ "$TRACE" = "examples/traces/contradiction.json" ]; then
+  echo "Note:         with the default llama3.2 this trace is misdiagnosed (ABSTENTION_FALSE_NEGATIVE, R20; expected GENERATION_CONTRADICTION, R30), and correct_abstention.json is misdiagnosed too (R12) - see the README worked example."
+fi

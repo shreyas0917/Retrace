@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 1.1.0 — 2026-11-09
+
+### Example traces: misdiagnoses with the default model stated
+- The README now says plainly that with the default `llama3.2`, two of the three example traces are misdiagnosed: `contradiction.json` → `ABSTENTION_FALSE_NEGATIVE` (R20, expected R30) and `correct_abstention.json` → `RETRIEVAL_DISTRACTOR_DOMINANT` (R12, expected `OK_CORRECT_ABSTENTION`); the worked example is labelled as `qwen2.5-coder:7b` output. `make demo` prints a line saying so after the Investigate link. No rule was changed.
+- Future work records that R12 fires before the abstention check (R14), so correct refusals over irrelevant chunks are reported as retrieval failures.
+
 ### Console: rule strength instead of a calibrated percentage
 - The Investigate verdict now shows **Rule strength: High/Medium/Low** rather than a "Calibrated confidence" percentage, because the committed calibrator is miscalibrated on real runs. The tooltip explains this and gives the observed live accuracy (highest strength ~95% correct, lowest ~6%, on a small AI-labelled, not-yet-human-reviewed sample), linking `docs/benchmarks/calibration_live_v1.md`.
 

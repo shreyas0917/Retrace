@@ -479,7 +479,7 @@ Labelling: `scripts/live_labelling.py export` writes a blind sheet: query, ranke
 
 Reason: the headline numbers so far come from synthetic cases whose judge outputs were scripted from the same picture of failures as the rules. Real runs with blind human labels measure the whole system, judges included.
 
-Status: Accepted. Recorded; awaiting labels.
+Status: Accepted. Recorded. v1.1.0 ships with the suite labelled blind by an independent AI annotator (a fresh subagent, no access to Retrace predictions), not by the author; the manifest records `annotator: ai_draft_blind`, `human_reviewed: false`, and the reports say so. Human review by the author is planned for v1.1.1, after which the annotator becomes `ai_draft_author_reviewed`. The title's "by the author" describes the intended labelling process, not the labels in this release.
 
 ## ADR-047 — Tolerant matching of the abstention sentinel
 

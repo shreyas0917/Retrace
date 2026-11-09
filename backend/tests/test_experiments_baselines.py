@@ -13,6 +13,7 @@ from app.db import session as db_session
 from app.db.models import Experiment, ExperimentCaseResult
 from app.services.eval.baseline import BaselineError, get_active_baseline, promote_baseline
 from app.services.eval.evaluate import (
+    APP_VERSION,
     EXIT_ERROR,
     EXIT_PASS,
     EXIT_REGRESSION,
@@ -134,7 +135,7 @@ def test_eval_gold_persists_case_results() -> None:
         assert exp is not None
         assert exp.status == "COMPLETED"
         assert exp.suite_hash == result["suite_hash"]
-        assert exp.pipeline.get("app_version") == "1.0.0"
+        assert exp.pipeline.get("app_version") == APP_VERSION
         assert "cost_per_query" in exp.pipeline
         assert exp.pipeline["cost_per_query"] is None
     finally:

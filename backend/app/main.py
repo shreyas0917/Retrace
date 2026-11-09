@@ -30,6 +30,7 @@ from app.core.middleware import RequestIdMiddleware
 from app.core.ratelimit import RateLimitMiddleware, get_rate_limiter
 from app.db import models  # noqa: F401 — register models with metadata
 from app.db.session import init_db
+from app.version import __version__ as APP_VERSION
 
 logger = get_logger(__name__)
 
@@ -82,7 +83,7 @@ def create_app() -> FastAPI:
     application = FastAPI(
         title="Retrace",
         description="RAG reliability and failure-localization system",
-        version="1.0.0",
+        version=APP_VERSION,
         lifespan=lifespan,
     )
 
