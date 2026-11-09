@@ -15,10 +15,26 @@ scripts/dev_test.sh tests/test_security.py -k csrf
 cd frontend && npm install && npm test && npm run build
 ```
 
-Test files map to subsystems: infrastructure (T01 to T10), corpus and retrieval, generation,
-diagnosis, evaluation suites, experiments and baselines, observability, investigation,
-plus the v1.0 additions: security (`test_security.py`), durable telemetry
-(`test_telemetry.py`), resilience and fault injection (`test_resilience.py`),
-retrieval metrics (`test_retrieval_metrics.py`), judge validation
-(`test_judge_validation.py`) and the held-out diagnosis benchmark
-(`test_v1_diagnosis_benchmark.py`).
+Test files are named by what they test:
+
+| File | Covers |
+| --- | --- |
+| `test_infrastructure.py` | settings, health, auth basics (T01 to T10) |
+| `test_corpus_retrieval.py` | corpus, chunking, embedding, retrieval |
+| `test_generation.py` | generation, RAG execution, abstention, traces |
+| `test_diagnosis_rules.py` | diagnosis rules, judges, taxonomy |
+| `test_eval_suites.py` | gold and planted suites, benchmark metrics |
+| `test_experiments_baselines.py` | experiments, baselines, `retrace eval` |
+| `test_observability.py` | metrics, signals, redaction, health |
+| `test_investigation_api.py`, `test_investigation_correctness.py` | investigation API and runbooks |
+| `test_security.py` | auth, CSRF, rate and size limits |
+| `test_telemetry.py`, `test_telemetry_retention.py` | durable telemetry, cost, retention |
+| `test_resilience.py` | retries, timeouts, fault injection |
+| `test_retrieval_metrics.py` | retrieval metrics and ablation |
+| `test_judge_validation.py`, `test_label_review_sheet.py` | judge validation and label review |
+| `test_faithfulness_nli.py` | NLI faithfulness judge |
+| `test_external_traces.py` | bring-your-own-trace API and CLI |
+| `test_live_suite.py`, `test_live_labels.py` | live_v1 recording, labelling merge and report |
+| `test_benchmark_calibration_write.py` | calibration is written only on request |
+| `test_v1_diagnosis_benchmark.py` | held-out diagnosis benchmark floors |
+| `test_concepts_doc.py` | `docs/concepts.md` rule table matches the rule catalog |

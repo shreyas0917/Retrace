@@ -1,4 +1,4 @@
-# Acceptance thresholds for `retrace eval` (PRD §16).
+# Acceptance thresholds for `retrace eval`.
 #
 # Drop rules: fail when (baseline - current) >= drop_lt
 # Absolute floors: fail when current < min_* (defaults 0.0 so first runs can pass)

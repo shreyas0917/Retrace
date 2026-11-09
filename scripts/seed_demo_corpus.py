@@ -8,15 +8,15 @@ import sys
 from pathlib import Path
 
 import httpx
+from _api_key import require_api_key
 
 API_BASE = os.environ.get("RETRACE_API_BASE", "http://localhost:8000")
-API_KEY = os.environ.get("API_KEY", "dev-retrace-api-key-change-me")
 CORPUS_DIR = Path(os.environ.get("DEMO_CORPUS_DIR", "/data/corpus/demo"))
 MODEL_API_KEY = os.environ.get("MODEL_API_KEY", "")
 
 
 def main() -> int:
-    headers = {"Authorization": f"Bearer {API_KEY}"}
+    headers = {"Authorization": f"Bearer {require_api_key()}"}
     if not CORPUS_DIR.exists():
         alt = Path(__file__).resolve().parents[1] / "data" / "corpus" / "demo"
         corpus_dir = alt if alt.exists() else CORPUS_DIR
@@ -85,7 +85,9 @@ def main() -> int:
             )
 
         if not MODEL_API_KEY or MODEL_API_KEY.strip() in {"", "replace-me"}:
-            print("generate: SKIPPED — MODEL_API_KEY not configured " "(Phase 3 path covered by FakeLLM tests)")
+            print(
+                "generate: SKIPPED — MODEL_API_KEY not configured " "(the generation path is covered by FakeLLM tests)"
+            )
             return 0
 
         r = client.post(

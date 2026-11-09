@@ -1,9 +1,9 @@
-"""Phase 9 clean-room validation — no new product features.
+"""Clean-room release validation — no new product features.
 
 Runs inside the backend container (PYTHONPATH=/app):
 
   docker compose exec -T backend sh -c \\
-    'cd /app && PYTHONPATH=/app python /scripts/validate_phase9.py'
+    'cd /app && PYTHONPATH=/app python /scripts/validate_release.py'
 
 Steps: health → seed demo → retrieve → fake RAG → diagnose → investigation →
 planted eval → baseline promote → ops endpoints → report.
@@ -27,6 +27,8 @@ from sqlalchemy import select
 # Ensure app imports when invoked as /scripts/...
 sys.path.insert(0, "/app")
 
+from _api_key import require_api_key
+
 from app.db import session as db_session
 from app.db.models import CorpusVersion
 from app.services.diagnosis.engine import diagnose_execution
@@ -35,7 +37,7 @@ from app.services.llm_client import LLMResult, set_llm_provider
 from app.services.rag import run_rag
 
 API_BASE = os.environ.get("RETRACE_API_BASE", "http://127.0.0.1:8000")
-API_KEY = os.environ.get("API_KEY", "dev-retrace-api-key-change-me")
+API_KEY = require_api_key()
 CORPUS_DIR_CANDIDATES = [
     Path("/data/corpus/demo"),
     Path(__file__).resolve().parents[1] / "data" / "corpus" / "demo",

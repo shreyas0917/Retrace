@@ -1,4 +1,4 @@
-"""Load and validate versioned gold/planted JSONL suites (PRD §5.3)."""
+"""Load and validate versioned gold/planted JSONL suites (ADR-021)."""
 
 from __future__ import annotations
 

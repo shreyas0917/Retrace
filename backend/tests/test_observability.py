@@ -1,4 +1,4 @@
-"""Phase 7 — observability, metrics, signals, redaction, health."""
+"""Observability: metrics, signals, redaction and health."""
 
 from __future__ import annotations
 

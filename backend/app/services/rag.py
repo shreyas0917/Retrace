@@ -116,7 +116,7 @@ def run_rag(
 
         results = retrieval["results"]
         if not _has_usable_context(results):
-            # Forced abstention — do not call the LLM (PRD NO_EVIDENCE path).
+            # Forced abstention — do not call the LLM (the NO_EVIDENCE path).
             abstained = True
             status = STATUS_ABSTAINED
             answer = ABSTENTION_ANSWER

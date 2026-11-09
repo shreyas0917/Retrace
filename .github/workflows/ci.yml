@@ -28,8 +28,18 @@ jobs:
           ruff check backend scripts --config backend/ruff.toml
       - name: Ruff format check
         run: ruff format --check backend scripts --config backend/ruff.toml
+      - name: No PRD references or phase-numbered test names
+        run: |
+          if git grep -n -I -i -E '\bprd\b|_prd|prd_' -- . ':!backend/alembic/versions' ':!.github/workflows/ci.yml'; then
+            echo 'Remove the PRD references above (the PRD is not part of this repo).' >&2; exit 1
+          fi
+          if git ls-files | grep -n 'test_phase' || git grep -n 'test_phase' -- . ':!.github/workflows/ci.yml'; then
+            echo 'Name tests by what they test, not by phase.' >&2; exit 1
+          fi
       - name: Held-out and calibration suite hashes match manifests
         run: python scripts/build_heldout_suite.py --check
+      - name: docs/concepts.md rule table matches the rule catalog
+        run: python scripts/gen_concepts.py --check
 
   types:
     name: Types (mypy, diagnosis and eval)

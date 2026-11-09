@@ -53,7 +53,7 @@ PRODUCTION_CONFIG: tuple[int, int] = (
     int(DEFAULT_CHUNKING_CONFIG["chunk_size"]),
     int(DEFAULT_CHUNKING_CONFIG["chunk_overlap"]),
 )
-DEFAULT_EMBEDDING_MODEL = embeddings_service._PRD_MODEL  # noqa: SLF001
+DEFAULT_EMBEDDING_MODEL = embeddings_service._PINNED_EMBEDDING_MODEL  # noqa: SLF001
 RRF_K = 60
 BM25_K1 = 1.5
 BM25_B = 0.75
@@ -311,7 +311,7 @@ def default_embed_fn(texts: Sequence[str]) -> np.ndarray:
 def make_sentence_transformer_embed_fn(model_name: str) -> EmbedFn:
     """Load an arbitrary sentence-transformers model directly (bypasses Settings lock).
 
-    Only used for ablations; the production embedder stays PRD-locked.
+    Only used for ablations; the production embedder stays pinned.
     """
     from sentence_transformers import SentenceTransformer
 

@@ -15,14 +15,14 @@ Wait until the backend is healthy, then:
 
 ```bash
 docker compose exec backend alembic current
-# expect: 007_telemetry_cost (head)
+# expect: 008_external_traces (head)
 ```
 
 ## Automated validation
 
 ```bash
 docker compose exec backend pytest -v
-docker compose exec -T backend sh -c "cd /app && PYTHONPATH=/app python /scripts/validate_phase9.py"
+docker compose exec -T backend sh -c "cd /app && PYTHONPATH=/app python /scripts/validate_release.py"
 python scripts/build_heldout_suite.py --check
 ```
 

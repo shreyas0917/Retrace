@@ -1,4 +1,4 @@
-"""Load acceptance thresholds for experiment gating (PRD §16)."""
+"""Load acceptance thresholds for experiment gating."""
 
 from __future__ import annotations
 

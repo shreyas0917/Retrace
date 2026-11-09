@@ -1,4 +1,4 @@
-"""Diagnosis aggregation thresholds (PRD diagnosis_thresholds.v2)."""
+"""Diagnosis aggregation thresholds (diagnosis_thresholds.v2)."""
 
 from __future__ import annotations
 

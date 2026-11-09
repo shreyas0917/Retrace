@@ -38,7 +38,7 @@ const INTERNAL_TITLES = new Set([
   "correctness",
 ]);
 
-/** Stable product corpus id created by seed_demo_corpus / validate_phase9. */
+/** Stable product corpus id created by seed_demo_corpus / validate_release. */
 const PRODUCT_DEMO_CORPUS_ID = "demo";
 
 export function isFixtureCorpus(corpus: {

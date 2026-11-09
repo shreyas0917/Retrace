@@ -91,10 +91,12 @@ class Settings(BaseSettings):
 
     @field_validator("embedding_model")
     @classmethod
-    def embedding_model_must_match_prd(cls, value: str) -> str:
+    def embedding_model_must_match_pinned(cls, value: str) -> str:
         expected = "sentence-transformers/all-MiniLM-L6-v2"
         if value != expected:
-            raise ValueError(f"EMBEDDING_MODEL must be '{expected}' (PRD-locked); got '{value}'")
+            raise ValueError(
+                f"EMBEDDING_MODEL must be '{expected}' (pinned for reproducible corpus versions); got '{value}'"
+            )
         return value
 
     @property
