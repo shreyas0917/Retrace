@@ -1,10 +1,16 @@
 # Diagnosis benchmark method
 
-This document explains how Retrace measures the diagnosis engine in v1.0 and
-what the numbers in [benchmarks/heldout_v1.md](benchmarks/heldout_v1.md) do and
-do not mean. The planted suite (12 scenarios) proves the engine is wired
-correctly; the held-out suite estimates per-class quality, confidence
-calibration and how the rule engine compares with other classifiers.
+This document explains how Retrace measures the diagnosis engine and what the
+numbers in [benchmarks/live_v1.md](benchmarks/live_v1.md) and
+[benchmarks/heldout_v1.md](benchmarks/heldout_v1.md) do and do not mean.
+`live_v1` is the measure of the whole system on real pipeline runs, judges
+included. The planted suite (12 scenarios) proves the engine is wired
+correctly; the held-out suite is an engine logic test on synthetic signals
+with scripted judges, and also hosts the classifier comparison.
+
+> **Labels:** `live_v1` is labelled blind by an independent AI annotator
+> (fresh subagent, no access to Retrace predictions); not yet reviewed by a
+> human. Human review is planned for v1.1.1.
 
 ## Suites
 
@@ -14,6 +20,7 @@ calibration and how the rule engine compares with other classifiers.
 | `calib_v1` | 80 | Fit the confidence calibrator | Only for calibration, never for rules |
 | `heldout_v1` | 160 | Per-class precision/recall/F1, calibration check, classifier comparison | Never |
 | `gold_v1` | 2 | Offline executions; AI-drafted, not yet reviewed | No |
+| `live_v1` | 50 | Real pipeline runs (real retrieval, generation and judges) with blind labels; accuracy with CIs, per-condition breakdown, cross-validated calibration | Never (no rule, prompt or threshold was changed from it) |
 
 `heldout_v1` and `calib_v1` are produced by `scripts/build_heldout_suite.py`
 from a bank of 26 policy facts across 13 documents and 12 scenario templates
@@ -35,6 +42,28 @@ The benchmark measures the deterministic diagnosis engine given judge
 verdicts; it does not measure how good the LLM judges are on real text. Judge
 quality is measured separately in
 [benchmarks/judge_validation.md](benchmarks/judge_validation.md).
+
+## Real runs: live_v1
+
+`live_v1` records 50 questions run through the real pipeline (`llama3.2` for
+generation and the LLM judges, NLI faithfulness), with faults injected on
+purpose: removed gold documents, near-topic distractors, unanswerable
+questions and faulty generator prompts. The labelling sheet shows only the
+question, the ranked chunks and the answer, never the condition or Retrace's
+prediction ([labelling guide](labelling-guide.md)). The report replays the
+recorded judge outputs, so it is reproducible offline.
+
+Result (AI-annotator labels, not yet reviewed by a human): 40.0% lenient
+accuracy (95% CI 26.0% to 52.0%), macro-F1 0.405 (0.278 to 0.553). That is far
+below the 98.1% of the synthetic engine logic test, and the gap is the point
+of having both. The report's automatic first pass suggests the relevance judge
+(calling sufficient context insufficient) for 16 of the 30 misses. The
+headline is the diagnosis as recorded; a parsing bug for abstentions written
+`INSUFFICIENT CONTEXT` with a space was fixed (ADR-047), and the report shows
+a secondary re-diagnosis of the same recordings — but it stays at 40% because
+the rules then call those runs `RETRIEVAL_DISTRACTOR_DOMINANT` rather than the
+labelled `OK_CORRECT_ABSTENTION`, a second rule/label disagreement for human
+review. The miss causes are suggestions until confirmed by hand.
 
 ## What is reported
 
@@ -64,6 +93,17 @@ own. With `--calibrate-on` it fits a fresh calibrator and reports it for
 comparison; only `--write-calibration` writes it to
 `backend/configs/calibration.json`. The report always states which
 calibrator its calibrated numbers used.
+
+On `heldout_v1` the calibrated confidence puts 153 of 160 cases in one bin, so
+its low ECE is not evidence of calibration. Calibration on real runs is
+measured by `retrace benchmark calibration-cv --suite live_v1`
+([report](benchmarks/calibration_live_v1.md)): 5-fold cross-validation on the
+as-recorded diagnoses. Result (AI-annotator labels): the raw score separates
+right from wrong diagnoses (observed 94.7% correct at the top level, 6.5% at
+the lower), but the committed calibrator, fitted on synthetic cases, is
+miscalibrated on real runs (ECE 0.60 vs 0.41 raw). Retrace therefore shows a
+"Rule strength" level, not a calibrated percentage, and does not refit the
+calibrator; that waits for a larger, human-reviewed set with a held-out split.
 
 ## Classifier comparison
 
@@ -116,6 +156,12 @@ docker compose exec backend python -m app.cli.retrace benchmark report \
   --markdown /docs/benchmarks/heldout_v1.md --out /data/reports/heldout_report.json
 # add --with-llm to include the LLM classifier (uses MODEL_* from .env)
 # add --write-calibration to refit and replace the committed calibrator
+
+# real runs (offline replay of the recorded judges)
+scripts/dev_test.sh python -m app.cli.retrace benchmark report --suite live_v1 \
+  --markdown /docs/benchmarks/live_v1.md --out /data/reports/live_v1_report.json
+scripts/dev_test.sh python -m app.cli.retrace benchmark calibration-cv --suite live_v1 \
+  --markdown /docs/benchmarks/calibration_live_v1.md --out /data/reports/calibration_live_v1.json
 ```
 
 The held-out run is also a test: `backend/tests/test_v1_diagnosis_benchmark.py`
