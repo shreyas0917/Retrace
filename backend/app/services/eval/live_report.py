@@ -27,6 +27,7 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from app.db.models import Diagnosis
+from app.services.abstention import exact_sentinel_matching
 from app.services.diagnosis.calibration import load_calibration
 from app.services.diagnosis.taxonomy import short_code
 from app.services.eval.evaluate import APP_VERSION, run_evaluation
@@ -150,9 +151,36 @@ def run_live_report(db: Session, *, suite_id: str = "live_v1", suite_version: st
     runs_manifest = json.loads(runs_manifest_path.read_text(encoding="utf-8")) if runs_manifest_path.is_file() else {}
     manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
 
-    result = run_evaluation(db, suite_id=suite_id, suite_version=suite_version, persist=True)
+    # Headline = the diagnosis Retrace made with the code that recorded these runs. The abstention
+    # sentinel is matched exactly here (ADR-047), so a model answer like "INSUFFICIENT CONTEXT" with a
+    # space is read exactly as it was at recording time, before the parsing fix.
+    with exact_sentinel_matching():
+        result = run_evaluation(db, suite_id=suite_id, suite_version=suite_version, persist=True)
     rows = result["cases"]
     summary = result["summary"]
+
+    # Secondary = the same recordings re-diagnosed with the parsing fix in place (tolerant matching).
+    # It is optimistic (the fix was written after seeing these very misses) and not an independent
+    # measurement; no runs are re-recorded.
+    fixed = run_evaluation(db, suite_id=suite_id, suite_version=suite_version, persist=False)
+    fixed_rows = fixed["cases"]
+    recorded_code = {r["case_id"]: r.get("predicted_failure_code") for r in rows}
+    flipped = sorted(
+        r["case_id"] for r in fixed_rows if r.get("predicted_failure_code") != recorded_code.get(r["case_id"])
+    )
+    fixed_by_id = {r["case_id"]: r for r in fixed_rows}
+    after_fix = {
+        "lenient_accuracy": bootstrap_ci(fixed_rows, _lenient),
+        "strict_accuracy": bootstrap_ci(fixed_rows, _strict),
+        "macro_f1": bootstrap_ci(fixed_rows, macro_f1),
+        "changed_case_ids": flipped,
+        "newly_correct": sorted(
+            r["case_id"]
+            for r in fixed_rows
+            if r.get("correct_failure_code") and not _recorded_correct(rows, r["case_id"])
+        ),
+        "changed_to": dict(sorted(_count(fixed_by_id[cid].get("predicted_failure_code") for cid in flipped).items())),
+    }
 
     by_condition: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for r in rows:
@@ -202,6 +230,7 @@ def run_live_report(db: Session, *, suite_id: str = "live_v1", suite_version: st
             "seed": BOOTSTRAP_SEED,
         },
         "conditions": conditions,
+        "after_fix": after_fix,
         "misses": misses,
         "miss_causes": dict(sorted(_count(m["cause"] for m in misses).items())),
         "timeouts": sum(
@@ -214,6 +243,13 @@ def run_live_report(db: Session, *, suite_id: str = "live_v1", suite_version: st
             {(r.get("settings") or {}).get("model_timeout_seconds") for r in _records(directory)} - {None}
         ),
     }
+
+
+def _recorded_correct(rows: list[dict[str, Any]], case_id: str) -> bool:
+    for r in rows:
+        if r["case_id"] == case_id:
+            return bool(r.get("correct_failure_code"))
+    return False
 
 
 def _records(directory: Path) -> list[dict[str, Any]]:
@@ -281,6 +317,38 @@ def _labeller_limit(report: dict[str, Any]) -> str:
     return f"- One labeller ({annotator}), with no second annotator, so label noise is not measured."
 
 
+def _after_fix_lines(report: dict[str, Any], ci: dict[str, Any]) -> list[str]:
+    af = report.get("after_fix")
+    if not af:
+        return []
+    changed = af.get("changed_case_ids") or []
+    newly = af.get("newly_correct") or []
+    changed_to = ", ".join(f"`{code}` {n}" for code, n in (af.get("changed_to") or {}).items())
+    return [
+        "### After fixing a parsing bug found during this evaluation",
+        "",
+        "The abstention-parsing bug fixed in ADR-047 was found here. Re-diagnosing the **same recordings** with "
+        "the fix (no new runs) gives the numbers below. This would be **optimistic and not an independent "
+        "measurement**: the fix was written after seeing these exact misses. The headline above stays the "
+        "as-recorded number.",
+        "",
+        "| Metric (same 50 recordings, fix applied) | Value |",
+        "| --- | --- |",
+        f"| Lenient accuracy | {_ci(af['lenient_accuracy'])} |",
+        f"| Strict accuracy | {_ci(af['strict_accuracy'])} |",
+        f"| Macro-F1 | {_ci(af['macro_f1'], pct=False)} |",
+        "",
+        f"The fix changes {len(changed)} diagnosis(es) ({changed_to or 'none'}) and makes **{len(newly)}** more "
+        "correct, so the headline is unchanged. The fix makes the pipeline recognise these `unanswerable` runs as "
+        "abstentions, but the rule engine then calls them `RETRIEVAL_DISTRACTOR_DOMINANT` (the retrieved chunks are "
+        "off-topic and the system abstained) rather than the labelled `OK_CORRECT_ABSTENTION`. That is a second, "
+        "separate disagreement between a rule and the label, not an error the parsing fix can settle; a human "
+        "reviewer should decide which code fits an unanswerable question whose retrieval returned only distractors. "
+        "The fix is in `app/services/abstention.py`.",
+        "",
+    ]
+
+
 def render_live_markdown(report: dict[str, Any]) -> str:
     s = report["summary"]
     ci = report["confidence_intervals"]
@@ -317,6 +385,11 @@ def render_live_markdown(report: dict[str, Any]) -> str:
         "",
         f"Confidence intervals: percentile bootstrap over cases, {ci['resamples']} resamples, seed {ci['seed']}.",
         "",
+        "The headline is the diagnosis Retrace made with the code that recorded these runs. The abstention "
+        "sentinel was matched exactly then, so the 8 `unanswerable` runs where the model replied "
+        "`INSUFFICIENT CONTEXT` (with a space) were read as answers, not abstentions.",
+        "",
+        *_after_fix_lines(report, ci),
         "## Per class (strict)",
         "",
         "| Label | Support | Predicted | Precision | Recall | F1 |",

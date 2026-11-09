@@ -2,7 +2,7 @@
 
 > **Labels:** labelled blind by an independent AI annotator (fresh subagent, no access to Retrace predictions); not yet reviewed by a human.
 
-Produced by `retrace benchmark report --suite live_v1` on 2026-11-09. Suite hash `sha256:3d004c818d9095c70bdd32244d9896e99042592f91a4733f1f2019b6e34d8487`, experiment `5abe1fcd-ce3d-4bdf-ae1c-a16ea38600a8`, report commit 34050fd3918272238a3cf087fdcfe0e266339c48.
+Produced by `retrace benchmark report --suite live_v1` on 2026-11-09. Suite hash `sha256:3d004c818d9095c70bdd32244d9896e99042592f91a4733f1f2019b6e34d8487`, experiment `3bbf5422-1b5a-494d-a845-0dafdc6bdabd`, report commit 93cc9cdad840a463b3ffc376bbbc0c5e54021885-dirty.
 
 50 questions on the 13-document demo corpus ran through real retrieval, generation and judges (llama3.2:latest, temperature 0; NLI faithfulness), recorded 2026-11-08 to 2026-11-08 on commit edffb7f. Labelled on 2026-11-08. Labels: labelled blind by an independent AI annotator (fresh subagent, no access to Retrace predictions); not yet reviewed by a human. The annotator saw only the blind sheet, the labelling guide and the corpus chunks, never the runs or the injected conditions. This report replays the recorded judge outputs, so it is reproducible offline.
 
@@ -17,6 +17,20 @@ Produced by `retrace benchmark report --suite live_v1` on 2026-11-09. Suite hash
 | Accuracy on the cases not deferred | 40.0% |
 
 Confidence intervals: percentile bootstrap over cases, 2000 resamples, seed 20261108.
+
+The headline is the diagnosis Retrace made with the code that recorded these runs. The abstention sentinel was matched exactly then, so the 8 `unanswerable` runs where the model replied `INSUFFICIENT CONTEXT` (with a space) were read as answers, not abstentions.
+
+### After fixing a parsing bug found during this evaluation
+
+The abstention-parsing bug fixed in ADR-047 was found here. Re-diagnosing the **same recordings** with the fix (no new runs) gives the numbers below. This would be **optimistic and not an independent measurement**: the fix was written after seeing these exact misses. The headline above stays the as-recorded number.
+
+| Metric (same 50 recordings, fix applied) | Value |
+| --- | --- |
+| Lenient accuracy | 40.0% (95% CI 26.0% to 52.0%) |
+| Strict accuracy | 38.0% (95% CI 26.0% to 50.0%) |
+| Macro-F1 | 0.405 (95% CI 0.278 to 0.553) |
+
+The fix changes 8 diagnosis(es) (`RETRIEVAL_DISTRACTOR_DOMINANT` 8) and makes **0** more correct, so the headline is unchanged. The fix makes the pipeline recognise these `unanswerable` runs as abstentions, but the rule engine then calls them `RETRIEVAL_DISTRACTOR_DOMINANT` (the retrieved chunks are off-topic and the system abstained) rather than the labelled `OK_CORRECT_ABSTENTION`. That is a second, separate disagreement between a rule and the label, not an error the parsing fix can settle; a human reviewer should decide which code fits an unanswerable question whose retrieval returned only distractors. The fix is in `app/services/abstention.py`.
 
 ## Per class (strict)
 

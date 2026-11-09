@@ -231,7 +231,10 @@ def test_live_report_runs_offline_and_renders(workspace) -> None:
     assert set(report["conditions"]) == {r["condition"] for r in workspace.records}
     assert sum(c["n"] for c in report["conditions"].values()) == len(workspace.records)
     assert report["runs"]["generation_models"] == ["llama3.2:latest"]
+    # The headline is the as-recorded pass; the after-fix re-diagnosis is reported separately.
+    assert set(report["after_fix"]) >= {"lenient_accuracy", "changed_case_ids", "newly_correct", "changed_to"}
     text = render_live_markdown(report)
+    assert "After fixing a parsing bug found during this evaluation" in text
     for heading in (
         "## Results",
         "## Per class (strict)",
