@@ -50,7 +50,7 @@ def test_report_shape_and_decision_rule() -> None:
     spread = report["split_spread"]
     assert spread["seeds"] == cv.SPLIT_SEEDS and spread["ece"]["min"] <= spread["ece"]["median"] <= spread["ece"]["max"]
     md = cv.render_cv_markdown(report, command="cmd", suite="live_v1", provenance="p", banner=None)
-    assert "lookup table" in md and "Other fold splits" in md and "PROVISIONAL" not in md
+    assert "lookup table" in md and "Other fold splits" in md and "> **" not in md
     # The committed calibrator falls back to the raw score when calibrated_confidence is missing.
     assert p["calib_v1"]["ece"]["point"] == p["raw"]["ece"]["point"]
 
@@ -59,8 +59,8 @@ def test_no_claim_when_the_raw_score_is_already_calibrated() -> None:
     pattern = [(0.8, i % 5 != 0) for i in range(50)]
     report = cv.cross_validated_calibration(_rows(pattern, calibrated=0.8), k=5, resamples=300)
     assert report["decision"]["cv_clearly_lower_than_raw"] is False
-    md = cv.render_cv_markdown(report, command="cmd", suite="live_v1", provenance="p", banner="PROVISIONAL — x")
-    assert "**not** clearly better" in md and "rule-strength score" in md and "PROVISIONAL — x" in md
+    md = cv.render_cv_markdown(report, command="cmd", suite="live_v1", provenance="p", banner="Labels: x")
+    assert "**not** clearly better" in md and "rule-strength score" in md and "> **Labels: x.**" in md
     assert "| Bin | Cases |" in md and "never writes `backend/configs/calibration.json`" in md
 
 

@@ -229,7 +229,7 @@ def render_cv_markdown(report: dict[str, Any], *, command: str, suite: str, prov
     p = r["predictors"]
     lines = [f"# Calibration on {suite}, cross-validated", ""]
     if banner:
-        lines += [f"> **{banner}.** Do not quote these numbers until the review is done.", ""]
+        lines += [f"> **{banner}.**", ""]
     lines += [
         f"Produced by `{command}`. {provenance}",
         "",
