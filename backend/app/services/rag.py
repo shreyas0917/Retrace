@@ -17,6 +17,7 @@ from app.core.errors import (
 from app.core.logging import bind_correlation, get_logger
 from app.core.ops import record_generation
 from app.db.models import CorpusVersion, ExecutionTrace
+from app.services.abstention import is_sentinel
 from app.services.eval.faults import EvalFault
 from app.services.generation import generate_answer
 from app.services.llm_client import GENERATION_TEMPERATURE
@@ -151,7 +152,7 @@ def run_rag(
                 )
             except Exception as exc:  # noqa: BLE001 - never fail a run on pricing
                 logger.warning("cost_estimate_failed", error=str(exc)[:200])
-            if answer.strip() == ABSTENTION_ANSWER:
+            if is_sentinel(answer):
                 abstained = True
                 status = STATUS_ABSTAINED
 

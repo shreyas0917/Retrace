@@ -37,7 +37,7 @@ Unknown fields are rejected, and booleans must be real JSON booleans. The whole 
 
 ### How abstention is detected
 
-When `abstained` is omitted, the answer counts as an abstention if it is exactly Retrace's sentinel `INSUFFICIENT_CONTEXT`, or if it is at most 300 characters long and contains one of these phrases, case-insensitively:
+When `abstained` is omitted, the answer counts as an abstention if the whole answer is Retrace's sentinel `INSUFFICIENT_CONTEXT` (in any case, with a space, underscore or hyphen between the words, optionally quoted and with trailing punctuation: `INSUFFICIENT CONTEXT`, `insufficient_context.`), or if it is at most 300 characters long and contains one of these phrases, case-insensitively:
 
 `i don't know`, `i do not know`, `i cannot answer`, `i can't answer`, `i am unable to answer`, `i'm unable to answer`, `not enough information to answer`, `the provided context does not contain`, `the context does not contain`, `the documents do not contain`, `no relevant information`.
 
