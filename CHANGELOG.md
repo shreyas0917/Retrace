@@ -5,9 +5,9 @@
 ### Abstention sentinel parsing (ADR-047)
 - The abstention sentinel is now matched tolerantly (case, whitespace, underscores or hyphens between the words, quotes and trailing punctuation): `INSUFFICIENT CONTEXT`, `insufficient_context` and `Insufficient context.` are abstentions. Before, only the exact `INSUFFICIENT_CONTEXT` counted, in the demo pipeline, the diagnosis engine and external-trace ingestion. Found during the `live_v1` evaluation, where all 8 unanswerable runs were missed this way.
 - `exact_sentinel_matching()` brings back the old comparison for replaying earlier recordings as recorded.
-### Judge validation (PROVISIONAL — AI-drafted labels, not yet reviewed by the author)
-- A second, fresh AI agent checked all 173 judge labels from the review sheet alone and suggested no changes (notes on 3 borderline rows). Applied with `judge_labels_review.py apply --annotator ai_draft_blind`: label values unchanged, annotator `ai_draft_blind`, manifest marked provisional, new hash.
-- `docs/benchmarks/judge_validation.md` regenerated with `judges validate --faithfulness-backend both`: the LLM and NLI faithfulness backends side by side, a PROVISIONAL banner, the label provenance read from the manifest, the exact command, and a Limits section.
+### Judge validation (labels: AI-drafted, cross-checked by a second independent AI; not reviewed by a human)
+- A second, fresh AI agent checked all 173 judge labels from the review sheet alone and suggested no changes (notes on 3 borderline rows). Applied with `judge_labels_review.py apply --annotator ai_draft_blind`: label values unchanged, annotator `ai_draft_blind`, manifest `human_reviewed: false`, new hash.
+- `docs/benchmarks/judge_validation.md` regenerated with `judges validate --faithfulness-backend both`: the LLM and NLI faithfulness backends side by side, the label provenance read from the manifest, the exact command, and a Limits section.
 - `judge_labels_review.py apply --annotator` takes `ai_draft_author_reviewed` (default, after the author's review) or `ai_draft_blind`.
 
 ### Console redesign (Phase 7)
