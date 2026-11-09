@@ -112,13 +112,13 @@ markers.
 
 The relevance, faithfulness and contradiction judges are LLM calls. Their
 output drives diagnosis, so their error rate is part of the system's error
-rate. Validation measures that error rate against human labels, checks whether
+rate. Validation measures that error rate against labelled examples, checks whether
 the judges agree with each other, and checks how much they depend on prompt
 wording.
 
 ### Labeled dataset (`backend/datasets/judges/judge_labels_v1.jsonl`)
 
-66 examples (AI-drafted, not yet reviewed; 24 relevance, 24 faithfulness, 18 contradiction)
+66 examples (AI-drafted, cross-checked by a second independent AI, not yet reviewed by a human; 24 relevance, 24 faithfulness, 18 contradiction)
 built from demo-corpus facts. Chunk texts are excerpts of the corpus documents;
 four synthetic "injected" chunks carry prompt-injection text. Hard cases:
 
@@ -132,11 +132,14 @@ four synthetic "injected" chunks carry prompt-injection text. Hard cases:
   detail is not a contradiction, abstentions, unit confusion ($300 per month
   vs per week), same-chunk number confusion (SEV1 15 min vs SEV2 1 hour).
 
-Every row records `annotator: "ai_draft"` and `annotation_date`; the manifest
-carries the dataset hash. The labels were drafted by an AI agent and no human
-has reviewed them yet. After the author's review the annotator becomes
-`ai_draft_author_reviewed` and the manifest records how many labels changed.
-There is no inter-annotator agreement figure; that is a known limitation.
+Every row records its `annotator` and `annotation_date`; the manifest carries
+the dataset hash and the review. The labels were drafted by an AI agent; a
+second, fresh AI agent then checked all 173 of them from the review sheet alone
+and changed none (`annotator: "ai_draft_blind"`, `human_reviewed: false`). Two
+AI passes agreeing is weak evidence. After the author's review the annotator
+becomes `ai_draft_author_reviewed` and the manifest records how many labels
+changed; `judges validate` words the report from the manifest. There is no
+inter-annotator agreement figure; that is a known limitation.
 
 ### What is measured (`backend/app/services/judges/validation.py`)
 
@@ -189,7 +192,8 @@ never be presented as live-model results.
 
 ### What the numbers do and do not show
 
-* They measure one model on 66 AI-drafted, not yet reviewed examples. Kappa on 18
+* They measure one model on 66 AI-drafted examples a human has not reviewed
+  yet (the report says so at the top). Kappa on 18
   contradiction examples has wide confidence intervals; treat anything within
   about 0.15 as the same.
 * Perfect fixture results (kappa = 1.0 with the oracle provider in tests) prove
