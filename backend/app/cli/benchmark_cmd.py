@@ -46,6 +46,26 @@ def _scores_and_correct(cases: list[dict[str, Any]], key: str) -> tuple[list[flo
     return scores, correct
 
 
+def concentration_caveat(cal: dict[str, Any], share: float = 0.8) -> str | None:
+    """A warning when most cases sit in one calibrated bin: ECE then says little."""
+    cal_bins = [b for b in (cal.get("calibrated") or {}).get("bins", []) if b.get("count")]
+    raw_used = sum(1 for b in (cal.get("raw") or {}).get("bins", []) if b.get("count"))
+    total = sum(b["count"] for b in cal_bins)
+    if not total:
+        return None
+    top = max(cal_bins, key=lambda b: b["count"])
+    if top["count"] / total < share:
+        return None
+    ece = (cal.get("calibrated") or {}).get("ece")
+    return (
+        f"**Caveat:** the calibrated confidence puts {top['count']} of {total} cases in one bin "
+        f"({top['lo']:.1f}–{top['hi']:.1f}), and the raw score falls in only {raw_used} of the 10 bins, so the "
+        f"calibrated ECE of {_f(ece)} is not meaningful evidence of calibration. It mostly says that the "
+        "synthetic cases the engine gets right sit at the top of the scale. For calibration on real runs, see "
+        "`docs/benchmarks/calibration_live_v1.md` (cross-validated on `live_v1`)."
+    )
+
+
 def calibration_report(cases: list[dict[str, Any]], n_bins: int = 10) -> dict[str, Any]:
     raw_s, raw_c = _scores_and_correct(cases, "diagnosis_score")
     cal_s, cal_c = _scores_and_correct(cases, "calibrated_confidence")
@@ -295,6 +315,9 @@ def render_markdown(report: dict[str, Any]) -> str:
             continue
         lines.append(f"| {b['lo']:.1f}–{b['hi']:.1f} | {b['count']} | {_f(b['mean_score'])} | {_f(b['accuracy'])} |")
     lines.append("")
+    caveat = concentration_caveat(cal)
+    if caveat:
+        lines += [caveat, ""]
 
     cc = report.get("classifier_comparison") or {}
     clf = cc.get("classifiers") or {}
@@ -478,6 +501,78 @@ def cmd_benchmark_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_calibration_cv(args: argparse.Namespace) -> int:
+    """k-fold calibration on a labelled suite; never writes the calibration config."""
+    from app.db import session as db_session
+    from app.services.abstention import exact_sentinel_matching
+    from app.services.eval.calibration_cv import cross_validated_calibration, render_cv_markdown, score_distribution
+    from app.services.eval.live_report import AI_BLIND_WORDING, label_provenance
+    from app.services.eval.suite_loader import suite_dir
+
+    db_session.init_db()
+    assert db_session.SessionLocal is not None
+    db = db_session.SessionLocal()
+    try:
+        # Calibrate on the as-recorded diagnoses, so these numbers match the live_v1 headline (ADR-047).
+        with exact_sentinel_matching():
+            result = run_evaluation(db, suite_id=args.suite, suite_version=args.suite_version, persist=False)
+    except Exception as exc:  # noqa: BLE001
+        print(f"Calibration error: {exc}", file=sys.stderr)
+        return 2
+    finally:
+        db.close()
+    rows = result["cases"]
+
+    if args.distribution_only:
+        dist = score_distribution(rows, n_bins=args.bins)
+        print(json.dumps({"suite": args.suite, "suite_hash": result["suite_hash"], **dist}, indent=2))
+        return 0
+
+    report = cross_validated_calibration(rows, k=args.folds, n_bins=args.bins)
+    report.update({"suite_id": args.suite, "suite_hash": result["suite_hash"], "git_commit": result.get("git_commit")})
+    manifest_path = suite_dir(args.suite, args.suite_version) / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.is_file() else {}
+    provenance = label_provenance(
+        {
+            "annotator": manifest.get("annotator"),
+            "review": manifest.get("review"),
+            "summary": {"total_cases": len(rows)},
+        }
+    )
+    banner = f"Labels: {AI_BLIND_WORDING}" if manifest.get("annotator") == "ai_draft_blind" else None
+    if args.out:
+        out = Path(args.out)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(report, indent=2, default=str) + "\n", encoding="utf-8")
+        print(f"wrote {out}")
+    if args.markdown:
+        command = (
+            f"retrace benchmark calibration-cv --suite {args.suite} --folds {args.folds} --bins {args.bins} "
+            f"--markdown {args.markdown}"
+        )
+        prov = f"Suite hash `{result['suite_hash']}`, commit {result.get('git_commit') or 'unknown'}. {provenance}"
+        md = Path(args.markdown)
+        md.parent.mkdir(parents=True, exist_ok=True)
+        md.write_text(
+            render_cv_markdown(
+                report,
+                command=command,
+                suite=args.suite,
+                provenance=prov,
+                banner=banner,
+            ),
+            encoding="utf-8",
+        )
+        print(f"wrote {md}")
+    p = report["predictors"]
+    for name in ("raw", "calib_v1", "cv_live"):
+        print(f"{name:<9} ece {p[name]['ece']} brier {p[name]['brier']}")
+    print(
+        f"distinct raw scores {report['distinct_raw_scores']}; clearly better: {report['decision']['cv_clearly_lower_than_raw']}"
+    )
+    return 0
+
+
 def register(sub: argparse._SubParsersAction) -> None:
     bench = sub.add_parser("benchmark", help="Benchmark reports (held-out suite, calibration, classifiers)")
     bench_sub = bench.add_subparsers(dest="benchmark_command", required=True)
@@ -497,6 +592,22 @@ def register(sub: argparse._SubParsersAction) -> None:
         help="Write the calibrator fitted on --calibrate-on to backend/configs/calibration.json",
     )
     rep.set_defaults(func=cmd_benchmark_report)
+    cv = bench_sub.add_parser(
+        "calibration-cv",
+        help="k-fold calibration on a labelled suite (never writes the calibration config)",
+    )
+    cv.add_argument("--suite", default="live_v1")
+    cv.add_argument("--suite-version", default="1.0.0")
+    cv.add_argument("--folds", type=int, default=5)
+    cv.add_argument("--bins", type=int, default=10)
+    cv.add_argument("--out", default=None)
+    cv.add_argument("--markdown", default=None)
+    cv.add_argument(
+        "--distribution-only",
+        action="store_true",
+        help="Only print how the suite's raw and calibrated scores spread over the bins",
+    )
+    cv.set_defaults(func=cmd_calibration_cv)
 
 
 def main(argv: list[str] | None = None) -> int:
