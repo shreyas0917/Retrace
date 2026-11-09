@@ -8,9 +8,9 @@ included. The planted suite (12 scenarios) proves the engine is wired
 correctly; the held-out suite is an engine logic test on synthetic signals
 with scripted judges, and also hosts the classifier comparison.
 
-> **PROVISIONAL — AI-drafted labels, not yet reviewed by the author.** The
-> `live_v1` and calibration numbers quoted here come from labels an AI agent
-> drafted blind. They change when the author's review is merged.
+> **Labels:** `live_v1` is labelled blind by an independent AI annotator
+> (fresh subagent, no access to Retrace predictions); not yet reviewed by a
+> human. Human review is planned for v1.1.1.
 
 ## Suites
 
@@ -53,7 +53,7 @@ question, the ranked chunks and the answer, never the condition or Retrace's
 prediction ([labelling guide](labelling-guide.md)). The report replays the
 recorded judge outputs, so it is reproducible offline.
 
-PROVISIONAL result (AI-drafted labels, not yet reviewed by the author):
+Result (labels from the independent AI annotator, not yet reviewed by a human):
 40.0% lenient accuracy (95% CI 26.0% to 52.0%), macro-F1 0.405 (0.278 to
 0.553). That is far below the 98.1% of the synthetic engine logic test, and
 the gap is the point of having both. The report's automatic first pass
@@ -97,8 +97,8 @@ On `heldout_v1` the calibrated confidence puts 153 of 160 cases in one bin,
 so its low ECE is not evidence of calibration. Calibration on real runs is
 measured by `retrace benchmark calibration-cv --suite live_v1`
 ([report](benchmarks/calibration_live_v1.md)): 5-fold cross-validation, so no
-case is scored by a calibrator fitted on it. PROVISIONAL result (AI-drafted
-labels): on real runs the raw score takes two values and separates right
+case is scored by a calibrator fitted on it. Result (AI-annotated labels, not
+yet reviewed by a human): on real runs the raw score takes two values and separates right
 from wrong diagnoses (1.0: 94.7% right, 0.7: 6.5%), but the committed
 calibrator, fitted on synthetic cases, maps every live case to 1.0. A
 cross-validated live calibrator is clearly better (ECE 0.414 for the raw

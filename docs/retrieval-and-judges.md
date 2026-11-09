@@ -135,7 +135,7 @@ four synthetic "injected" chunks carry prompt-injection text. Hard cases:
 Every row records its `annotator` and `annotation_date`; the manifest
 carries the dataset hash and the review. The labels were drafted by an AI
 agent; a second, fresh AI agent then checked all 173 of them from the review
-sheet alone and changed none (`annotator: "ai_draft_blind"`, provisional). Two
+sheet alone and changed none (`annotator: "ai_draft_blind"`, `human_reviewed: false`). Two
 AI passes agreeing is weak evidence. After the author's review the annotator
 becomes `ai_draft_author_reviewed` and the manifest records how many labels
 changed; `judges validate` words the report from the manifest.
@@ -193,7 +193,7 @@ never be presented as live-model results.
 ### What the numbers do and do not show
 
 * They measure one model on 66 AI-drafted examples the author has not reviewed
-  yet (the current report is marked PROVISIONAL). Kappa on 18
+  yet (the report says so at the top). Kappa on 18
   contradiction examples has wide confidence intervals; treat anything within
   about 0.15 as the same.
 * Perfect fixture results (kappa = 1.0 with the oracle provider in tests) prove

@@ -77,15 +77,15 @@ or gate CI on it with `retrace diagnose --batch traces.jsonl --fail-on GENERATIO
 
 ## Results
 
-> **PROVISIONAL — AI-drafted labels, not yet reviewed by the author.** The live_v1, calibration and judge numbers below come from labels an AI agent drafted blind; the author has not reviewed them yet. They will change.
+> **Who labelled what.** `live_v1` (and the calibration measured on it): labelled blind by an independent AI annotator (fresh subagent, no access to Retrace predictions); not yet reviewed by a human. Judge examples: AI-drafted, cross-checked by a second independent AI (0 of 173 changed); not reviewed by a human. Human review of both is planned; the results will be republished as v1.1.1 with the number of labels the author changed.
 
 | Question | Result | Report |
 | --- | --- | --- |
-| How often is the diagnosis right on real pipeline runs? | **PROVISIONAL: 40.0% lenient accuracy (95% CI 26.0% to 52.0%), macro-F1 0.405 (0.278 to 0.553)** on `live_v1`: 50 real runs with `llama3.2` as generator and judge, labels AI-drafted blind and not yet reviewed. Suggested causes (not yet confirmed): the relevance judge calling sufficient context insufficient (16 of 30 misses), and 8 abstentions the pipeline did not flag. | [live_v1.md](docs/benchmarks/live_v1.md) |
-| Is the confidence score calibrated on real runs? | **PROVISIONAL:** the raw score takes 2 values on `live_v1` and separates right from wrong diagnoses (1.0: 94.7% right; 0.7: 6.5%), but its scale is off; the committed calibrator (fitted on synthetic cases) says 1.0 for every live case. A calibrator cross-validated on `live_v1` is clearly better (ECE 0.414 → 0.001), but with 2 raw values it is a two-entry lookup table. | [calibration_live_v1.md](docs/benchmarks/calibration_live_v1.md) |
+| How often is the diagnosis right on real pipeline runs? | **40.0% lenient accuracy (95% CI 26.0% to 52.0%), macro-F1 0.405 (0.278 to 0.553)** on `live_v1`: 50 real runs with `llama3.2` as generator and judge, labelled blind by an independent AI annotator, not yet reviewed by a human. Suggested causes (not yet confirmed): the relevance judge calling sufficient context insufficient (16 of 30 misses), and 8 abstentions the pipeline did not flag. | [live_v1.md](docs/benchmarks/live_v1.md) |
+| Is the confidence score calibrated on real runs? | The raw score takes 2 values on `live_v1` and separates right from wrong diagnoses (1.0: 94.7% right; 0.7: 6.5%), but its scale is off; the committed calibrator (fitted on synthetic cases) says 1.0 for every live case. A calibrator cross-validated on `live_v1` is clearly better (ECE 0.414 → 0.001), but with 2 raw values it is a two-entry lookup table. | [calibration_live_v1.md](docs/benchmarks/calibration_live_v1.md) |
 | Do the rules pick the right code when the signals are right? | Engine logic test on synthetic signals with scripted judges (`heldout_v1`, 160 cases): 98.1% lenient accuracy, macro-F1 0.947. This tests the rules, not accuracy on real failures. | [heldout_v1.md](docs/benchmarks/heldout_v1.md) |
 | Is retrieval good on the demo corpus? | Production config, dense MiniLM: Recall@5 0.947, MRR 0.849 on 82 answerable queries (queries AI-drafted, not yet reviewed) | [retrieval_ablation.md](docs/benchmarks/retrieval_ablation.md) |
-| Can the judges be trusted? | **PROVISIONAL** (`llama3.2`, labels AI-drafted and checked by a second AI agent, not yet by the author): NLI faithfulness agrees with the labels on 22 of 24 answers (kappa 0.83) where the LLM faithfulness judge barely beats chance (kappa 0.02). The relevance judge is right on 84% of chunks but on only 29% of "is the context sufficient?" calls, the same weakness that dominates the live_v1 misses. 24–56 examples per judge, so intervals are wide. | [judge_validation.md](docs/benchmarks/judge_validation.md) |
+| Can the judges be trusted? | `llama3.2`; labels AI-drafted, cross-checked by a second independent AI (0 of 173 changed); not reviewed by a human. NLI faithfulness agrees with the labels on 22 of 24 answers (kappa 0.83) where the LLM faithfulness judge barely beats chance (kappa 0.02). The relevance judge is right on 84% of chunks but on only 29% of "is the context sufficient?" calls, the same weakness that dominates the live_v1 misses. 24–56 examples per judge, so intervals are wide. | [judge_validation.md](docs/benchmarks/judge_validation.md) |
 
 Every number links to a committed report that names the command that produced it. How the suites differ and what each measures: [docs/diagnosis-benchmark.md](docs/diagnosis-benchmark.md).
 
@@ -108,10 +108,17 @@ The relevance and contradiction judges are LLM calls with structured output; fai
 
 ## Known limitations
 
-- The live benchmark is 50 runs with one generation model and a 13-document corpus. Its labels are an AI draft that the author has not reviewed yet, so its numbers are provisional.
+- The live benchmark is 50 runs with one generation model and a 13-document corpus, labelled by one AI annotator; no human has reviewed the labels yet, so label noise is unmeasured.
 - With the default `llama3.2` judge, accuracy on real runs is low (see Results): the relevance judge often calls sufficient context insufficient. A stronger judge model is likely to help, but that has not been measured.
 - The engine logic test uses scripted judge outputs, so it says nothing about judge quality. Judge quality depends on the model you configure and must be measured for it.
 - Single operator identity: no RBAC, key rotation UI or server-side session revocation. Rate limits are per process.
+
+## Future work
+
+- **Human review of the labels** (planned for v1.1.1): the author reviews the 50 `live_v1` labels blind (`data/labelling/REVIEW_ME.html`, built by `scripts/build_review_page.py`) and the 173 judge labels; the reports are re-run and say "AI-drafted, reviewed and corrected by the author (N of 50 changed)".
+- Abstention detection that tolerates formatting variants such as `INSUFFICIENT CONTEXT`, validated on a separate set before re-recording `live_v1`.
+- A stronger relevance judge (or prompt) for the "is the context sufficient?" call, measured on the judge set first.
+- A second human or AI annotator on `live_v1` to measure label agreement.
 
 ## License
 
