@@ -46,7 +46,15 @@ Real output (trimmed), with `qwen2.5-coder:7b` as the judge model:
 
 **Fix:** retrieval did its job, so the generator is the problem. `TIGHTEN_GENERATOR` means constraining generation to the retrieved evidence (for example, asking it to restate figures exactly as the context gives them) rather than changing retrieval.
 
-The diagnosis is only as good as the judges. With the default local `llama3.2` (3B), the relevance judge called the same context insufficient and Retrace reported `ABSTENTION_FALSE_NEGATIVE` (rule R20) instead. That is why the judges are validated separately (below), and why you should validate the judge model you configure.
+The diagnosis is only as good as the judges. **This worked example shows `qwen2.5-coder:7b` output, not the default.** With the default local `llama3.2` (3B), the relevance judge called the same context insufficient and Retrace reported `ABSTENTION_FALSE_NEGATIVE` (rule R20) instead. That is why the judges are validated separately (below), and why you should validate the judge model you configure.
+
+**With the default `llama3.2`, two of the three example traces are misdiagnosed:**
+
+| Example trace | Expected | With `llama3.2` |
+| --- | --- | --- |
+| `examples/traces/contradiction.json` | `GENERATION_CONTRADICTION` (R30) | `ABSTENTION_FALSE_NEGATIVE` (R20): the relevance judge calls the context insufficient |
+| `examples/traces/correct_abstention.json` | `OK_CORRECT_ABSTENTION` | `RETRIEVAL_DISTRACTOR_DOMINANT` (R12): R12 fires before the abstention check (see Future work) |
+| `examples/traces/retrieval_miss.json` | `RETRIEVAL_MISS` (R11) | `RETRIEVAL_MISS` (R11), correct; it needs no judge |
 
 ![The Investigate screen: verdict, stage strip, answer beside the best evidence chunk, and the next step](docs/assets/console-investigate.png)
 
@@ -61,7 +69,7 @@ make demo
 
 `make demo` creates `.env` with a generated `API_KEY` (an existing `.env` is never changed), starts the stack, waits until it is ready, seeds a 13-document demo corpus, posts an example trace and prints the console URL and a link straight to its diagnosis. Sign in with the `API_KEY` from `.env`. It is safe to run again. The first run builds the backend image (PyTorch, sentence-transformers and two small models), which took about 17 minutes on the author's machine; later runs take a few minutes.
 
-To run the LLM judges locally, install [Ollama](https://ollama.com), `ollama pull llama3.2:latest` (or set `MODEL_*` in `.env` to any OpenAI-compatible endpoint), and run `make demo` again: it then posts the contradiction example above.
+To run the LLM judges locally, install [Ollama](https://ollama.com), `ollama pull llama3.2:latest` (or set `MODEL_*` in `.env` to any OpenAI-compatible endpoint), and run `make demo` again: it then posts the contradiction example above. With `llama3.2` that trace is misdiagnosed as `ABSTENTION_FALSE_NEGATIVE` (R20), not `GENERATION_CONTRADICTION` (R30); `make demo` prints a line saying so, and the table above lists which example traces the default model gets wrong.
 
 ## Use it on your own RAG app
 
@@ -119,7 +127,7 @@ The relevance and contradiction judges are LLM calls with structured output; fai
 - A stronger or better-prompted relevance judge for the "context sufficient" call, measured on a separate validation set first.
 - A second annotator on `live_v1` to measure inter-annotator agreement.
 - A larger, human-reviewed live set with a held-out split, then an honest calibrator refit (the committed one stays as is until then).
-- An `OK_CORRECT_ABSTENTION` vs `RETRIEVAL_DISTRACTOR_DOMINANT` rule distinction for unanswerable questions whose retrieval returns only distractors (surfaced by the live_v1 error analysis).
+- R12 (distractor-dominant) fires before the abstention check, so correct refusals over irrelevant chunks are reported as retrieval failures; seen in `correct_abstention.json` and in all 8 unanswerable live_v1 cases. Needs a rule-order change validated on a new set.
 
 ## License
 

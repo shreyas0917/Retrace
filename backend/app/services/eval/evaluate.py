@@ -17,8 +17,9 @@ from app.services.eval.regression import compare_metrics
 from app.services.eval.runner import run_suite_benchmark
 from app.services.eval.suite_loader import load_suite
 from app.services.eval.thresholds_config import load_thresholds
+from app.version import __version__
 
-APP_VERSION = "1.0.0"
+APP_VERSION = __version__
 
 # Exit codes: 0 pass, 1 regression, 2 error
 EXIT_PASS = 0
